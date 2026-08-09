@@ -15,12 +15,35 @@ set_option maxHeartbeats 1000000
 tag := "cliques"
 %%%
 
+Source: [Iso.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Iso.lean), [Cone.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Cone.lean), [Chordal.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Chordal.lean).
+
 The first substantial result in the paper is also the cheapest, and it is a good place to see the
 counting machinery earn its keep. Attach a new vertex to a clique of an `n`-monophilic graph; the
 result is still `n`-monophilic. Iterating gives Kostochka and Sidorenko's observation
 {citep kostochkaSidorenko}[] that chordal graphs are `n`-monophilic for every `n`.
 
 # The construction
+
+The construction attaches one new vertex to a chosen set `K` of existing ones. When `K` is a clique
+— pairwise adjacent — the new vertex together with `K` forms a larger clique, and that is the case
+Lemma 1 is about:
+
+```diagram (cssWidth := "62%")
+open Illuminate Diagram in
+let v (x y : Float) : Diagram _ := translate x y (circle 8)
+let e (x1 y1 x2 y2 : Float) : Diagram _ := line ⟨x1, y1⟩ ⟨x2, y2⟩
+-- the clique K, drawn as a triangle
+let k := [v 0 0, v 110 0, v 55 (-90)]
+let kEdges := [e 0 0 110 0, e 110 0 55 (-90), e 55 (-90) 0 0]
+-- the rest of G, hanging off the clique
+let rest := [v (-90) (-60), v (-70) 30]
+let restEdges := [e (-90) (-60) 0 0, e (-70) 30 0 0, e (-90) (-60) 55 (-90)]
+-- the new vertex, joined to every vertex of K
+let newV := [v 55 100]
+let newEdges := [e 55 100 0 0, e 55 100 110 0, e 55 100 55 (-90)]
+let labels := [translate 55 126 (text "the new vertex"), translate 55 (-116) (text "clique K")]
+(kEdges ++ restEdges ++ newEdges ++ k ++ rest ++ newV ++ labels).foldl atop emptyDiagram
+```
 
 Adding a vertex means changing the vertex type, and as with deletion we use `Option V` so that the
 new vertex is `none` and the old graph sits underneath unchanged.

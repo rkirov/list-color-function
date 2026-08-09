@@ -1,5 +1,6 @@
 import VersoManual
 import Book.Papers
+import Book.Map
 import Book.Counting
 import Book.Cliques
 import Book.Paths
@@ -52,6 +53,8 @@ every result cited in this book depends only on Lean's three standard axioms —
 extensionality, choice, and quotient soundness. That is a strong guarantee about the proofs. It is
 not a guarantee that the *statements* say what you think they say; that is what the numerical
 cross-checks scattered through the development, and the discussion in this book, are for.
+
+{include 1 Book.Map}
 
 {include 1 Book.Counting}
 

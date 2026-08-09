@@ -15,6 +15,8 @@ set_option maxHeartbeats 1000000
 tag := "paths"
 %%%
 
+Source: [Path.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Path.lean), [Recurrence.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Recurrence.lean), [PathCount.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/PathCount.lean).
+
 Section 3 of the paper computes the number of colorings of a path from a very particular shape of
 list assignment, and everything about cycles follows from that computation. This chapter is about
 getting the shape right.
@@ -68,8 +70,27 @@ one color missing from `S`, such an assignment is determined, up to renaming, by
 colors. The paper calls it **type A** when the two coincide and **type B** when they differ, and
 writes `A_k` and `B_k` for the resulting counts.
 
-Writing `n = m + 2` throughout keeps everything in `ℕ` with no truncated subtraction. The
-recurrences are then a two-line mutual definition:
+Pictured, with $`S` the common interior palette and the two ends each missing one colour:
+
+```diagram (cssWidth := "86%")
+open Illuminate Diagram in
+let v (x y : Float) : Diagram _ := translate x y (circle 8)
+let e (x1 y1 : Float) (x2 y2 : Float) : Diagram _ := line ⟨x1, y1⟩ ⟨x2, y2⟩
+let row (y : Float) (lbl : String) (l r : String) : List (Diagram _) :=
+  let xs : List Float := [0, 70, 140, 210, 280]
+  let verts := xs.map (fun x => v x y)
+  let edges := [e 0 y 70 y, e 70 y 140 y, e 140 y 210 y, e 210 y 280 y]
+  let labs := [translate 0 (y + 26) (text l), translate 280 (y + 26) (text r),
+               translate 140 (y + 26) (text "S"),
+               translate (-96) y (text lbl)]
+  edges ++ verts ++ labs
+(row 70 "type A" "S minus x" "S minus x" ++ row (-70) "type B" "S minus x" "S minus y")
+  |>.foldl atop emptyDiagram
+```
+
+In type A the two ends are missing the *same* colour; in type B, different ones. Writing
+`n = m + 2` throughout keeps everything in `ℕ` with no truncated subtraction. The recurrences are
+then a two-line mutual definition:
 
 ```lean
 open SimpleGraph Monophilic in

@@ -15,6 +15,8 @@ set_option maxHeartbeats 1000000
 tag := "cores"
 %%%
 
+Source: [Core.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Core.lean), [K23.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/K23.lean).
+
 Theorem 2 of the paper characterizes the `2`-monophilic graphs, and it does so in terms of a graph's
 **core** — what is left after repeatedly deleting vertices of degree 1 until every remaining vertex
 has degree at least 2. Lemma 5 is what makes that reduction legitimate: a connected graph is
@@ -126,7 +128,23 @@ example : pendantTower (pathG 0) 2 ((PUnit.unit, pathEnd 0), pathEnd 1) = pathG 
 # The other ingredient: K₂,₃
 
 Theorem 2's list of possible cores contains one graph that is neither a vertex nor a cycle, and it
-has to be handled by hand. Everything follows from a decomposition of the count. The two vertices on
+has to be handled by hand:
+
+```diagram (cssWidth := "56%")
+open Illuminate Diagram in
+let v (x y : Float) : Diagram _ := translate x y (circle 8)
+let e (x1 y1 x2 y2 : Float) : Diagram _ := line ⟨x1, y1⟩ ⟨x2, y2⟩
+let small := [v 0 70, v 0 (-70)]
+let large := [v 170 90, v 170 0, v 170 (-90)]
+let edges := [e 0 70 170 90, e 0 70 170 0, e 0 70 170 (-90),
+              e 0 (-70) 170 90, e 0 (-70) 170 0, e 0 (-70) 170 (-90)]
+let labels := [translate (-24) 70 (text "x"), translate (-24) (-70) (text "y"),
+               translate 196 90 (text "u"), translate 196 0 (text "v"),
+               translate 196 (-90) (text "w")]
+(edges ++ small ++ large ++ labels).foldl atop emptyDiagram
+```
+
+Everything follows from a decomposition of the count. The two vertices on
 the small side are non-adjacent to each other, the three on the large side are pairwise
 non-adjacent, and every small-side vertex is adjacent to every large-side one. So a colouring is:
 choose colours `a` and `b` on the small side freely, then choose independently for each large-side

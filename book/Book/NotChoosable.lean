@@ -15,6 +15,8 @@ set_option maxHeartbeats 1000000
 tag := "notchoosable"
 %%%
 
+Source: [NotChoosable.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/NotChoosable.lean).
+
 Section 5 of the paper constructs, for each `n`, a graph that is `n`-choosable but *not*
 `n`-monophilic — showing that the two notions, which the characterization of `2`-monophilic graphs
 makes look almost identical, genuinely come apart. The construction is assembled from many copies of

@@ -15,6 +15,8 @@ set_option maxHeartbeats 1000000
 tag := "counting"
 %%%
 
+Source: [Defs.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Defs.lean), [Rename.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Rename.lean), [Basic.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Basic.lean), [Delete.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Delete.lean), [Sum.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Sum.lean).
+
 The whole subject rests on one number. Given a graph `G` and, for each vertex, a finite list of
 permitted colors, how many proper colorings draw each vertex's color from its own list? Everything
 else — monophilicity, the recurrences, the theorems — is a statement about how that number moves as
@@ -155,6 +157,26 @@ One identity does most of the work in the paper's third section. Fix a vertex an
 the colorings that make that choice are exactly the colorings of the graph with that vertex deleted,
 from the lists that have lost the chosen color at each neighbor. The paper calls the shrunken
 assignment the *induced* one.
+
+```diagram (cssWidth := "88%")
+open Illuminate Diagram in
+let v (x y : Float) : Diagram _ := translate x y (circle 8)
+let e (x1 y1 x2 y2 : Float) : Diagram _ := line ⟨x1, y1⟩ ⟨x2, y2⟩
+-- left: the whole graph, with the chosen vertex on the left and its three neighbours
+let left :=
+  [e 0 0 90 70, e 0 0 90 0, e 0 0 90 (-70), e 90 70 170 0, e 90 (-70) 170 0, e 90 0 170 0,
+   v 0 0, v 90 70, v 90 0, v 90 (-70), v 170 0,
+   translate 0 (-28) (text "v, coloured c"),
+   translate 130 100 (text "neighbours of v")]
+-- right: the same graph with v deleted; its neighbours have lost the colour c
+let right :=
+  [e 90 70 170 0, e 90 (-70) 170 0, e 90 0 170 0,
+   v 90 70, v 90 0, v 90 (-70), v 170 0,
+   translate 130 100 (text "each list has lost c")]
+   |>.map (translate 330 0)
+let arrow := [line ⟨210, 0⟩ ⟨390, 0⟩, translate 300 22 (text "delete v")]
+(left ++ right ++ arrow).foldl atop emptyDiagram
+```
 
 Formalizing it requires deciding what "delete a vertex" means, and here there is a choice that pays
 off repeatedly. Deleting a vertex from a graph on `V` naturally lands on a subtype, which drags

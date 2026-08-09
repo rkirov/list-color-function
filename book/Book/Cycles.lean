@@ -15,6 +15,8 @@ set_option maxHeartbeats 1000000
 tag := "cycles"
 %%%
 
+Source: [PathSplit.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/PathSplit.lean), [PathMinimizing.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/PathMinimizing.lean), [Cycle.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Cycle.lean), [CycleMonophilic.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/CycleMonophilic.lean), [CycleTwo.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/CycleTwo.lean), [CycleRotate.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/CycleRotate.lean).
+
 Everything now assembles. This chapter covers the second half of Lemma 3 — which assignments
 actually achieve the minimum — and then Theorem 1.
 
@@ -90,7 +92,24 @@ passing is load-bearing, and identifies precisely which claim would fail without
 
 # Cycles
 
-A cycle is a path with its two ends joined:
+A cycle is a path with its two ends joined. In this development that is *literally* the definition,
+and the two graphs live on the same vertex type — which is what makes the arguments below cheap:
+
+```diagram (cssWidth := "78%")
+open Illuminate Diagram in
+let v (x : Float) : Diagram _ := translate x 0 (circle 8)
+let e (x1 x2 : Float) : Diagram _ := line ⟨x1, 0⟩ ⟨x2, 0⟩
+let xs : List Float := [0, 60, 120, 180, 240, 300]
+let verts := xs.map v
+let edges := [e 0 60, e 60 120, e 120 180, e 180 240, e 240 300]
+-- the closing edge, routed below so it does not overlap the path
+let closing := [line ⟨0, -8⟩ ⟨0, -50⟩, line ⟨0, -50⟩ ⟨300, -50⟩, line ⟨300, -50⟩ ⟨300, -8⟩]
+let labels := [translate 0 26 (text "pathEnd"), translate 300 26 (text "pathStart"),
+               translate 150 (-66) (text "the closing edge")]
+(edges ++ closing ++ verts ++ labels).foldl atop emptyDiagram
+```
+
+So `closePath k` is `pathG k` plus the single edge joining `pathStart k` to `pathEnd k`:
 
 ```lean
 open SimpleGraph Monophilic in

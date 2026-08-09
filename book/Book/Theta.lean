@@ -15,6 +15,8 @@ set_option maxHeartbeats 1000000
 tag := "theta"
 %%%
 
+Source: [Theta.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Theta.lean).
+
 Theorem 2 characterizes the `2`-monophilic graphs. Its easy direction assembles results already in
 hand — trees, cycles, `K₂,₃`, and the observation that a graph with an odd cycle is not
 `2`-colorable and so is `2`-monophilic vacuously. Its converse runs through a theorem this
@@ -29,10 +31,30 @@ disjoint paths of lengths `2`, `2`, and `2m`. A `2`-monophilic graph that is `2`
 theta graphs beyond the smallest. (The smallest, `θ_{2,2,2}`, *is* `K₂,₃`, which the previous
 chapter showed is `2`-monophilic — so it stays on the list.)
 
+The graph $`\theta_{2,2,2m}` is two branch vertices joined by three internally disjoint paths, of
+lengths $`2`, $`2` and $`2m`:
+
+```diagram (cssWidth := "80%")
+open Illuminate Diagram in
+let v (x y : Float) : Diagram _ := translate x y (circle 8)
+let e (x1 y1 x2 y2 : Float) : Diagram _ := line ⟨x1, y1⟩ ⟨x2, y2⟩
+-- branch vertices, and the long path between them along the middle
+let branch := [v 0 0, v 300 0]
+let longPath := [v 75 0, v 150 0, v 225 0]
+let longEdges := [e 0 0 75 0, e 75 0 150 0, e 150 0 225 0, e 225 0 300 0]
+-- the two length-2 paths, above and below
+let shortVerts := [v 150 80, v 150 (-80)]
+let shortEdges := [e 0 0 150 80, e 150 80 300 0, e 0 0 150 (-80), e 150 (-80) 300 0]
+let labels := [translate 0 (-26) (text "u"), translate 300 (-26) (text "w"),
+               translate 150 104 (text "a"), translate 150 (-104) (text "b"),
+               translate 150 22 (text "length 2m")]
+(longEdges ++ shortEdges ++ branch ++ longPath ++ shortVerts ++ labels).foldl atop emptyDiagram
+```
+
 There is a pleasant economy in the construction. Attaching a new vertex adjacent to *both* branch
-vertices is precisely a path of length 2 between them — which is to say, a cone over a two-element
-set. So a theta graph is a long path with two cones stacked on it, and no new graph construction is
-needed at all:
+vertices — the vertices `a` and `b` above — is precisely a path of length 2 between them, which is
+to say a cone over a two-element set. So a theta graph is the long path with two cones stacked on
+it, and no new graph construction is needed at all:
 
 ```lean
 open SimpleGraph Monophilic in

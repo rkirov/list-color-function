@@ -15,6 +15,8 @@ set_option maxHeartbeats 1000000
 tag := "swapping"
 %%%
 
+Source: [Bridge.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Bridge.lean), [PathColorable.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/PathColorable.lean).
+
 Lemma 2 is the technical heart of the paper. It says that if a graph splits into two pieces joined
 by a single edge, then the lists at the two ends of that edge can be made *nested* — one contained
 in the other — without ever increasing the number of colorings. It is what lets later arguments
@@ -22,7 +24,27 @@ assume that a count-minimizing assignment has a very rigid shape.
 
 # Bridges
 
-The setting is a graph that is a disjoint union plus one extra edge.
+The setting is a graph that falls into two pieces joined by a single edge:
+
+```diagram (cssWidth := "72%")
+open Illuminate Diagram in
+let v (x y : Float) : Diagram _ := translate x y (circle 8)
+let e (x1 y1 x2 y2 : Float) : Diagram _ := line ⟨x1, y1⟩ ⟨x2, y2⟩
+-- left piece G, with its distinguished vertex v₀ on the right
+let g := [v (-230) 60, v (-230) (-60), v (-150) 0, v (-70) 0]
+let gEdges := [e (-230) 60 (-150) 0, e (-230) (-60) (-150) 0, e (-150) 0 (-70) 0,
+               e (-230) 60 (-230) (-60)]
+-- right piece H, with its distinguished vertex w₀ on the left
+let h := [v 70 0, v 150 0, v 230 60, v 230 (-60)]
+let hEdges := [e 70 0 150 0, e 150 0 230 60, e 150 0 230 (-60), e 230 60 230 (-60)]
+let bridge := [line ⟨-70, 0⟩ ⟨70, 0⟩]
+let labels := [translate (-70) 26 (text "v0"), translate 70 26 (text "w0"),
+               translate 0 (-30) (text "the bridge"),
+               translate (-160) (-96) (text "G"), translate 160 (-96) (text "H")]
+(gEdges ++ hEdges ++ bridge ++ g ++ h ++ labels).foldl atop emptyDiagram
+```
+
+Cutting that edge disconnects the graph, and the counting factors accordingly.
 
 ```lean
 open SimpleGraph Monophilic in
