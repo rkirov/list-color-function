@@ -1,0 +1,112 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# Needed by the `deploy` job to publish the book to GitHub Pages.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Never run two Pages deployments at once; cancel superseded PR builds.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  formalization:
+    name: Build and audit the formalization
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build
+        uses: leanprover/lean-action@v1
+        with:
+          lake-package-directory: "."
+          use-mathlib-cache: "true"
+          test: "false"
+          lint: "false"
+
+      - name: No sorry, admit, or native_decide
+        run: |
+          if grep -rnwE 'sorry|admit|native_decide' Monophilic/ Monophilic.lean scripts/; then
+            echo "::error::found sorry/admit/native_decide in the formalization"
+            exit 1
+          fi
+          echo "clean"
+
+      - name: Axiom audit
+        run: |
+          set -o pipefail
+          lake env lean scripts/AxiomAudit.lean | tee axioms.txt
+          python3 - <<'PY'
+          import re, sys
+          allowed = {"propext", "Classical.choice", "Quot.sound"}
+          lines = [l for l in open("axioms.txt") if "depends on axioms" in l]
+          if not lines:
+              sys.exit("::error::axiom audit produced no output")
+          used = set()
+          for l in lines:
+              used |= {x.strip() for x in re.search(r"\[(.*)\]", l).group(1).split(",")}
+          extra = used - allowed
+          print(f"audited {len(lines)} declarations; axioms used: {sorted(used)}")
+          if extra:
+              sys.exit(f"::error::non-standard axioms in use: {sorted(extra)}")
+          PY
+
+  book:
+    name: Build the Verso companion
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Verso and its three dependencies are built from source and change only when
+      # book/lake-manifest.json does. Mathlib is *not* cached here — lean-action fetches
+      # its olean cache separately, and Mathlib would blow the 10 GB per-repo cache limit.
+      - name: Cache Verso build
+        uses: actions/cache@v4
+        with:
+          path: |
+            book/.lake/packages/verso
+            book/.lake/packages/subverso
+            book/.lake/packages/MD4Lean
+            book/.lake/packages/illuminate
+          key: verso-${{ runner.os }}-${{ hashFiles('book/lake-manifest.json', 'book/lean-toolchain') }}
+
+      # This also type-checks every example in the book text, each of which is discharged
+      # against the corresponding theorem — so the prose cannot drift from the proofs.
+      - name: Build book
+        uses: leanprover/lean-action@v1
+        with:
+          lake-package-directory: "book"
+          use-mathlib-cache: "true"
+          test: "false"
+          lint: "false"
+
+      - name: Generate HTML
+        working-directory: book
+        run: |
+          lake env lean --run Main.lean --output _out --depth 2 --without-tex
+          test -f _out/html-multi/index.html || { echo "::error::no index.html generated"; exit 1; }
+          echo "generated $(find _out -name '*.html' | wc -l) pages"
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: book/_out/html-multi
+
+  deploy:
+    name: Deploy the book to GitHub Pages
+    needs: book
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

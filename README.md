@@ -1,5 +1,9 @@
 # List coloring and *n*-monophilic graphs — a Lean 4 formalization
 
+[![CI](https://github.com/rkirov/list-color-function/actions/workflows/ci.yml/badge.svg)](https://github.com/rkirov/list-color-function/actions/workflows/ci.yml)
+
+📖 **[Read the companion book](https://rkirov.github.io/list-color-function/)**
+
 A machine-checked development of Kirov & Naimi, *List coloring and n-monophilic graphs*,
 Ars Combinatoria **124** (2016), 329–340 ([arXiv:1004.5183](https://arxiv.org/abs/1004.5183)).
 
