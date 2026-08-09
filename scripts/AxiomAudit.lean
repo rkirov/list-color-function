@@ -66,3 +66,13 @@ open SimpleGraph Monophilic
 #print axioms SimpleGraph.ERT.col_L₀_eq_zero
 #print axioms SimpleGraph.ERT.not_choosable
 #print axioms SimpleGraph.ERT.not_monophilic
+
+/-! ### Rubin's theorem: the direction that is proved -/
+#print axioms SimpleGraph.Choosable.mono
+#print axioms SimpleGraph.Choosable.comap
+#print axioms SimpleGraph.choosable_pendantTower_iff
+#print axioms Monophilic.choosable_two_closePath_of_odd
+#print axioms Monophilic.not_choosable_two_closePath_of_even
+#print axioms Monophilic.choosable_theta
+#print axioms Monophilic.choosable_two_of_rubinFamily
+#print axioms SimpleGraph.monophilic_two_iff_of_rubin_hard
