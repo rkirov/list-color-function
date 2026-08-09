@@ -286,6 +286,37 @@ spent on it. This is cheap and has repeatedly paid for itself.
   `n = 1,2,3`, while the uniform count is large (`402653202` at `n = 3`). So the failure is genuinely
   a list phenomenon.
 
+## M11 — attempting Rubin's theorem
+
+*A connected graph is `2`-choosable iff its core is a single vertex, an even cycle, or
+`θ_{2,2,2m}`.* Currently borrowed as an explicit hypothesis by `monophilic_two_iff_of_rubin`.
+
+**Easy direction (the three families are 2-choosable).**
+* Even cycles: **essentially free** — `col(C,L) ≥ colConst(C,2) = 2 > 0` straight from Theorem 1.
+  Verified to compile in four lines.
+* `K₁` / edgeless: trivial.
+* `θ_{2,2,2m}`: the real work. The `col_theta` product formula gives a clean reduction — since each
+  apex list has two colours, a summand vanishes *only* when that list equals `{g(start), g(end)}`,
+  which forces the endpoints to differ. So **if any path colouring identifies the two endpoints the
+  summand is immediately nonzero**, and otherwise one needs an achievable endpoint pair distinct
+  from both apex lists. The `reach` machinery of `CycleTwo.lean` is exactly the right tool.
+
+**Hard direction (2-choosable ⟹ the core is one of the three).** This is the direction Theorem 2
+actually consumes, and it is where the difficulty is. The contrapositive splits as:
+* core contains an odd cycle ⟹ not `2`-colourable ⟹ not `2`-choosable — easy;
+* core bipartite, min degree `≥ 2`, connected, not a cycle ⟹ it has a vertex of degree `≥ 3` ⟹
+  **it contains a theta subgraph** ⟹ that theta is not of the form `(2,2,even)` ⟹ not 2-choosable.
+
+The starred step is the blocker: extracting a theta subgraph needs block/ear-decomposition
+machinery that Mathlib does not have, and "follow a path until it returns to the cycle" is a real
+induction over walks. Note also that our `theta m` is hardwired as two *length-2* paths, so ruling
+out general `θ_{a,b,c}` would need a general theta construction as well.
+
+**Realistic target.** Discharge the easy direction, and reduce the borrowed hypothesis from all of
+Rubin to the purely *structural* fact that a connected graph with minimum degree `≥ 2` that is not a
+cycle contains a theta subgraph. That is a strictly better quarantine: the loan would then contain
+no colouring content at all.
+
 ### The one real blocker: M8 needs Rubin's theorem
 
 Theorem 2's converse runs through **Rubin's characterization of 2-choosable graphs** (Erdős–Rubin–
