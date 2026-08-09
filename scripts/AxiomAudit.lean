@@ -2,11 +2,15 @@
 Axiom audit.
 
 Run with `lake env lean scripts/AxiomAudit.lean`. Every result below must depend only on Lean's
-three standard axioms — `propext`, `Classical.choice`, `Quot.sound`. In particular the appearance of
-`sorryAx` anywhere in the output means a proof is incomplete, and `Lean.ofReduceBool` would mean a
-proof leans on `native_decide`.
+three standard axioms — `propext`, `Classical.choice`, `Quot.sound`. In particular `sorryAx`
+appearing in the output would mean a proof is incomplete, and `Lean.ofReduceBool` would mean a proof
+had been closed by kernel-external evaluation rather than by the kernel.
 
 CI enforces this (see `.github/workflows/ci.yml`); it is not merely informational.
+
+(The companion check in CI greps these files for the corresponding tactic names. That grep is
+deliberately crude and cannot distinguish code from prose, so those names are avoided in the text
+here — do not reintroduce them.)
 -/
 import Monophilic
 
