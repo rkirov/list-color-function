@@ -434,5 +434,5 @@ Build notes:
 ## Notes on the build
 
 Disk is at 94% (5.2 GB free); a second Mathlib checkout does not fit. `.lake/packages` is a symlink
-to `/home/rado/jordan_pick/.lake/packages` (same toolchain `v4.32.2`, same rev `905b9581`), so the
+to a sibling Mathlib checkout's `.lake/packages` (same toolchain `v4.32.2`, same rev `905b9581`), so the
 prebuilt Mathlib is shared read-only. Full build: ~12 s.
