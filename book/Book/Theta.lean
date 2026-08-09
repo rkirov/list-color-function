@@ -1,0 +1,108 @@
+import VersoManual
+import Book.Papers
+import Monophilic
+
+open Verso.Genre Manual
+open Verso.Genre.Manual.InlineLean
+open Book
+
+set_option pp.rawOnError true
+set_option maxHeartbeats 1000000
+
+#doc (Manual) "Theta Graphs and Theorem 2" =>
+
+%%%
+tag := "theta"
+%%%
+
+Theorem 2 characterizes the `2`-monophilic graphs. Its easy direction assembles results already in
+hand — trees, cycles, `K₂,₃`, and the observation that a graph with an odd cycle is not
+`2`-colorable and so is `2`-monophilic vacuously. Its converse runs through a theorem this
+development does not have, and this chapter is about how to be honest about that.
+
+# The one thing left to prove
+
+Rubin's theorem {citep erdosRubinTaylor}[] says a connected graph is `2`-choosable exactly when its
+core is a single vertex, an even cycle, or `θ_{2,2,2m}` — two vertices joined by three internally
+disjoint paths of lengths `2`, `2`, and `2m`. A `2`-monophilic graph that is `2`-colorable is
+`2`-choosable, so Rubin's list is the list of candidates, and the only work left is to rule out the
+theta graphs beyond the smallest. (The smallest, `θ_{2,2,2}`, *is* `K₂,₃`, which the previous
+chapter showed is `2`-monophilic — so it stays on the list.)
+
+There is a pleasant economy in the construction. Attaching a new vertex adjacent to *both* branch
+vertices is precisely a path of length 2 between them — which is to say, a cone over a two-element
+set. So a theta graph is a long path with two cones stacked on it, and no new graph construction is
+needed at all:
+
+```lean
+open SimpleGraph Monophilic in
+example (m : ℕ) : theta m = thetaOf (2 * m) := rfl
+```
+
+Note the two branch vertices are *not* adjacent, so `{pathStart, pathEnd}` is not a clique and the
+clique-based identity from the Lemma 1 chapter does not apply. But the extension count it was
+derived from carries no clique hypothesis, and that is what gets used — one more instance of the
+pattern that the general lemma is the useful one.
+
+# The witness
+
+```lean
+open SimpleGraph Monophilic in
+example (m : ℕ) (hm : 1 ≤ m) : (theta m).colConst 2 = 2 :=
+  colConst_theta m hm
+```
+
+```lean
+open SimpleGraph Monophilic in
+example (m : ℕ) (hm : 2 ≤ m) : (theta m).col (thetaWitness m) = 1 :=
+  col_theta_witness m hm
+```
+
+and therefore
+
+```lean
+open SimpleGraph Monophilic in
+example (m : ℕ) (hm : 2 ≤ m) : ¬ (theta m).Monophilic 2 :=
+  not_monophilic_theta m hm
+```
+
+The hypothesis `m ≥ 2` is essential rather than an artifact, and the boundary is a good consistency
+check on the whole chain: `θ_{2,2,2}` *is* `K₂,₃`, and there the same witness gives `col = 2`, equal
+to `colConst` — exactly as it must, since the previous chapter proved `K₂,₃` is `2`-monophilic.
+
+The paper gives a figure for `m = 2`. A figure cannot be formalized: what is needed is a family
+uniform in `m`. Searching for one found 48 assignments achieving `col = 1` at `m = 2`, and from them
+a family that works for every `m` — the branch vertices get `{1,2}` and `{1,3}`, the two short
+interior vertices `{1,2}` and `{2,3}`, and the long path's interior gets `{1,2}` repeated, ending
+`{2,3}, {1,3}`. Along the long path the `{1,2}` lists force an alternating colouring, so the colour
+arriving at the far end is determined, and the last two lists then pin the branch vertex — which is
+what collapses the count to one.
+
+# Quarantining Rubin
+
+Theorem 2 is then stated *relative* to Rubin, and the way it is stated matters more than the fact
+that it is:
+
+```lean
+open SimpleGraph in
+example {V : Type} [Fintype V] [DecidableEq V]
+    {G : SimpleGraph V} [DecidableRel G.Adj]
+    {CoreIsVertex CoreIsEvenCycle : Prop} {CoreIsTheta : ℕ → Prop}
+    (rubin : G.Choosable 2 ↔
+      CoreIsVertex ∨ CoreIsEvenCycle ∨ ∃ m, 1 ≤ m ∧ CoreIsTheta m)
+    (hvertex : CoreIsVertex → G.Monophilic 2)
+    (hcycle : CoreIsEvenCycle → G.Monophilic 2)
+    (hK23 : CoreIsTheta 1 → G.Monophilic 2)
+    (htheta : ∀ m, 2 ≤ m → CoreIsTheta m → ¬ G.Monophilic 2) :
+    G.Monophilic 2 ↔ ¬ G.Colorable 2 ∨ CoreIsVertex ∨ CoreIsEvenCycle ∨ CoreIsTheta 1 :=
+  monophilic_two_iff_of_rubin rubin hvertex hcycle hK23 htheta
+```
+
+The three alternatives are **abstract propositions**, not definitions. That is deliberate. If
+`CoreIsEvenCycle` were defined here, the statement would quietly depend on whatever that definition
+happened to say about cores, and a reader could not tell by inspection how much was borrowed. Left
+abstract, the theorem says exactly what it should: *given* Rubin's classification, and *given* the
+four monophilicity facts about the classes it names — each of which is proved in this development —
+the Kirov–Naimi characterization follows.
+
+What is borrowed is legible in the signature. Nothing else is.

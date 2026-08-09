@@ -1,0 +1,15 @@
+# Lake build output and fetched dependencies.
+# NOTE: `.lake/packages` here is a *symlink* into a sibling checkout (see README) — never commit it.
+.lake/
+*.olean
+*.ilean
+*.trace
+*.hash
+
+# Generated book output (regenerate with `lake env lean --run Main.lean`)
+book/_out/
+
+# Editor / OS
+.DS_Store
+*.swp
+*~
