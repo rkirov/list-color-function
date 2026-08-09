@@ -49,10 +49,16 @@ The proof of the path statement splits on whether the list assignment along the 
 ## Main results
 
 * `Monophilic.card_sdiff_endPair_pos` : `0 < #(L \ endPair k g) ↔ L ≠ endPair k g`, for `#L = 2`
+* `Monophilic.card_sdiff_endPair_pos_of_ends_eq` : the same, unconditionally, when `g` identifies
+  the two ends
 * `Monophilic.col_theta_pos_of_endPair_ne` : **the reduction** — one good path coloring suffices
 * `Monophilic.col_theta_pos_of_ends_eq` : a path coloring identifying the two ends suffices
+* `Monophilic.exists_ends_eq_of_const` : the alternating coloring, for a constant assignment
 * `Monophilic.exists_ends_eq_or_three_endPairs` : **the path statement**
+* `Monophilic.exists_path_coloring_endPair_ne` : the path statement, as used below
 * `Monophilic.choosable_theta` : **`θ_{2,2,2m}` is `2`-choosable for `m ≥ 1`**
+* `Monophilic.choosable_and_not_monophilic_theta` : for `m ≥ 2`, `2`-choosable but not
+  `2`-monophilic
 -/
 
 open Finset
@@ -161,12 +167,19 @@ theorem card_sdiff_endPair_pos {k : ℕ} {L : Finset ℕ} (hL : L.card = 2) (g :
     exact hne (Finset.eq_of_subset_of_card_le hemp (by
       rw [hL]; exact card_endPair_le k g))
 
-/-- A list of size two keeps at least one color when the two ends of the path agree. -/
+/-- A list of size two is never the pair of end colors of a coloring identifying the two ends of
+the path: that pair is a singleton. -/
 theorem endPair_ne_of_ends_eq {k : ℕ} {L : Finset ℕ} (hL : L.card = 2) {g : PathV k → ℕ}
     (h : g (pathStart k) = g (pathEnd k)) : L ≠ endPair k g := by
   intro heq
   rw [heq, endPair_eq_singleton h, Finset.card_singleton] at hL
   exact absurd hL (by omega)
+
+/-- A list of size two keeps at least one color when the two ends of the path agree: only one
+color is forbidden. -/
+theorem card_sdiff_endPair_pos_of_ends_eq {k : ℕ} {L : Finset ℕ} (hL : L.card = 2)
+    {g : PathV k → ℕ} (h : g (pathStart k) = g (pathEnd k)) : 0 < (L \ endPair k g).card :=
+  (card_sdiff_endPair_pos hL g).mpr (endPair_ne_of_ends_eq hL h)
 
 /-! ### The reduction to a single path coloring
 

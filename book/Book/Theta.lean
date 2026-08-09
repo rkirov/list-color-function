@@ -120,6 +120,26 @@ example {V : Type} [Fintype V] [DecidableEq V]
   monophilic_two_iff_of_rubin rubin hvertex hcycle hK23 htheta
 ```
 
+Since only the forward implication is ever used, the hypothesis is a one-way implication rather
+than an equivalence — and the backward half is no longer assumed at all, because it is proved:
+
+```lean
+open SimpleGraph Monophilic in
+example {V : Type} [Fintype V] [DecidableEq V]
+    (G : SimpleGraph V) [DecidableRel G.Adj] (h : RubinFamily G) : G.Choosable 2 :=
+  choosable_two_of_rubinFamily G h
+```
+
+That is Rubin's easy direction: every graph on his list — a single vertex, an even cycle, or
+$`\theta_{2,2,2m}` — really is `2`-choosable. The even-cycle case is a corollary of Theorem 1 rather
+than a separate argument: `2`-monophilicity says the constant assignment minimizes, and for an even
+cycle that minimum is `col(C,2) = 2 > 0`.
+
+What is still borrowed is the other direction — that a `2`-choosable graph *must* have one of those
+cores. It reduces to a statement with no colouring content in it at all: a connected graph of
+minimum degree at least two that is not a cycle contains a theta subgraph. Extracting that subgraph
+needs block or ear decomposition, which Mathlib does not have, so it is left as the loan.
+
 The three alternatives are **abstract propositions**, not definitions. That is deliberate. If
 `CoreIsEvenCycle` were defined here, the statement would quietly depend on whatever that definition
 happened to say about cores, and a reader could not tell by inspection how much was borrowed. Left

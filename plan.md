@@ -312,10 +312,38 @@ machinery that Mathlib does not have, and "follow a path until it returns to the
 induction over walks. Note also that our `theta m` is hardwired as two *length-2* paths, so ruling
 out general `θ_{a,b,c}` would need a general theta construction as well.
 
-**Realistic target.** Discharge the easy direction, and reduce the borrowed hypothesis from all of
-Rubin to the purely *structural* fact that a connected graph with minimum degree `≥ 2` that is not a
-cycle contains a theta subgraph. That is a strictly better quarantine: the loan would then contain
-no colouring content at all.
+**Outcome: the easy direction is proved.** `Monophilic/Choosable.lean`, `ThetaChoosable.lean`,
+`Rubin.lean`:
+
+* `Choosable.mono` / `Choosable.comap` — choosability passes to subgraphs, on the same vertex type
+  and (via `Function.extend`, giving the full palette off the image) on a smaller one;
+* `choosable_pendantTower_iff` — the core reduction, mirroring the monophilic version. Unlike that
+  one this genuinely needs `2 ≤ n`: at `n ≤ 1` the equivalence is false, since a single vertex is
+  `1`-choosable and a single edge is not;
+* `choosable_two_closePath_of_odd` — even cycles, four lines from Theorem 1;
+* `not_choosable_two_closePath_of_even` — odd cycles are not even `2`-colourable;
+* **`choosable_theta`** — `θ_{2,2,2m}` is `2`-choosable;
+* `choosable_two_of_rubinFamily` — the three families together.
+
+The `θ` proof came out cleaner than planned. For `|L| = 2` the criterion is a single iff,
+`0 < |L \setminus \{g(\text{start}), g(\text{end})\}| \iff L \ne \{g(\text{start}), g(\text{end})\}`,
+which subsumes the equal-endpoints case on cardinality grounds — no case split needed at all. The
+even-length hypothesis is used *only* in the constant-assignment case.
+
+*A strong cross-check:* `theta 1` **is** `K₂,₃`, and the two files — written independently — were
+checked to agree on `col` for **all 243** assignments drawn from three candidate 2-lists, under an
+explicit vertex correspondence, as well as on vertex count, edge count and `colConst` at `n = 2,3,4`.
+
+**The loan is now smaller.** Only `rubin.mp` was ever used, so
+`monophilic_two_iff_of_rubin_hard` takes a one-way implication rather than an `↔`; the old form
+survives as a corollary. What is still borrowed reduces to a purely *structural* fact with no
+colouring content: a connected graph with minimum degree `≥ 2` that is not a cycle contains a theta
+subgraph.
+
+**Not attempted, and why.** That structural fact needs block or ear decomposition, which Mathlib
+does not have, plus a walk induction for "follow a path until it returns to the cycle". There is a
+second obstacle: `theta m` here is hardwired as two *length-2* paths, so ruling out general
+`θ_{a,b,c}` would additionally need a general theta construction.
 
 ### The one real blocker: M8 needs Rubin's theorem
 
