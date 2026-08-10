@@ -127,7 +127,10 @@ example {V : Type} [Fintype V] [DecidableEq V]
 ```
 
 *Nine: Theorem 2 of Kirov–Naimi* — {ref "twomonophilic"}[the `2`-monophilicity chapter]. The one
-statement in the list with a borrowed hypothesis, and the borrowing is visible in the signature.
+statement in the list that carries a hypothesis: Rubin's theorem, which this development is in the
+course of proving. The hypothesis is visible in the signature, and it is stated in the most
+conservative form available — the three classes it names are quantified variables with no definition
+attached, so nothing about what "core" means can be smuggled in through one.
 
 ```lean
 open SimpleGraph in

@@ -19,6 +19,7 @@ import Book.Cores
 import Book.Theta
 import Book.NotChoosable
 import Book.Findings
+import Book.Reference
 
 open Verso.Genre Manual
 open Verso.Genre.Manual.InlineLean
@@ -65,9 +66,11 @@ proves nothing.
 counting argument in graph theory is set up in a proof assistant so that the counting stays
 tractable. It covers how to count list colourings at all, the cone construction, the arithmetic on
 paths, the swapping lemma that makes minimizing assignments rigid, the assembly into Theorem 1, and
-the material on cores and theta graphs. Its last chapter collects what mechanization taught us that
-reading did not — which hypotheses turned out to be load-bearing, which turned out to be
-unnecessary, and which pieces of surrounding folklore did not survive checking.
+the material on cores and theta graphs. It then collects what mechanization taught us that reading
+did not — which hypotheses turned out to be load-bearing, which turned out to be unnecessary, which
+pieces of surrounding folklore did not survive checking, and one hypothesis of our own that turned
+out to be false. It closes with {ref "reference"}[The Declarations]: the vocabulary and the headline
+results rendered straight out of the library, with their own documentation.
 
 A word on what "verified" means here and what it does not. The development contains no `sorry`, and
 every result cited in this book depends only on Lean's three standard axioms — propositional
@@ -112,3 +115,5 @@ cross-checks scattered through the development, and the discussion in this book,
 {include 1 Book.NotChoosable}
 
 {include 1 Book.Findings}
+
+{include 1 Book.Reference}

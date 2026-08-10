@@ -19,10 +19,11 @@ Source: [Theta.lean](https://github.com/rkirov/list-color-function/blob/main/Mon
 
 Theorem 2 characterizes the `2`-monophilic graphs. Its easy direction assembles results already in
 hand — trees, cycles, `K₂,₃`, and the observation that a graph with an odd cycle is not
-`2`-colorable and so is `2`-monophilic vacuously. Its converse runs through a theorem this
-development does not have, and this chapter is about how to be honest about that.
+`2`-colorable and so is `2`-monophilic vacuously. Its converse runs through Rubin's theorem, which
+this development is in the course of proving; this chapter is about how the dependency is arranged
+so that the two halves can be worked on independently.
 
-# The one thing left to prove
+# Where Rubin's theorem enters
 
 Rubin's theorem {citep erdosRubinTaylor}[] says a connected graph is `2`-choosable exactly when its
 core is a single vertex, an even cycle, or `θ_{2,2,2m}` — two vertices joined by three internally
@@ -100,10 +101,10 @@ interior vertices `{1,2}` and `{2,3}`, and the long path's interior gets `{1,2}`
 arriving at the far end is determined, and the last two lists then pin the branch vertex — which is
 what collapses the count to one.
 
-# Quarantining Rubin
+# Isolating Rubin's theorem
 
-Theorem 2 is then stated *relative* to Rubin, and the way it is stated matters more than the fact
-that it is:
+Theorem 2 is then stated so that Rubin's theorem is a hypothesis and nothing else is, and the way
+it is stated matters more than the fact that it is:
 
 ```lean
 open SimpleGraph in
@@ -135,16 +136,27 @@ $`\theta_{2,2,2m}` — really is `2`-choosable. The even-cycle case is a corolla
 than a separate argument: `2`-monophilicity says the constant assignment minimizes, and for an even
 cycle that minimum is `col(C,2) = 2 > 0`.
 
-What is still borrowed is the other direction — that a `2`-choosable graph *must* have one of those
-cores. It reduces to a statement with no colouring content in it at all: a connected graph of
-minimum degree at least two that is not a cycle contains a theta subgraph. Extracting that subgraph
-needs block or ear decomposition, which Mathlib does not have, so it is left as the loan.
+What is outstanding is the other direction — that a `2`-choosable graph *must* have one of those
+cores. Its colouring content is proved: a theta graph is `2`-choosable exactly when its shape is
+$`(2,2,\text{even})`. What is not yet proved is a structural statement with no colouring content in
+it at all, about which subgraphs a connected graph of minimum degree at least two must contain when
+it is not a cycle. Extracting such a subgraph needs block or ear decomposition, which Mathlib does
+not have. {ref "twochoosable"}[The `2`-choosability chapter] says how far that has got — and gives
+the six-vertex counterexample, $`K_{2,4}`, that settled what the structural step is *not* allowed to
+be.
 
-The three alternatives are **abstract propositions**, not definitions. That is deliberate. If
-`CoreIsEvenCycle` were defined here, the statement would quietly depend on whatever that definition
-happened to say about cores, and a reader could not tell by inspection how much was borrowed. Left
-abstract, the theorem says exactly what it should: *given* Rubin's classification, and *given* the
-four monophilicity facts about the classes it names — each of which is proved in this development —
-the Kirov–Naimi characterization follows.
+The three alternatives above are *abstract propositions*, not definitions. That is deliberate, and
+it is the most conservative form the statement can take: if `CoreIsEvenCycle` were defined here, the
+theorem would quietly depend on whatever that definition happened to say about cores, and a reader
+could not tell by inspection how much had been assumed. Left abstract, the theorem says exactly what
+it should: *given* Rubin's classification, and *given* the four monophilicity facts about the classes
+it names — each of which is proved in this development — the Kirov–Naimi characterization follows.
 
-What is borrowed is legible in the signature. Nothing else is.
+The version in `Monophilic.Theorem2`, displayed in {ref "twomonophilic"}[the `2`-monophilicity
+chapter], goes the other way and pays off the definitions: there the four alternatives are spelled
+out on a concrete notion of core, and the hypothesis is a single named proposition {name Monophilic.RubinTheorem}`RubinTheorem`
+taken as the first explicit argument. Both forms are proved; the abstract one shows that no more
+than Rubin's statement is being used, and the concrete one is what becomes unconditional the moment
+Rubin's theorem is available.
+
+What is assumed is legible in the signature. Nothing else is.

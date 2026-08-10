@@ -88,6 +88,10 @@ example (n : ℕ) (hn : 2 ≤ n) : ¬ (K n).Monophilic n :=
   not_monophilic n hn
 ```
 
+The smallest instance, `K 2`, is $`K_{2,4}`, and it earns its keep twice over: besides being the
+building block here it is the counterexample that fixed what the missing structural step of Rubin's
+theorem is allowed to look like, in {ref "twochoosable"}[the `2`-choosability chapter].
+
 This last line is a one-liner from the three-regime observation, but it is worth pausing on: it is a
 complete, if easy, instance of the paper's theme. What Section 5 goes on to do is much harder —
 build a graph that *is* `n`-choosable and still fails to be `n`-monophilic, so that the failure

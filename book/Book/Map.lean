@@ -35,6 +35,14 @@ development. That means two things for you as a reader. First, the statements yo
 statements that were actually proved — not paraphrases. Second, if a theorem is ever renamed or its
 hypotheses change, this book stops building, so the prose cannot silently drift out of date.
 
+There is a second check, aimed at a different failure. An `example` keeps a displayed *statement*
+honest, but a sentence that merely names a declaration is only text, and it would survive that
+declaration being deleted. So the names in the table below, and the load-bearing names elsewhere in
+the prose, are written as resolved references: each is elaborated when the book is built, and a name
+that no longer exists is a build error rather than a piece of stale typography.
+{ref "reference"}[The last chapter] does the same job in bulk, by rendering the declarations
+themselves.
+
 You do not need to read Lean to follow the mathematics. Each displayed statement is explained in
 the surrounding text, and the Lean is there so you can check that the explanation is honest.
 
@@ -88,51 +96,55 @@ Each Lean name below is the exact statement proved; each file link goes to the s
   * File
 *
   * Lemma 1
-  * `SimpleGraph.Monophilic.coneOn`
+  * {name}`SimpleGraph.Monophilic.coneOn`
   * [Cone.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Cone.lean)
 *
   * Kostochka–Sidorenko
-  * `SimpleGraph.monophilic_cliqueTower_of_isEmpty`
+  * {name}`SimpleGraph.monophilic_cliqueTower_of_isEmpty`
   * [Chordal.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Chordal.lean)
 *
   * Lemma 2
-  * `SimpleGraph.exists_nested_of_bridge`
+  * {name}`SimpleGraph.exists_nested_of_bridge`
   * [Bridge.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Bridge.lean)
 *
   * Lemma 3(a)
-  * `Monophilic.col_pathAssign`, `Monophilic.pathA_closed_form`
+  * {name}`Monophilic.col_pathAssign`, {name}`Monophilic.pathA_closed_form`
   * [PathCount.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/PathCount.lean), [Recurrence.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Recurrence.lean)
 *
   * Lemma 3(b)
-  * `Monophilic.min_pathA_pathB_le_col`
+  * {name}`Monophilic.min_pathA_pathB_le_col`
   * [PathMinimizing.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/PathMinimizing.lean)
 *
   * Lemma 3(c)
-  * `Monophilic.isPathShape_parity_of_minimizing`
+  * {name}`Monophilic.isPathShape_parity_of_minimizing`
   * [PathMinimizing.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/PathMinimizing.lean)
 *
   * Lemma 4
-  * `Monophilic.col_lt_col_of_ssubset`
+  * {name}`Monophilic.col_lt_col_of_ssubset`
   * [PathColorable.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/PathColorable.lean)
 *
   * **Theorem 1**
-  * `Monophilic.monophilic_closePath_of_two_le`
+  * {name}`Monophilic.monophilic_closePath_of_two_le`
   * [CycleRotate.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/CycleRotate.lean)
 *
   * Lemma 5
-  * `SimpleGraph.monophilic_pendantTower_iff`
+  * {name}`SimpleGraph.monophilic_pendantTower_iff`
   * [Core.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Core.lean)
 *
   * Lemma 6
-  * `SimpleGraph.monophilic_K23`
+  * {name}`SimpleGraph.monophilic_K23`
   * [K23.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/K23.lean)
 *
   * **Theorem 2**
-  * `SimpleGraph.monophilic_two_iff_of_rubin`
-  * [Theta.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Theta.lean)
+  * {name}`Monophilic.monophilic_two_iff_of_rubin`
+  * [Theorem2.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Theorem2.lean)
+*
+  * Rubin's theorem
+  * {name}`Monophilic.RubinTheorem`, {name}`Monophilic.choosable_two_of_rubinAlternatives`
+  * [Theorem2.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Theorem2.lean), [Rubin.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Rubin.lean)
 *
   * §5 building block
-  * `SimpleGraph.ERT.not_choosable`
+  * {name}`SimpleGraph.ERT.not_choosable`
   * [NotChoosable.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/NotChoosable.lean)
 :::
 

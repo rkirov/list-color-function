@@ -91,6 +91,39 @@ this development:
 None of these errors would have appeared as type errors. All of them would have appeared as a proof
 that would not close, at the bottom of an induction, with no indication of which end was wrong.
 
+# A scaffolding hypothesis of our own that was false
+
+The one genuinely negative finding, and it is about this repository rather than about any paper.
+
+To split Rubin's theorem into a structural half and a colouring half — so that the two could be
+worked on independently — an auxiliary hypothesis was invented here. Applied to a graph `H`, it
+offered four alternatives: `H` is a cycle, or it is $`\theta_{2,2,2m}`, or it contains an odd cycle,
+or it contains a theta $`\theta_{a,b,c}` of some shape other than $`(2,2,\text{even})`. Each
+disjunct names a configuration whose colouring behaviour is settled, so it looked like exactly the
+right currency to buy the hard direction with.
+
+It is false. The counterexample is $`K_{2,4}`, a graph the development already owned as the
+Erdős–Rubin–Taylor block of {ref "notchoosable"}[the separation chapter]: six vertices, eight edges,
+connected, minimum degree two, bipartite so no odd cycle, degree sequence `4,4,2,2,2,2` so neither a
+cycle nor any $`\theta_{2,2,2m}` — and its only theta subgraph is the *good* $`\theta_{2,2,2}`,
+because a theta needs two branch vertices of degree at least three and $`K_{2,4}` has only two such
+vertices, joined by exactly four internally disjoint paths of length two. Yet $`K_{2,4}` is not
+`2`-choosable. Every disjunct fails at once. The refutation is by brute force, and the hypothesis
+has been deleted along with everything that took it.
+
+Two things follow, and they are worth keeping apart.
+
+*What went wrong is a three-arm restriction.* $`K_{2,4}` **is** a theta graph — two vertices joined
+by internally disjoint paths — just not one with three arms. The right structural object is the
+generalized theta of arbitrary arity, and $`K_{2,4}` is the four-arm one. A dichotomy strong enough
+to finish Rubin's argument has to offer those, plus pairs of cycles meeting in at most one vertex.
+{ref "twochoosable"}[The `2`-choosability chapter] tells the story in full, with the checks.
+
+*This is a defect in our scaffolding and not an error in Kirov–Naimi.* Their proof of Theorem 2
+cites Rubin's theorem rather than proving it, and therefore never asserts anything of the kind. The
+distinction is not a courtesy: no claim is being made here about the correctness of the paper, in
+which no error has been found.
+
 # The surrounding literature
 
 Two claims that are widely repeated did not survive checking.
@@ -113,6 +146,13 @@ or choosability, no DP-coloring, no chordality or perfect elimination orderings,
 Vizing. There is also, contrary to a claim we started from, no `Fintype` instance for the bundled
 coloring type — which is what forced the design decision in the first chapter.
 
+One gap turned into a small by-product. "A graph that is not `2`-colourable contains an odd cycle" —
+the classical characterization of bipartite graphs — is an open `TODO` in Mathlib's `Bipartite.lean`.
+Kirov and Naimi's proof of Theorem 2 opens with exactly that sentence, so it had to be built here,
+and it is: the middle step, that an odd closed *walk* contains an odd *cycle*, is proved by rotating
+the walk to a repeated vertex and cutting it there. It is textbook material and no kind of
+contribution, but it is a piece of the standard library that this project happens to have supplied.
+
 More broadly, list coloring and choosability appear not to have been formalized in any major proof
 assistant. The adjacent mechanized results are Gonthier's Four Color Theorem in Coq
 {citep gonthier4ct}[], Bauer and Nipkow's Five Colour Theorem in Isabelle {citep bauerNipkow}[], and
@@ -122,7 +162,7 @@ the list color function has, as far as we can determine, not been formalized any
 # What is done, and what is not
 
 Proved here: Lemmas 1 through 6; Kostochka–Sidorenko in its simplicial-elimination-ordering form;
-Theorem 1 for every `n ≥ 3`; Theorem 2 relative to Rubin; and the building block of Section 5.
+Theorem 1 for every `n ≥ 3`; Theorem 2 given Rubin's theorem; and the building block of Section 5.
 
 Theorem 1 is complete: **every cycle, every `n ≥ 2`**. Two things remain, of quite different kinds.
 
@@ -139,10 +179,18 @@ which edge to delete is load-bearing rather than a convenience. Everywhere else 
 sufficed; there, a rotation automorphism of the cycle had to be built to supply the same freedom.
 
 **Rubin's theorem, and therefore the converse half of Theorem 2 unconditionally.** Rubin's
-characterization of `2`-choosable graphs {citep erdosRubinTaylor}[] is a genuine external
-dependency: no proof assistant has it. Rather than hide that, Theorem 2 is stated *relative* to it,
-with the borrowed statement appearing as an explicit hypothesis and the classes it names left as
-abstract propositions. The Kirov–Naimi contribution is then fully verified and the loan is legible.
+characterization of `2`-choosable graphs {citep erdosRubinTaylor}[] is a 1979 result that appears
+not to have been machine-checked before. It is not treated as an external dependency here: it is a
+named proposition {name Monophilic.RubinTheorem}`RubinTheorem` in the development, it is being proved, and Theorem 2 takes it as
+its first explicit argument so that supplying a term makes Theorem 2 unconditional with no other
+edit anywhere.
+
+How far that has got: the ⟸ direction is proved. So is the whole colouring content of the forward
+direction — a theta graph is `2`-choosable exactly when its shape is $`(2,2,\text{even})`. What
+remains is a structural statement about which subgraphs a connected graph of minimum degree at least
+two must contain, which in the literature is a block or ear decomposition and which Mathlib does not
+have. Every colouring-theoretic ingredient of Theorem 2 is proved outright, and so is its entire ⟸
+direction, with no hypothesis and not even connectivity.
 
 **Section 5's full construction** — `n²` copies of `K_{n,nⁿ}` beneath a complete bipartite graph,
 with the second parameter chosen by a counting argument — is a substantial project of its own and

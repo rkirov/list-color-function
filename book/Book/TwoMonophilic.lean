@@ -15,11 +15,11 @@ set_option maxHeartbeats 1000000
 tag := "twomonophilic"
 %%%
 
-Source: [Core.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Core.lean), [K23.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/K23.lean), [Theta.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Theta.lean), [Rubin.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Rubin.lean).
+Source: [Core.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Core.lean), [K23.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/K23.lean), [Theta.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Theta.lean), [Rubin.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Rubin.lean), [Theorem2.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Theorem2.lean).
 
 This chapter states the second main theorem of Kirov and Naimi {citep kirovNaimi}[]: a complete
-description of the `2`-monophilic graphs. It also says exactly what the description is conditional
-on, because the answer is *almost* unconditional and the remaining gap is worth being precise about.
+description of the `2`-monophilic graphs. It also says exactly what the description still rests on,
+because the answer is *almost* unconditional and the remaining gap is worth being precise about.
 
 # Narrowing the field
 
@@ -46,7 +46,8 @@ all:
 ```lean
 open SimpleGraph in
 example {V : Type} [Fintype V] [DecidableEq V]
-    (G : SimpleGraph V) [DecidableRel G.Adj] (n k : ℕ) (d : TowerData V k) :
+    (G : SimpleGraph V) [DecidableRel G.Adj] (n k : ℕ)
+    (d : TowerData V k) :
     (pendantTower G k d).Monophilic n ↔ G.Monophilic n :=
   monophilic_pendantTower_iff n k d
 ```
@@ -56,6 +57,18 @@ clique, so it is the Lemma 1 of {ref "chordal"}[the chordal chapter]. The other 
 matching identity for arbitrary lists, obtained by giving the new vertex *the same list as its
 neighbour* — then exactly one of its colours is always blocked, and the count is multiplied by
 `n - 1` exactly rather than merely bounded.
+
+Read backwards, the same statement transports monophilicity between a graph and its core:
+
+```lean
+open SimpleGraph Monophilic in
+example {V W : Type} [Fintype V] [DecidableEq V] [Fintype W]
+    [DecidableEq W] {G : SimpleGraph V} [DecidableRel G.Adj]
+    {H : SimpleGraph W} [DecidableRel H.Adj]
+    (h : CoreIs G H) (n : ℕ) :
+    G.Monophilic n ↔ H.Monophilic n :=
+  monophilic_iff_of_coreIs h n
+```
 
 So it is enough to classify the possible cores.
 
@@ -106,8 +119,19 @@ The positive case is a finite but genuinely fiddly computation, carried out in f
 
 ```lean
 open SimpleGraph in
-example : (completeBipartiteGraph (Fin 2) (Fin 3)).Monophilic 2 :=
+example :
+    (completeBipartiteGraph (Fin 2) (Fin 3)).Monophilic 2 :=
   monophilic_K23
+```
+
+The identification of $`K_{2,3}` with the smallest theta is an explicit bijection, checked by
+`decide`, and it is what lets the same fact be quoted on either model:
+
+```lean
+open SimpleGraph Monophilic in
+example :
+    completeBipartiteGraph (Fin 2) (Fin 3) ≃g theta 1 :=
+  k23IsoThetaOne
 ```
 
 The negative case is a family of explicit witnesses. For every `m ≥ 1` the uniform count is `2`,
@@ -122,7 +146,8 @@ and for `m ≥ 2` there is a `2`-list assignment achieving `1`:
 
 ```lean
 open Monophilic in
-example (m : ℕ) (hm : 2 ≤ m) : (theta m).col (thetaWitness m) = 1 :=
+example (m : ℕ) (hm : 2 ≤ m) :
+    (theta m).col (thetaWitness m) = 1 :=
   col_theta_witness m hm
 ```
 
@@ -149,81 +174,149 @@ example (m : ℕ) (hm : 2 ≤ m) :
 
 # Theorem 2
 
-*A graph is `2`-monophilic if and only if it is not `2`-colourable, or its core is a single vertex,
-an even cycle, or $`K_{2,3}`.*
+*A connected graph is `2`-monophilic if and only if its core is a single vertex, is a cycle, is
+$`K_{2,3}`, or it contains an odd cycle.*
 
-The Lean statement carries the borrowed half of Rubin's theorem as an explicit hypothesis, and the
-way it does so is the point of this section:
+The Lean statement takes Rubin's theorem as its first explicit argument, and the way it does so is
+the point of this section:
 
 ```lean
-open SimpleGraph in
+open SimpleGraph Monophilic in
+example (rubin : RubinTheorem) {V : Type} [Fintype V]
+    [DecidableEq V] (G : SimpleGraph V) [DecidableRel G.Adj]
+    (hconn : G.Connected) :
+    G.Monophilic 2 ↔
+      CoreIsVertex G ∨ CoreIsCycle G ∨ CoreIsK23 G ∨
+        HasOddCycle G :=
+  monophilic_two_iff_of_rubin rubin G hconn
+```
+
+Three things are worth reading off that signature.
+
+*The four alternatives are real definitions, not abstract propositions.* Each spells out on top of
+the {name Monophilic.CoreIs}`CoreIs` predicate of {ref "twochoosable"}[the previous chapter] a phrase the paper states in
+words, so there is nothing to take on trust about what "core" means here:
+
+```lean
+open SimpleGraph Monophilic in
+example {V : Type} [Fintype V] [DecidableEq V]
+    (G : SimpleGraph V) [DecidableRel G.Adj] :
+    CoreIsCycle G ↔
+      ∃ k, 2 ≤ k ∧ CoreIs G (closePath k) := Iff.rfl
+```
+
+```lean
+open SimpleGraph Monophilic in
+example {V : Type} [Fintype V] [DecidableEq V]
+    (G : SimpleGraph V) [DecidableRel G.Adj] :
+    CoreIsK23 G ↔ CoreIs G (theta 1) := Iff.rfl
+```
+
+```lean
+open SimpleGraph Monophilic in
+example {V : Type} [Fintype V] [DecidableEq V]
+    (G : SimpleGraph V) [DecidableRel G.Adj] :
+    HasOddCycle G ↔
+      ∃ k, Even k ∧ 2 ≤ k ∧ Contains G (closePath k) :=
+  Iff.rfl
+```
+
+Note that Theorem 2 asks for less than Rubin's theorem does: "is a cycle", with no parity
+restriction, where Rubin's list says "is an even cycle". That is because *every* cycle is
+`2`-monophilic, by Theorem 1, whereas only the even ones are `2`-choosable.
+
+*The hypothesis is a single named proposition.* {name Monophilic.RubinTheorem}`RubinTheorem` is Rubin's theorem, stated in the
+development and being proved there; it is not an axiom and it is not a re-statement tailored to what
+Theorem 2 happens to need.
+
+*It is the first explicit argument.* The day a term `rubinTheorem : RubinTheorem` exists,
+`monophilic_two_iff_of_rubin rubinTheorem` is the unconditional theorem, with no other edit
+anywhere in the development and no change to this chapter beyond deleting the hypothesis.
+
+# How much of this is unconditional?
+
+More than the shape of the statement suggests, and the difference matters.
+
+*The entire ⟸ direction*, with no hypothesis at all — not Rubin's theorem, and not even
+connectivity:
+
+```lean
+open SimpleGraph Monophilic in
 example {V : Type} [Fintype V] [DecidableEq V]
     {G : SimpleGraph V} [DecidableRel G.Adj]
-    {CoreIsVertex CoreIsEvenCycle : Prop} {CoreIsTheta : ℕ → Prop}
-    (rubin : G.Choosable 2 →
-      CoreIsVertex ∨ CoreIsEvenCycle ∨ ∃ m, 1 ≤ m ∧ CoreIsTheta m)
-    (hvertex : CoreIsVertex → G.Monophilic 2)
-    (hcycle : CoreIsEvenCycle → G.Monophilic 2)
-    (hK23 : CoreIsTheta 1 → G.Monophilic 2)
-    (htheta : ∀ m, 2 ≤ m → CoreIsTheta m → ¬ G.Monophilic 2) :
-    G.Monophilic 2 ↔
-      ¬ G.Colorable 2 ∨ CoreIsVertex ∨ CoreIsEvenCycle ∨ CoreIsTheta 1 :=
-  monophilic_two_iff_of_rubin_hard rubin hvertex hcycle hK23 htheta
+    (h : CoreIsVertex G ∨ CoreIsCycle G ∨ CoreIsK23 G ∨
+      HasOddCycle G) :
+    G.Monophilic 2 :=
+  monophilic_two_of_alternatives h
 ```
 
-Read it as follows. The three propositions `CoreIsVertex`, `CoreIsEvenCycle` and `CoreIsTheta m` are
-*abstract* — they are quantified variables, with no definition attached. The hypothesis `rubin` says
-that whenever `G` is `2`-choosable, one of them holds. The four remaining hypotheses say what
-monophilicity does on each: the first three families are `2`-monophilic, and the theta graphs beyond
-the smallest are not.
-
-Every one of those four hypotheses is a theorem of this development, displayed above. The `rubin`
-hypothesis is the only thing borrowed, and it is:
-
-* a one-way implication, not an equivalence, because only that direction is used — the converse is
-  proved, in {ref "twochoosable"}[the previous chapter];
-* stated in terms of abstract propositions, so that nothing about what "core" means can be smuggled
-  in through a definition.
-
-That second point is a deliberate design decision and it is worth defending. If `CoreIsEvenCycle`
-were *defined* here, the theorem would quietly depend on whatever that definition said, and a reader
-could no longer tell by inspecting the statement how much had been assumed. Left abstract, the
-theorem says precisely what it should: given Rubin's classification, and given the four
-monophilicity facts about the families it names, the Kirov–Naimi characterization follows.
-
-# How conditional is this, really?
-
-Less than the shape of the statement suggests, and the difference matters.
-
-What is *not* borrowed: that a single vertex, an even cycle and $`K_{2,3}` are `2`-monophilic; that
-$`\theta_{2,2,2m}` is not, for `m ≥ 2`; that every graph on Rubin's list is `2`-choosable; and that
-every theta graph of a shape other than $`(2,2,\text{even})` fails to be `2`-choosable — the last of
-these being the classification `Monophilic.thetaClassification`, proved in full.
-
-What *is* borrowed reduces, after the previous chapter, to a single purely structural claim with no
-colouring in it: that the graph in question is a cycle, or $`\theta_{2,2,2m}`, or contains an odd
-cycle, or contains a theta of another shape. Establishing that in general is a block or ear
-decomposition argument, which Mathlib does not have.
-
-So the honest summary is: *Theorem 2 is proved modulo one structural graph-theoretic lemma about
-subgraph containment, and every colouring-theoretic ingredient is proved outright.* Two further
-data points suggest the borrowed lemma is not hiding anything: it is *provable* for the two families
-the theorem actually applies it to,
+*The ⟹ direction for a graph that is not `2`-colourable*, which is the case the paper disposes of
+in its opening sentence: such a graph contains an odd cycle. This is the classical characterization
+of bipartite graphs, and it is the one ingredient of the paper's proof that had to be built from
+scratch, because Mathlib records it as an open `TODO` in its `Bipartite.lean`:
 
 ```lean
-open Monophilic in
-example {k : ℕ} (hk : 2 ≤ k) : ThetaAlternative (closePath k) :=
-  thetaAlternative_closePath hk
+open SimpleGraph Monophilic in
+example {V : Type} [Fintype V] [DecidableEq V]
+    {G : SimpleGraph V} [DecidableRel G.Adj]
+    (h : ¬ G.Colorable 2) : HasOddCycle G :=
+  hasOddCycle_of_not_colorable_two h
 ```
+
+Its substance is the middle step, folklore rather than anybody's theorem: an odd closed *walk*
+contains an odd *cycle*. Rotate the walk to a repeated vertex and cut it there; the two shorter
+closed walks have lengths summing to the original, so exactly one of them is odd, and the induction
+is on length.
 
 ```lean
-open Monophilic in
-example {m : ℕ} (hm : 1 ≤ m) : ThetaAlternative (theta m) :=
-  thetaAlternative_theta hm
+open SimpleGraph Monophilic in
+example {V : Type} [DecidableEq V] {G : SimpleGraph V}
+    {x : V} (w : G.Walk x x) (hodd : Odd w.length) :
+    ∃ (y : V) (c : G.Walk y y), c.IsCycle ∧ Odd c.length :=
+  exists_odd_isCycle_of_odd_closed_walk w.length w rfl hodd
 ```
 
-and the graphs it would have to exclude are individually excluded already, on their own vertex
-models:
+That is a by-product rather than a contribution: a piece of textbook graph theory that Mathlib had
+flagged as missing and that this development needed anyway.
+
+*The ⟹ direction for a `2`-colourable graph, granted Rubin's conclusion.* Rubin's theorem is not
+assumed here; its three-way conclusion is taken as a hypothesis and converted into the four-way one:
+
+```lean
+open SimpleGraph Monophilic in
+example {V : Type} [Fintype V] [DecidableEq V]
+    {G : SimpleGraph V} [DecidableRel G.Adj]
+    (hmono : G.Monophilic 2)
+    (h : CoreIsVertex G ∨ CoreIsEvenCycle G ∨
+      CoreIsTheta G) :
+    CoreIsVertex G ∨ CoreIsCycle G ∨ CoreIsK23 G ∨
+      HasOddCycle G :=
+  alternatives_of_rubinAlternatives hmono h
+```
+
+The two moving parts there are the collapse of "even cycle" into "cycle", and the elimination of
+$`\theta_{2,2,2m}` for `m ≥ 2` — which is the witness family displayed above — leaving `m = 1`,
+which is $`K_{2,3}`.
+
+*The ⟸ direction of Rubin's theorem itself*, so that what is missing from `RubinTheorem` is only
+its forward implication:
+
+```lean
+open SimpleGraph Monophilic in
+example {V : Type} [Fintype V] [DecidableEq V]
+    {G : SimpleGraph V} [DecidableRel G.Adj]
+    (h : CoreIsVertex G ∨ CoreIsEvenCycle G ∨
+      CoreIsTheta G) : G.Choosable 2 :=
+  choosable_two_of_rubinAlternatives h
+```
+
+So the honest summary is: *every colouring-theoretic ingredient of Theorem 2 is proved outright, and
+what remains is the forward implication of Rubin's theorem, which reduces to a structural statement
+about subgraphs with no colouring in it.* Connectivity is load-bearing in exactly one place — it is
+the hypothesis of Rubin's theorem — and is used nowhere else.
+
+The graphs that the missing structural step would have to exclude are, individually, excluded
+already:
 
 ```lean
 open Monophilic in
@@ -236,6 +329,10 @@ open Monophilic in
 example : ¬ (thetaGen 1 3 3).Monophilic 2 :=
   not_monophilic_two_thetaGen_133
 ```
+
+What that step must *not* be is the subject of the $`K_{2,4}` section of
+{ref "twochoosable"}[the previous chapter]: a three-arm dichotomy is provably too weak, and the
+generalized theta of arbitrary arity is the right object.
 
 # What is left
 
