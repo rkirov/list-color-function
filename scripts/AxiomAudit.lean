@@ -77,7 +77,10 @@ open SimpleGraph Monophilic
 #print axioms Monophilic.choosable_two_of_rubinFamily
 #print axioms SimpleGraph.monophilic_two_iff_of_rubin_hard
 
-/-! ### The list color function of a cycle -/
+/-! ### The list color function -/
+#print axioms SimpleGraph.listColorFunction
+#print axioms SimpleGraph.monophilic_iff_listColorFunction_eq
 #print axioms Monophilic.monophilic_closePath_all
-#print axioms Monophilic.isLeast_col_closePath
+#print axioms Monophilic.listColorFunction_closePath
 #print axioms Monophilic.colConst_closePath_chromatic
+#print axioms Monophilic.listColorFunction_closePath_chromatic

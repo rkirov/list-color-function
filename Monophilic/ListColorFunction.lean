@@ -6,33 +6,84 @@ import Monophilic.CycleRotate
 import Monophilic.Core
 
 /-!
-# The list color function of a cycle
+# The list color function
 
-This file states Theorem 1 of Kirov–Naimi in the form the literature usually writes it: the **list
-color function** of a cycle agrees with its chromatic polynomial.
-
-For a graph `G`, the list color function `P_ℓ(G, n)` is the *minimum* of `col(G, L)` over all
+For a graph `G`, the **list color function** `P_ℓ(G, n)` is the *minimum* of `col(G, L)` over all
 `n`-list assignments `L`, and `P(G, n)` is the number of proper colorings from a single palette of
-`n` colors. Saying `G` is `n`-monophilic is exactly saying that this minimum is attained at the
-constant assignment, i.e. `P_ℓ(G, n) = P(G, n)`.
+`n` colors. Kostochka and Sidorenko's question, and the whole subject of Kirov–Naimi, is when the
+two agree.
+
+This file defines `P_ℓ` for an arbitrary graph and shows that the paper's `n`-monophilicity is
+*exactly* the statement `P_ℓ(G, n) = P(G, n)`. Everything here is general; the cycle results at the
+end are corollaries of Theorem 1.
 
 ## Main results
 
-* `Monophilic.monophilic_closePath_all` : every cycle is `n`-monophilic for **every** `n`, with no
-  hypothesis on `n` whatsoever
-* `Monophilic.isLeast_col_closePath` : `P_ℓ(C, n) = P(C, n)`, stated as `IsLeast` — the constant
-  assignment is achievable and no `n`-list assignment does better
-* `Monophilic.colConst_closePath_chromatic` : `P(C_v, n) = (n-1)^v + (-1)^v (n-1)`, the classical
-  chromatic polynomial of a cycle, so the right-hand side above is explicit
+* `SimpleGraph.listColorFunction G n` : `P_ℓ(G, n)`
+* `SimpleGraph.monophilic_iff_listColorFunction_eq` : `G` is `n`-monophilic **iff**
+  `P_ℓ(G, n) = P(G, n)` — the two formulations coincide, for every graph and every `n`
+* `Monophilic.listColorFunction_closePath` : for a cycle, `P_ℓ(C, n) = P(C, n)` for every `n`
+* `Monophilic.colConst_closePath_chromatic` : and that common value is
+  `(n-1)^v + (-1)^v (n-1)`, the classical chromatic polynomial of a cycle on `v` vertices
 
-## A caveat on the word "polynomial"
+## On the word "polynomial"
 
-This development never constructs the chromatic polynomial as an element of `Polynomial ℤ`; it works
-throughout with the *count* `colConst G n`, which is that polynomial's value at `n`. Nothing in
-Kirov–Naimi needs the polynomial itself, and avoiding it removes deletion–contraction and edge
-contraction from the critical path. `colConst_closePath_chromatic` below is what ties the count to
-the familiar closed form.
+`P(G, n)` here is the *count* `colConst G n`. The chromatic polynomial proper — an element of
+`Polynomial ℤ` whose evaluation is this count — is built separately in
+`Monophilic.ChromaticPolynomial`, via the Whitney subset expansion rather than
+deletion–contraction, since Mathlib has no edge contraction. Nothing in Kirov–Naimi needs the
+polynomial itself, which is why the development did without it for so long.
 -/
+
+namespace SimpleGraph
+
+variable {V : Type*} [Fintype V] [DecidableEq V] (G : SimpleGraph V) [DecidableRel G.Adj]
+
+/-- The set of coloring counts achievable by `n`-list assignments. -/
+def colCounts (n : ℕ) : Set ℕ := {c | ∃ L : ListAssignment V, IsNListAssignment L n ∧ G.col L = c}
+
+lemma colConst_mem_colCounts (n : ℕ) : G.colConst n ∈ G.colCounts n :=
+  ⟨constList V n, isNListAssignment_constList n, rfl⟩
+
+lemma colCounts_nonempty (n : ℕ) : (G.colCounts n).Nonempty :=
+  ⟨_, G.colConst_mem_colCounts n⟩
+
+/-- **The list color function** `P_ℓ(G, n)`: the least number of colorings achievable by any
+`n`-list assignment. -/
+noncomputable def listColorFunction (n : ℕ) : ℕ := sInf (G.colCounts n)
+
+variable {G}
+
+/-- `P_ℓ` really is achieved by some `n`-list assignment — the infimum is a minimum. -/
+lemma listColorFunction_mem (n : ℕ) : G.listColorFunction n ∈ G.colCounts n :=
+  Nat.sInf_mem (G.colCounts_nonempty n)
+
+/-- `P_ℓ(G, n)` is a lower bound for every `n`-list assignment. -/
+theorem listColorFunction_le_col {n : ℕ} {L : ListAssignment V} (hL : IsNListAssignment L n) :
+    G.listColorFunction n ≤ G.col L :=
+  Nat.sInf_le ⟨L, hL, rfl⟩
+
+/-- `P_ℓ(G, n) ≤ P(G, n)`, always: the constant assignment is one of the candidates. -/
+theorem listColorFunction_le_colConst (n : ℕ) : G.listColorFunction n ≤ G.colConst n :=
+  Nat.sInf_le (G.colConst_mem_colCounts n)
+
+/-- **`n`-monophilicity is exactly `P_ℓ(G, n) = P(G, n)`.**
+
+This is the bridge between the paper's formulation and the way the literature usually writes the
+question. `G` is `n`-monophilic when the constant list assignment minimizes the number of colorings;
+that says precisely that the minimum defining `P_ℓ` is attained there, i.e. that the list color
+function agrees with the chromatic polynomial at `n`. -/
+theorem monophilic_iff_listColorFunction_eq (n : ℕ) :
+    G.Monophilic n ↔ G.listColorFunction n = G.colConst n := by
+  constructor
+  · intro hmono
+    refine le_antisymm (listColorFunction_le_colConst n) ?_
+    obtain ⟨L, hL, hcol⟩ := listColorFunction_mem (G := G) n
+    exact hcol ▸ hmono L hL
+  · intro heq L hL
+    exact heq ▸ listColorFunction_le_col hL
+
+end SimpleGraph
 
 namespace Monophilic
 
@@ -49,24 +100,18 @@ theorem monophilic_closePath_all (k n : ℕ) (hk : 2 ≤ k) : (closePath k).Mono
   · obtain ⟨m, rfl⟩ : ∃ m, n = m + 2 := ⟨n - 2, by omega⟩
     exact monophilic_closePath_of_two_le hk
 
-/-- **`P_ℓ(C, n) = P(C, n)`.** The number of colorings from the constant palette is the *least*
-achievable over all `n`-list assignments — and it is achieved, by the constant assignment itself.
-That is precisely the assertion that the list color function of a cycle agrees with its chromatic
-polynomial at every `n`. -/
-theorem isLeast_col_closePath (k n : ℕ) (hk : 2 ≤ k) :
-    IsLeast {c | ∃ L : ListAssignment (PathV k), IsNListAssignment L n ∧ (closePath k).col L = c}
-      ((closePath k).colConst n) := by
-  constructor
-  · exact ⟨constList (PathV k) n, isNListAssignment_constList n, rfl⟩
-  · rintro c ⟨L, hL, rfl⟩
-    exact monophilic_closePath_all k n hk L hL
+/-- **`P_ℓ(C, n) = P(C, n)` for every cycle and every `n`** — Theorem 1 of Kirov–Naimi, in the
+notation the literature uses. -/
+theorem listColorFunction_closePath (k n : ℕ) (hk : 2 ≤ k) :
+    (closePath k).listColorFunction n = (closePath k).colConst n :=
+  (monophilic_iff_listColorFunction_eq n).mp (monophilic_closePath_all k n hk)
 
 /-- **The chromatic polynomial of a cycle, as a closed form.** `closePath (k+1)` is the cycle on
 `v = k + 2` vertices, and its coloring count from a palette of `n = m + 2` colors is
 `(n-1)^v + (-1)^v (n-1)`.
 
-Combined with `isLeast_col_closePath` this makes the right-hand side of `P_ℓ = P` explicit: for a
-cycle on `v` vertices, the least number of list colorings over all `n`-list assignments is exactly
+Combined with `listColorFunction_closePath` this makes the common value explicit: for a cycle on `v`
+vertices, the least number of list colorings over all `n`-list assignments is exactly
 `(n-1)^v + (-1)^v (n-1)`. -/
 theorem colConst_closePath_chromatic (m k : ℕ) :
     (((closePath (k + 1)).colConst (m + 2) : ℤ))
@@ -76,6 +121,19 @@ theorem colConst_closePath_chromatic (m k : ℕ) :
   have hcast : (((closePath (k + 1)).colConst (m + 2) : ℕ) : ℤ) = ((m + 2) * pathA m k : ℕ) := by
     exact_mod_cast congrArg (Nat.cast : ℕ → ℤ) h
   rw [hcast]; push_cast; rw [hA]; ring_nf
+
+/-- The two together: for a cycle on `v = k + 2` vertices and `n = m + 2` colors, the list color
+function is exactly `(n-1)^v + (-1)^v (n-1)`.
+
+The hypothesis `1 ≤ k` is what makes `closePath (k+1)` an actual cycle: at `k = 0` it is
+`closePath 1`, a single edge on two vertices. (The closed form in
+`colConst_closePath_chromatic` does hold there too — `(n-1)^2 + (n-1) = n(n-1)` is the right count
+for an edge — but `listColorFunction_closePath` is stated for genuine cycles.) -/
+theorem listColorFunction_closePath_chromatic (m k : ℕ) (hk : 1 ≤ k) :
+    (((closePath (k + 1)).listColorFunction (m + 2) : ℤ))
+      = ((m + 1) : ℤ) ^ (k + 2) + (-1) ^ (k + 2) * ((m + 1) : ℤ) := by
+  rw [listColorFunction_closePath (k + 1) (m + 2) (by omega)]
+  exact colConst_closePath_chromatic m k
 
 /-! ### Sanity checks against the classical formula -/
 
