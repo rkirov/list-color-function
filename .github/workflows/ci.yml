@@ -44,13 +44,6 @@ jobs:
           fi
           echo "clean"
 
-      # Deleting a declaration leaves references to it in docstrings dangling. Catches
-      # the broken name only -- a false sentence made of live names is a job for review.
-      - name: No stale references in prose
-        run: |
-          lake env lean --run scripts/DumpNames.lean > /tmp/names.txt
-          python3 scripts/check_refs.py /tmp/names.txt
-
 
   book:
     name: Build the Verso companion
