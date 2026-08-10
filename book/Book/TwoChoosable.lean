@@ -1,6 +1,6 @@
 import VersoManual
 import Book.Papers
-import Monophilic
+import ListColoring
 
 open Verso.Genre Manual
 open Verso.Genre.Manual.InlineLean
@@ -16,14 +16,20 @@ set_option maxRecDepth 40000
 tag := "twochoosable"
 %%%
 
-Source: [Choosable.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Choosable.lean), [ThetaChoosable.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/ThetaChoosable.lean), [Rubin.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Rubin.lean), [RubinHard.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/RubinHard.lean), [ThetaClass.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/ThetaClass.lean), [Theorem2.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Theorem2.lean).
+Source:
+[Choosable.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Choosable.lean),
+[ThetaChoosable.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/ThetaChoosable.lean),
+[Rubin.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Rubin.lean),
+[RubinHard.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/RubinHard.lean),
+[ThetaClass.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/ThetaClass.lean),
+[Theorem2.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Theorem2.lean).
 
-The classification of the `2`-monophilic graphs, which is the second main theorem of the paper,
-rests on an older classification: which graphs are `2`-choosable? That question was answered by
-A. L. Rubin, in the paper of Erdős, Rubin and Taylor {citep erdosRubinTaylor}[] where list
-colouring is introduced, and the result is universally credited to Rubin. Kirov and Naimi cite it;
-this development is *proving* it. This chapter states it, and says exactly how much of it is
-proved and what is outstanding.
+The classification of the graphs that are enumeratively chromatic-choosable at `2`, which is the
+second main theorem of the paper, rests on an older classification: which graphs are `2`-choosable?
+That question was answered by A. L. Rubin, in the paper of Erdős, Rubin and Taylor
+{citep erdosRubinTaylor}[] where list colouring is introduced, and the result is universally
+credited to Rubin. Kirov and Naimi cite it; this development is *proving* it. This chapter states
+it, and says exactly how much of it is proved and what is outstanding.
 
 The short version: the ⟸ direction is proved, the theta graphs are classified in full, and what
 remains is one purely structural statement about subgraphs, with no colouring in it.
@@ -47,10 +53,11 @@ example {V : Type} [Fintype V] [DecidableEq V]
 Repeatedly deleting vertices of degree one until none is left produces the *core* of the graph. The
 statement above is that reduction run backwards, which is the form a formalization can use directly:
 rather than define a fixpoint of a deletion operation, present the graph as its core with a tower of
-pendant attachments on top. That reading is what {name Monophilic.CoreIs}`CoreIs` says, and it is spelled out exactly so:
+pendant attachments on top. That reading is what {name ListColoring.CoreIs}`CoreIs` says, and it is
+spelled out exactly so:
 
 ```lean
-open SimpleGraph Monophilic in
+open SimpleGraph ListColoring in
 example {V W : Type} [Fintype V] [DecidableEq V] [Fintype W]
     [DecidableEq W] (G : SimpleGraph V) [DecidableRel G.Adj]
     (H : SimpleGraph W) [DecidableRel H.Adj] :
@@ -64,7 +71,7 @@ This is mechanization and not mathematics — the papers simply say "core" — a
 interchangeable because of the display above it. Choosability transports along it:
 
 ```lean
-open SimpleGraph Monophilic in
+open SimpleGraph ListColoring in
 example {V W : Type} [Fintype V] [DecidableEq V] [Fintype W]
     [DecidableEq W] {G : SimpleGraph V} [DecidableRel G.Adj]
     {H : SimpleGraph W} [DecidableRel H.Adj]
@@ -106,7 +113,7 @@ That sentence is a named proposition in the development, so that statements whic
 written against it before it is available. Unfolded, it reads:
 
 ```lean
-open SimpleGraph Monophilic in
+open SimpleGraph ListColoring in
 example : RubinTheorem =
     ∀ {V : Type} [Fintype V] [DecidableEq V]
       (G : SimpleGraph V) [DecidableRel G.Adj],
@@ -121,7 +128,7 @@ above. Recall that `closePath k` has `k + 1` vertices, so `Odd k` picks out the 
 number of vertices:
 
 ```lean
-open SimpleGraph Monophilic in
+open SimpleGraph ListColoring in
 example {V : Type} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) [DecidableRel G.Adj] :
     CoreIsEvenCycle G ↔
@@ -129,17 +136,18 @@ example {V : Type} [Fintype V] [DecidableEq V]
 ```
 
 ```lean
-open SimpleGraph Monophilic in
+open SimpleGraph ListColoring in
 example {V : Type} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) [DecidableRel G.Adj] :
     CoreIsTheta G ↔ ∃ m, 1 ≤ m ∧ CoreIs G (theta m) :=
   Iff.rfl
 ```
 
-The same three families collected up to isomorphism, without the core, are {name Monophilic.RubinFamily}`RubinFamily`:
+The same three families collected up to isomorphism, without the core, are
+{name ListColoring.RubinFamily}`RubinFamily`:
 
 ```lean
-open SimpleGraph Monophilic in
+open SimpleGraph ListColoring in
 example {V : Type} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) [DecidableRel G.Adj] :
     RubinFamily G ↔ (Subsingleton V ∨
@@ -156,7 +164,7 @@ three paths of length two is exactly two vertices each joined to the same three 
 Everything on Rubin's list really is `2`-choosable:
 
 ```lean
-open SimpleGraph Monophilic in
+open SimpleGraph ListColoring in
 example {V : Type} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) [DecidableRel G.Adj]
     (h : RubinFamily G) : G.Choosable 2 :=
@@ -166,7 +174,7 @@ example {V : Type} [Fintype V] [DecidableEq V]
 and therefore, transported along the core, in the form in which Rubin's theorem states it:
 
 ```lean
-open SimpleGraph Monophilic in
+open SimpleGraph ListColoring in
 example {V : Type} [Fintype V] [DecidableEq V]
     {G : SimpleGraph V} [DecidableRel G.Adj]
     (h : CoreIsVertex G ∨ CoreIsEvenCycle G ∨
@@ -174,20 +182,20 @@ example {V : Type} [Fintype V] [DecidableEq V]
   choosable_two_of_rubinAlternatives h
 ```
 
-That display is worth pausing on: it is one half of {name Monophilic.RubinTheorem}`RubinTheorem`, discharged. What is missing
-from the named proposition is only its *forward* implication.
+That display is worth pausing on: it is one half of {name ListColoring.RubinTheorem}`RubinTheorem`,
+discharged. What is missing from the named proposition is only its *forward* implication.
 
 The three cases are of quite different weights.
 
 *A single vertex* is `n`-choosable for any `n ≥ 1`, there being no edge to violate.
 
 *An even cycle* is a corollary of Theorem 1 rather than a separate argument, and this is the
-pleasing part. `2`-monophilicity says the uniform assignment minimizes the count; for an even cycle
-that minimum is $`\mathrm{col}(C, 2) = 2`; so *every* `2`-list assignment on an even cycle admits at
-least two colourings, in particular at least one.
+pleasing part. Enumerative chromatic-choosability at `2` says the uniform assignment minimizes the
+count; for an even cycle that minimum is $`\mathrm{col}(C, 2) = 2`; so *every* `2`-list assignment
+on an even cycle admits at least two colourings, in particular at least one.
 
 ```lean
-open Monophilic in
+open ListColoring in
 example {k : ℕ} (hk : Odd k) (hk2 : 2 ≤ k) :
     (closePath k).Choosable 2 :=
   choosable_two_closePath_of_odd hk hk2
@@ -196,7 +204,7 @@ example {k : ℕ} (hk : Odd k) (hk2 : 2 ≤ k) :
 The odd cycles are excluded for the bluntest possible reason — they are not even `2`-colourable:
 
 ```lean
-open Monophilic in
+open ListColoring in
 example {k : ℕ} (hk : Even k) (hk2 : 2 ≤ k) :
     ¬ (closePath k).Choosable 2 :=
   not_choosable_two_closePath_of_even hk hk2
@@ -207,7 +215,7 @@ for them either agrees or differs, and one checks that each arm can be completed
 the cases. The two length-two arms handle the pairs the long arm cannot.
 
 ```lean
-open Monophilic in
+open ListColoring in
 example (m : ℕ) (hm : 1 ≤ m) : (theta m).Choosable 2 :=
   choosable_theta m hm
 ```
@@ -224,14 +232,14 @@ paths of lengths `a`, `b`, `c`. Normalize the shape so that $`1 \le a \le b \le 
 sorting costs nothing, and $`b \ge 2` says at most one arm is a bare edge, since two would collapse:
 
 ```lean
-open Monophilic in
+open ListColoring in
 example {a b c : ℕ} :
     ValidShape a b c ↔
       1 ≤ a ∧ a ≤ b ∧ b ≤ c ∧ 2 ≤ b := Iff.rfl
 ```
 
 ```lean
-open Monophilic in
+open ListColoring in
 example {a b c : ℕ} :
     GoodShape a b c ↔ a = 2 ∧ b = 2 ∧ Even c := Iff.rfl
 ```
@@ -240,7 +248,7 @@ Rubin's list contains exactly the good shapes, and for theta graphs that is now 
 directions:
 
 ```lean
-open Monophilic in
+open ListColoring in
 example {a b c : ℕ} (hv : ValidShape a b c) :
     (thetaGen a b c).Choosable 2 ↔ GoodShape a b c :=
   choosable_two_thetaGen_iff hv
@@ -249,7 +257,7 @@ example {a b c : ℕ} (hv : ValidShape a b c) :
 The ⟸ half of that is Rubin's family again, on the general model:
 
 ```lean
-open Monophilic in
+open ListColoring in
 example (m : ℕ) (hm : 1 ≤ m) :
     (thetaGen 2 2 (2 * m)).Choosable 2 :=
   choosable_two_thetaGen_two_two m hm
@@ -258,7 +266,7 @@ example (m : ℕ) (hm : 1 ≤ m) :
 The ⟹ half is an explicit `2`-list assignment admitting no colouring, uniform in the shape:
 
 ```lean
-open Monophilic in
+open ListColoring in
 example {a b c : ℕ} (hv : ValidShape a b c)
     (hbad : ¬ GoodShape a b c) :
     ¬ (thetaGen a b c).Choosable 2 :=
@@ -266,7 +274,7 @@ example {a b c : ℕ} (hv : ValidShape a b c)
 ```
 
 ```lean
-open Monophilic in
+open ListColoring in
 example : ThetaClassification := thetaClassification
 ```
 
@@ -279,13 +287,13 @@ lists already fail — or $`3 \le b \le c` and the three arms between them block
 shapes are also checked outright:
 
 ```lean
-open Monophilic in
+open ListColoring in
 example : ¬ (thetaGen 3 3 3).Choosable 2 :=
   not_choosable_two_thetaGen_333
 ```
 
 ```lean
-open Monophilic in
+open ListColoring in
 example : ¬ (thetaGen 2 4 4).Choosable 2 :=
   not_choosable_two_thetaGen_244
 ```
@@ -363,7 +371,7 @@ example : ∀ φ : Fin 2 → Fin 2,
 *No odd cycle.* It is bipartite, hence `2`-colourable, and a graph with an odd cycle is not:
 
 ```lean
-open SimpleGraph Monophilic in
+open SimpleGraph ListColoring in
 example : ¬ HasOddCycle (ERT.K 2) := fun h =>
   not_colorable_two_of_hasOddCycle h
     (ERT.colorable 2 le_rfl)
@@ -376,14 +384,14 @@ length-two paths through the right-hand vertices. So every theta subgraph of $`K
 three of those four paths: it is a $`\theta_{2,2,2}`, and that is the *good* shape.
 
 ```lean
-open SimpleGraph Monophilic in
+open SimpleGraph ListColoring in
 example : Contains (ERT.K 2) (thetaGen 2 2 2) :=
   ⟨![Sum.inr ![0, 0], Sum.inr ![0, 1], Sum.inr ![1, 1],
      Sum.inl 0, Sum.inl 1], by decide, by decide⟩
 ```
 
 ```lean
-open Monophilic in
+open ListColoring in
 example : (thetaGen 2 2 2).Choosable 2 :=
   choosable_two_thetaGen_two_two 1 le_rfl
 ```
@@ -433,8 +441,8 @@ a search.
 # What this buys
 
 With Rubin's theorem stated as a named proposition, its ⟸ direction proved and its theta content
-proved, {ref "twomonophilic"}[the next chapter] can ask which of the `2`-choosable graphs are
-actually `2`-monophilic — and can state Theorem 2 in a form that becomes unconditional the moment
-the forward implication lands. There are not many candidates to sort through: a single vertex, the
-even cycles, and the theta graphs. Two of those three families are settled by theorems already
-proved.
+proved, {ref "twoecc"}[the next chapter] can ask which of the `2`-choosable graphs are actually
+enumeratively chromatic-choosable at `2` — and can state Theorem 2 in a form that becomes
+unconditional the moment the forward implication lands. There are not many candidates to sort
+through: a single vertex, the even cycles, and the theta graphs. Two of those three families are
+settled by theorems already proved.

@@ -1,6 +1,6 @@
 import VersoManual
 import Book.Papers
-import Monophilic
+import ListColoring
 
 open Verso.Genre Manual
 open Verso.Genre.Manual.InlineLean
@@ -15,7 +15,10 @@ set_option maxHeartbeats 1000000
 tag := "readingchallenge"
 %%%
 
-Source: [comparator/Challenge.lean](https://github.com/rkirov/list-color-function/blob/main/comparator/Challenge.lean), [comparator/config.json](https://github.com/rkirov/list-color-function/blob/main/comparator/config.json), [comparator/Submission.lean](https://github.com/rkirov/list-color-function/blob/main/comparator/Submission.lean).
+Source:
+[comparator/Challenge.lean](https://github.com/rkirov/list-color-function/blob/main/comparator/Challenge.lean),
+[comparator/config.json](https://github.com/rkirov/list-color-function/blob/main/comparator/config.json),
+[comparator/Submission.lean](https://github.com/rkirov/list-color-function/blob/main/comparator/Submission.lean).
 
 Everything up to here has been exposition. This chapter is a guide to a single file, and the file is
 the point: `comparator/Challenge.lean` is the *statement surface* of the development — what is
@@ -33,7 +36,7 @@ is the first of those; the second is `Submission.lean`, which contains no mathem
 
 > The comparator matches the placeholder statements of `Challenge.lean` against declarations of the
 > same fully-qualified names in this module's environment. Every one of them is proved in the
-> `Monophilic` library of this repository, under exactly those names, so importing the library is
+> `ListColoring` library of this repository, under exactly those names, so importing the library is
 > the whole submission — no re-export shim is needed, and none is wanted: a shim would put a second
 > declaration between the comparator and the thing that was actually proved.
 
@@ -59,15 +62,16 @@ example {V : Type} [Fintype V] [DecidableEq V]
   eval_chromaticPolynomial G n
 ```
 
-*Two: $`P_\ell(G,n) = P(G,n)` is `n`-monophilicity* — {ref "lists"}[the lists chapter].
+*Two: $`P_\ell(G,n) = P(G,n)` is enumerative chromatic-choosability at `n`* — {ref "lists"}[the
+lists chapter].
 
 ```lean
 open SimpleGraph in
 example {V : Type} [Fintype V] [DecidableEq V]
     {G : SimpleGraph V} [DecidableRel G.Adj] (n : ℕ) :
-    G.Monophilic n ↔
+    G.ECCAt n ↔
       (G.listColorFunction n : ℤ) = (G.chromaticPolynomial).eval (n : ℤ) :=
-  monophilic_iff_listColorFunction_eq_eval n
+  ecc_iff_listColorFunction_eq_eval n
 ```
 
 *Three and four: $`K_{n,n^n}` is `n`-colourable but not `n`-choosable* — the Erdős–Rubin–Taylor
@@ -90,8 +94,8 @@ example (n : ℕ) (hn : 2 ≤ n) : (K n).Colorable n := colorable n hn
 open SimpleGraph in
 example {V : Type} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) [DecidableRel G.Adj] (hG : G.IsChordal) (n : ℕ) :
-    G.Monophilic n :=
-  monophilic_of_isChordal G hG n
+    G.ECCAt n :=
+  ecc_of_isChordal G hG n
 ```
 
 *Six: Dirac's theorem* {citep dirac}[] — same chapter, and the reason the fifth can be stated in its
@@ -110,27 +114,27 @@ example {V : Type} [Fintype V] [DecidableEq V]
 *Seven: Theorem 1 of Kirov–Naimi* {citep kirovNaimi}[] — {ref "theorem1"}[the cycles chapter].
 
 ```lean
-open Monophilic in
-example {k m : ℕ} (hk : 2 ≤ k) : (closePath k).Monophilic (m + 2) :=
-  monophilic_closePath_of_two_le hk
+open ListColoring in
+example {k m : ℕ} (hk : 2 ≤ k) : (closePath k).ECCAt (m + 2) :=
+  ecc_closePath_of_two_le hk
 ```
 
 *Eight: Rubin's theorem, the direction that is proved* —
 {ref "twochoosable"}[the `2`-choosability chapter].
 
 ```lean
-open SimpleGraph Monophilic in
+open SimpleGraph ListColoring in
 example {V : Type} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) [DecidableRel G.Adj] (h : RubinFamily G) :
     G.Choosable 2 :=
   choosable_two_of_rubinFamily G h
 ```
 
-*Nine: Theorem 2 of Kirov–Naimi* — {ref "twomonophilic"}[the `2`-monophilicity chapter]. The one
-statement in the list that carries a hypothesis: Rubin's theorem, which this development is in the
-course of proving. The hypothesis is visible in the signature, and it is stated in the most
-conservative form available — the three classes it names are quantified variables with no definition
-attached, so nothing about what "core" means can be smuggled in through one.
+*Nine: Theorem 2 of Kirov–Naimi* — {ref "twoecc"}[the enumerative chromatic-choosability at `2`
+chapter]. The one statement in the list that carries a hypothesis: Rubin's theorem, which this
+development is in the course of proving. The hypothesis is visible in the signature, and it is
+stated in the most conservative form available — the three classes it names are quantified variables
+with no definition attached, so nothing about what "core" means can be smuggled in through one.
 
 ```lean
 open SimpleGraph in
@@ -139,13 +143,13 @@ example {V : Type} [Fintype V] [DecidableEq V]
     {CoreIsVertex CoreIsEvenCycle : Prop} {CoreIsTheta : ℕ → Prop}
     (rubin : G.Choosable 2 →
       CoreIsVertex ∨ CoreIsEvenCycle ∨ ∃ m, 1 ≤ m ∧ CoreIsTheta m)
-    (hvertex : CoreIsVertex → G.Monophilic 2)
-    (hcycle : CoreIsEvenCycle → G.Monophilic 2)
-    (hK23 : CoreIsTheta 1 → G.Monophilic 2)
-    (htheta : ∀ m, 2 ≤ m → CoreIsTheta m → ¬ G.Monophilic 2) :
-    G.Monophilic 2 ↔
+    (hvertex : CoreIsVertex → G.ECCAt 2)
+    (hcycle : CoreIsEvenCycle → G.ECCAt 2)
+    (hK23 : CoreIsTheta 1 → G.ECCAt 2)
+    (htheta : ∀ m, 2 ≤ m → CoreIsTheta m → ¬ G.ECCAt 2) :
+    G.ECCAt 2 ↔
       ¬ G.Colorable 2 ∨ CoreIsVertex ∨ CoreIsEvenCycle ∨ CoreIsTheta 1 :=
-  monophilic_two_iff_of_rubin_hard rubin hvertex hcycle hK23 htheta
+  ecc_two_iff_of_rubin_hard rubin hvertex hcycle hK23 htheta
 ```
 
 *Ten: Donner's theorem* {citep donner}[] — {ref "threshold"}[the threshold chapter].
@@ -154,8 +158,8 @@ example {V : Type} [Fintype V] [DecidableEq V]
 open SimpleGraph in
 example {V : Type} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) [DecidableRel G.Adj] :
-    ∃ N, ∀ k, N ≤ k → G.Monophilic k :=
-  exists_monophilic_forall_ge G
+    ∃ N, ∀ k, N ≤ k → G.ECCAt k :=
+  exists_ecc_forall_ge G
 ```
 
 # The nine sections
@@ -165,10 +169,10 @@ example {V : Type} [Fintype V] [DecidableEq V]
 ### 2. The chromatic polynomial
 ### 3. Lists instead of a palette
 ### 4. Chordal graphs and Kostochka–Sidorenko
-### 5. Theorem 1: every cycle is n-monophilic
+### 5. Theorem 1: every cycle is enumeratively chromatic-choosable at `n`
 ### 6. The machinery behind Theorem 1
 ### 7. 2-choosability: Rubin's list
-### 8. 2-monophilicity: Theorem 2
+### 8. Enumerative chromatic-choosability at `2`: Theorem 2
 ### 9. Every graph, eventually
 ```
 
@@ -207,7 +211,7 @@ example {V : Type} [Fintype V] [DecidableEq V]
   * 8
 *
   * §8 Theorem 2
-  * {ref "twomonophilic"}[Which Graphs Are 2-Monophilic?]
+  * {ref "twoecc"}[Which Graphs Are Enumeratively Chromatic-Choosable at 2?]
   * 9
 *
   * §9 Every graph, eventually
@@ -231,12 +235,12 @@ statement at all — the graph constructions built as `SimpleGraph` structure in
 tactic-proved `symm` and `loopless` fields (`coneOn`, `addPendant`, `addPendantPair`), and the
 decidability instances.
 
-*`config.json` names what is claimed.* Two lists. `theorem_names` is the ten above. `definition_names`
-is not a curated aesthetic choice but a computed one: exactly the definitions reachable from the
-types of those ten statements, together with the notions those are in turn written in terms of, so
-that the file can be read without the library open beside it.
+*`config.json` names what is claimed.* Two lists. `theorem_names` is the ten above.
+`definition_names` is not a curated aesthetic choice but a computed one: exactly the definitions
+reachable from the types of those ten statements, together with the notions those are in turn
+written in terms of, so that the file can be read without the library open beside it.
 
-*Instances are in the list because they are in the types.* `(closePath k).Monophilic (m + 2)` does
+*Instances are in the list because they are in the types.* `(closePath k).ECCAt (m + 2)` does
 not typecheck without a `DecidableRel` for the adjacency of `closePath k`, a `Fintype` and a
 `DecidableEq` for `PathV k`. Those instances therefore occur in the *type* of a listed theorem, and
 the comparator's traversal demands that every constant reachable from a listed type be either a
@@ -262,7 +266,7 @@ introduces them the other way round.
 
 The chromatic polynomial sits at §2, before lists are introduced, which pulls `compCount` and the
 `fromEdgeSet` decidability instance forward with it. That is the order the definitions force: §3's
-reformulation of monophilicity as $`P_\ell = P` mentions the polynomial.
+reformulation of enumerative chromatic-choosability as $`P_\ell = P` mentions the polynomial.
 
 Neither is a distortion of the story. But they are a reminder that a Lean file is a dependency order
 first and a narrative second, and that the two coincide less often than one would like.
@@ -272,9 +276,9 @@ first and a narrative second, and that the two coincide less often than one woul
 A great deal. The file claims ten theorems; the library proves several hundred. Everything discussed
 in this book that is not one of the ten — Kirov and Naimi's Lemmas 1 through 6, the three regimes,
 the explicit threshold $`n > 2^{|E|}`, the counts $`A_k` and $`B_k` and their closed forms, Dirac's
-lemma, Rubin's easy direction family by family, the classification of `2`-choosable theta graphs, the
-witness assignments for the theta graphs — is in the library, under the names given in the section
-headers of `Challenge.lean`.
+lemma, Rubin's easy direction family by family, the classification of `2`-choosable theta graphs,
+the witness assignments for the theta graphs — is in the library, under the names given in the
+section headers of `Challenge.lean`.
 
 The ten were chosen as the load-bearing ones: the results a reader would quote. Reading the file is
 reading those ten and the vocabulary they need. Reading this book is everything else.

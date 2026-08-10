@@ -38,7 +38,7 @@ jobs:
       # design, so it is deliberately outside this grep.
       - name: No sorry, admit, or native_decide
         run: |
-          if grep -rnwE 'sorry|admit|native_decide' Monophilic/ Monophilic.lean; then
+          if grep -rnwE 'sorry|admit|native_decide' ListColoring/ ListColoring.lean; then
             echo "::error::found sorry/admit/native_decide in the formalization"
             exit 1
           fi

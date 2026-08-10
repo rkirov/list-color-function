@@ -1,6 +1,6 @@
 import VersoManual
 import Book.Papers
-import Monophilic
+import ListColoring
 
 open Verso.Genre Manual
 open Verso.Genre.Manual.InlineLean
@@ -15,22 +15,25 @@ set_option maxHeartbeats 1000000
 tag := "theta"
 %%%
 
-Source: [Theta.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Theta.lean).
+Source:
+[Theta.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Theta.lean).
 
-Theorem 2 characterizes the `2`-monophilic graphs. Its easy direction assembles results already in
-hand — trees, cycles, `K₂,₃`, and the observation that a graph with an odd cycle is not
-`2`-colorable and so is `2`-monophilic vacuously. Its converse runs through Rubin's theorem, which
-this development is in the course of proving; this chapter is about how the dependency is arranged
-so that the two halves can be worked on independently.
+Theorem 2 characterizes the graphs that are enumeratively chromatic-choosable at `2`. Its easy
+direction assembles results already in hand — trees, cycles, `K₂,₃`, and the observation that a
+graph with an odd cycle is not `2`-colorable and so is enumeratively chromatic-choosable at `2`
+vacuously. Its converse runs through Rubin's theorem, which this development is in the course of
+proving; this chapter is about how the dependency is arranged so that the two halves can be worked
+on independently.
 
 # Where Rubin's theorem enters
 
 Rubin's theorem {citep erdosRubinTaylor}[] says a connected graph is `2`-choosable exactly when its
 core is a single vertex, an even cycle, or `θ_{2,2,2m}` — two vertices joined by three internally
-disjoint paths of lengths `2`, `2`, and `2m`. A `2`-monophilic graph that is `2`-colorable is
+disjoint paths of lengths `2`, `2`, and `2m`. A graph that is enumeratively chromatic-choosable
+at `2` and `2`-colorable is
 `2`-choosable, so Rubin's list is the list of candidates, and the only work left is to rule out the
 theta graphs beyond the smallest. (The smallest, `θ_{2,2,2}`, *is* `K₂,₃`, which the previous
-chapter showed is `2`-monophilic — so it stays on the list.)
+chapter showed is enumeratively chromatic-choosable at `2` — so it stays on the list.)
 
 The graph $`\theta_{2,2,2m}` is two branch vertices joined by three internally disjoint paths, of
 lengths $`2`, $`2` and $`2m`:
@@ -58,7 +61,7 @@ to say a cone over a two-element set. So a theta graph is the long path with two
 it, and no new graph construction is needed at all:
 
 ```lean
-open SimpleGraph Monophilic in
+open SimpleGraph ListColoring in
 example (m : ℕ) : theta m = thetaOf (2 * m) := rfl
 ```
 
@@ -70,13 +73,13 @@ pattern that the general lemma is the useful one.
 # The witness
 
 ```lean
-open SimpleGraph Monophilic in
+open SimpleGraph ListColoring in
 example (m : ℕ) (hm : 1 ≤ m) : (theta m).colConst 2 = 2 :=
   colConst_theta m hm
 ```
 
 ```lean
-open SimpleGraph Monophilic in
+open SimpleGraph ListColoring in
 example (m : ℕ) (hm : 2 ≤ m) : (theta m).col (thetaWitness m) = 1 :=
   col_theta_witness m hm
 ```
@@ -84,14 +87,15 @@ example (m : ℕ) (hm : 2 ≤ m) : (theta m).col (thetaWitness m) = 1 :=
 and therefore
 
 ```lean
-open SimpleGraph Monophilic in
-example (m : ℕ) (hm : 2 ≤ m) : ¬ (theta m).Monophilic 2 :=
-  not_monophilic_theta m hm
+open SimpleGraph ListColoring in
+example (m : ℕ) (hm : 2 ≤ m) : ¬ (theta m).ECCAt 2 :=
+  not_ecc_theta m hm
 ```
 
 The hypothesis `m ≥ 2` is essential rather than an artifact, and the boundary is a good consistency
 check on the whole chain: `θ_{2,2,2}` *is* `K₂,₃`, and there the same witness gives `col = 2`, equal
-to `colConst` — exactly as it must, since the previous chapter proved `K₂,₃` is `2`-monophilic.
+to `colConst` — exactly as it must, since the previous chapter proved `K₂,₃` is enumeratively
+chromatic-choosable at `2`.
 
 The paper gives a figure for `m = 2`. A figure cannot be formalized: what is needed is a family
 uniform in `m`. Searching for one found 48 assignments achieving `col = 1` at `m = 2`, and from them
@@ -113,19 +117,19 @@ example {V : Type} [Fintype V] [DecidableEq V]
     {CoreIsVertex CoreIsEvenCycle : Prop} {CoreIsTheta : ℕ → Prop}
     (rubin : G.Choosable 2 ↔
       CoreIsVertex ∨ CoreIsEvenCycle ∨ ∃ m, 1 ≤ m ∧ CoreIsTheta m)
-    (hvertex : CoreIsVertex → G.Monophilic 2)
-    (hcycle : CoreIsEvenCycle → G.Monophilic 2)
-    (hK23 : CoreIsTheta 1 → G.Monophilic 2)
-    (htheta : ∀ m, 2 ≤ m → CoreIsTheta m → ¬ G.Monophilic 2) :
-    G.Monophilic 2 ↔ ¬ G.Colorable 2 ∨ CoreIsVertex ∨ CoreIsEvenCycle ∨ CoreIsTheta 1 :=
-  monophilic_two_iff_of_rubin rubin hvertex hcycle hK23 htheta
+    (hvertex : CoreIsVertex → G.ECCAt 2)
+    (hcycle : CoreIsEvenCycle → G.ECCAt 2)
+    (hK23 : CoreIsTheta 1 → G.ECCAt 2)
+    (htheta : ∀ m, 2 ≤ m → CoreIsTheta m → ¬ G.ECCAt 2) :
+    G.ECCAt 2 ↔ ¬ G.Colorable 2 ∨ CoreIsVertex ∨ CoreIsEvenCycle ∨ CoreIsTheta 1 :=
+  ecc_two_iff_of_rubin rubin hvertex hcycle hK23 htheta
 ```
 
 Since only the forward implication is ever used, the hypothesis is a one-way implication rather
 than an equivalence — and the backward half is no longer assumed at all, because it is proved:
 
 ```lean
-open SimpleGraph Monophilic in
+open SimpleGraph ListColoring in
 example {V : Type} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) [DecidableRel G.Adj] (h : RubinFamily G) : G.Choosable 2 :=
   choosable_two_of_rubinFamily G h
@@ -133,8 +137,8 @@ example {V : Type} [Fintype V] [DecidableEq V]
 
 That is Rubin's easy direction: every graph on his list — a single vertex, an even cycle, or
 $`\theta_{2,2,2m}` — really is `2`-choosable. The even-cycle case is a corollary of Theorem 1 rather
-than a separate argument: `2`-monophilicity says the constant assignment minimizes, and for an even
-cycle that minimum is `col(C,2) = 2 > 0`.
+than a separate argument: enumerative chromatic-choosability at `2` says the constant assignment
+minimizes, and for an even cycle that minimum is `col(C,2) = 2 > 0`.
 
 What is outstanding is the other direction — that a `2`-choosable graph *must* have one of those
 cores. Its colouring content is proved: a theta graph is `2`-choosable exactly when its shape is
@@ -149,14 +153,14 @@ The three alternatives above are *abstract propositions*, not definitions. That 
 it is the most conservative form the statement can take: if `CoreIsEvenCycle` were defined here, the
 theorem would quietly depend on whatever that definition happened to say about cores, and a reader
 could not tell by inspection how much had been assumed. Left abstract, the theorem says exactly what
-it should: *given* Rubin's classification, and *given* the four monophilicity facts about the classes
+it should: *given* Rubin's classification, and *given* the four enumerative chromatic-choosability facts about the classes
 it names — each of which is proved in this development — the Kirov–Naimi characterization follows.
 
-The version in `Monophilic.Theorem2`, displayed in {ref "twomonophilic"}[the `2`-monophilicity
-chapter], goes the other way and pays off the definitions: there the four alternatives are spelled
-out on a concrete notion of core, and the hypothesis is a single named proposition {name Monophilic.RubinTheorem}`RubinTheorem`
-taken as the first explicit argument. Both forms are proved; the abstract one shows that no more
-than Rubin's statement is being used, and the concrete one is what becomes unconditional the moment
-Rubin's theorem is available.
+The version in `ListColoring.Theorem2`, displayed in {ref "twoecc"}[the enumerative
+chromatic-choosability at `2` chapter], goes the other way and pays off the definitions: there the
+four alternatives are spelled out on a concrete notion of core, and the hypothesis is a single named
+proposition {name ListColoring.RubinTheorem}`RubinTheorem` taken as the first explicit argument.
+Both forms are proved; the abstract one shows that no more than Rubin's statement is being used, and
+the concrete one is what becomes unconditional the moment Rubin's theorem is available.
 
 What is assumed is legible in the signature. Nothing else is.

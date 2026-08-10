@@ -1,6 +1,6 @@
 import VersoManual
 import Book.Papers
-import Monophilic
+import ListColoring
 
 open Verso.Genre Manual
 open Verso.Genre.Manual.InlineLean
@@ -15,7 +15,9 @@ set_option maxHeartbeats 1000000
 tag := "colouring"
 %%%
 
-Source: [Defs.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Defs.lean), [Basic.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Basic.lean), [Cone.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Cone.lean).
+Source: [Defs.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Defs.lean),
+[Basic.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Basic.lean),
+[Cone.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Cone.lean).
 
 This chapter assumes you know what a graph is — a finite set of vertices, some pairs of which are
 joined by an edge — and nothing further. Everything else is built here.
@@ -161,7 +163,7 @@ So a tree on `v` vertices has $`n(n-1)^{v-1}` proper colourings, whatever its sh
 three vertices with three colours has $`3 \cdot 2 \cdot 2 = 12`:
 
 ```lean
-open Monophilic in
+open ListColoring in
 example : (pathG 2).colConst 3 = 12 := by decide
 ```
 
@@ -169,7 +171,7 @@ and the path on four vertices with two colours has $`2 \cdot 1 \cdot 1 \cdot 1 =
 alternating colourings:
 
 ```lean
-open Monophilic in
+open ListColoring in
 example : (pathG 3).colConst 2 = 2 := by decide
 ```
 
@@ -181,12 +183,12 @@ $`(n-1)^v + (-1)^v (n-1)` for the cycle on `v` vertices. Two instances: the four
 colours has $`1 + 1 = 2` colourings, and the five-cycle with two colours has none.
 
 ```lean
-open Monophilic in
+open ListColoring in
 example : (closePath 3).colConst 2 = 2 := by decide
 ```
 
 ```lean
-open Monophilic in
+open ListColoring in
 example : (closePath 4).colConst 2 = 0 := by decide
 ```
 
@@ -247,7 +249,7 @@ first hint of the next chapter: those functions are all polynomials.
 The last entry is the odd one out. The first four rows are formulas one can guess from the shape of
 the graph; the fifth had to be computed. $`K_{2,3}` is exactly the sort of graph — small, bipartite,
 unremarkable — that will turn out to sit on the boundary of the classification in
-{ref "twomonophilic"}[a later chapter].
+{ref "twoecc"}[a later chapter].
 
 # The question this book is about
 

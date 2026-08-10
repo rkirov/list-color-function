@@ -1,6 +1,6 @@
 # Counting List Colorings — a Verso companion
 
-A textbook companion to the Lean 4 formalization in `../Monophilic/`, covering Kirov & Naimi,
+A textbook companion to the Lean 4 formalization in `../ListColoring/`, covering Kirov & Naimi,
 *List coloring and n-monophilic graphs* (Ars Combin. **124** (2016), 329–340; arXiv:1004.5183).
 
 Every displayed statement in the book is an `example` discharged against the corresponding theorem
@@ -10,7 +10,7 @@ hypotheses and the book stops building.
 ## Chapters
 
 1. **Counting List Colorings** — why `SimpleGraph.Coloring` is the wrong counting object, the
-   `col` / `colConst` / `Monophilic` definitions, renaming invariance, the deletion identity.
+   `col` / `colConst` / `ECCAt` definitions, renaming invariance, the deletion identity.
 2. **Cones over Cliques** — Lemma 1 and complete graphs.
 3. **Paths and the Two Recurrences** — paths built by pendant attachment, `A_k` and `B_k`,
    Lemma 3(a).

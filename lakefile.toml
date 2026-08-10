@@ -1,7 +1,7 @@
 name = "graph_coloring"
 version = "0.1.0"
 keywords = ["math", "graph theory", "list coloring"]
-defaultTargets = ["Monophilic"]
+defaultTargets = ["ListColoring"]
 
 [leanOptions]
 pp.unicode.fun = true
@@ -14,4 +14,4 @@ scope = "leanprover-community"
 rev = "905b95818eb32af7874a58b427f50c1711a5e96c"
 
 [[lean_lib]]
-name = "Monophilic"
+name = "ListColoring"

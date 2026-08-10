@@ -1,7 +1,7 @@
 # Comparator workspace for this repository.
 #
 # `Challenge.lean` is the statement surface of the development: every public definition and every
-# top-level result, stated exactly as in `Monophilic/`, with placeholder bodies. `Submission.lean`
+# top-level result, stated exactly as in `ListColoring/`, with placeholder bodies. `Submission.lean`
 # delegates to the library itself (path-required, not vendored), so the comparator checks the exact
 # library build. Shares the root's `packagesDir` to reuse the already-built Mathlib.
 #

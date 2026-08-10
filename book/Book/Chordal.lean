@@ -1,6 +1,6 @@
 import VersoManual
 import Book.Papers
-import Monophilic
+import ListColoring
 
 open Verso.Genre Manual
 open Verso.Genre.Manual.InlineLean
@@ -15,17 +15,20 @@ set_option maxHeartbeats 1000000
 tag := "chordal"
 %%%
 
-Source: [Cone.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Cone.lean), [Chordal.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Chordal.lean), [Dirac.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Dirac.lean).
+Source: [Cone.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Cone.lean),
+[Chordal.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Chordal.lean),
+[Dirac.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Dirac.lean).
 
-Which graphs are `n`-monophilic? The first answer, and the one that came with the question, is due
-to Kostochka and Sidorenko {citep kostochkaSidorenko}[]: *every chordal graph is `n`-monophilic, for
-every `n`*. This chapter explains what chordal means, why the proof is short, and what had to be
-supplied to make it complete.
+Which graphs are enumeratively chromatic-choosable at `n`? The first answer, and the one that came
+with the question, is due to Kostochka and Sidorenko {citep kostochkaSidorenko}[]: *every chordal
+graph is enumeratively chromatic-choosable at `n`, for every `n`*. This chapter explains what
+chordal means, why the proof is short, and what had to be supplied to make it complete.
 
 # One vertex at a time
 
-The whole argument is a single step, iterated. Suppose `G` is `n`-monophilic, and build a new graph
-by adding one vertex joined to a set `K` of old ones. How does the count change?
+The whole argument is a single step, iterated. Suppose `G` is enumeratively chromatic-choosable at
+`n`, and build a new graph by adding one vertex joined to a set `K` of old ones. How does the count
+change?
 
 Given a colouring of `G`, the new vertex may take any colour of its own list that its neighbours
 have not used. So the number of colourings of the new graph is
@@ -47,15 +50,15 @@ example {V : Type} [Fintype V] [DecidableEq V]
 
 With arbitrary lists the image `f(K)` can only be *smaller*, so each term is at least
 $`n - |K|` and the same computation gives an inequality in the direction we want. Combining the two
-with monophilicity of `G` gives Kirov and Naimi's Lemma 1:
+with enumerative chromatic-choosability of `G` gives Kirov and Naimi's Lemma 1:
 
 ```lean
 open SimpleGraph in
 example {V : Type} [Fintype V] [DecidableEq V]
     {G : SimpleGraph V} [DecidableRel G.Adj] {K : Finset V}
-    (hK : G.IsClique (K : Set V)) {n : ℕ} (hG : G.Monophilic n) :
-    (coneOn G K).Monophilic n :=
-  SimpleGraph.Monophilic.coneOn hK hG
+    (hK : G.IsClique (K : Set V)) {n : ℕ} (hG : G.ECCAt n) :
+    (coneOn G K).ECCAt n :=
+  SimpleGraph.ECCAt.coneOn hK hG
 ```
 
 Three lines of arithmetic. The clique hypothesis is doing all the work: it is what makes the
@@ -105,16 +108,16 @@ That is exactly a tower of the cone construction, with a clique condition at eve
 ```lean
 open SimpleGraph in
 example {V : Type} [Fintype V] [DecidableEq V]
-    {G : SimpleGraph V} [DecidableRel G.Adj] {n : ℕ} (hG : G.Monophilic n) :
+    {G : SimpleGraph V} [DecidableRel G.Adj] {n : ℕ} (hG : G.ECCAt n) :
     ∀ (k : ℕ) (d : CliqueTowerData V k), CliqueTowerData.IsSimplicial G k d →
-      (cliqueTower G k d).Monophilic n :=
-  monophilic_cliqueTower hG
+      (cliqueTower G k d).ECCAt n :=
+  ecc_cliqueTower hG
 ```
 
 The induction adds nothing beyond bookkeeping: each step is one application of Lemma 1. Starting the
-tower from the empty graph, which is `n`-monophilic for the emptiest of reasons, gives the theorem
-in ordering form — *anything with a simplicial elimination ordering is `n`-monophilic, for every
-`n`*.
+tower from the empty graph, which is enumeratively chromatic-choosable at `n` for the emptiest of
+reasons, gives the theorem in ordering form — *anything with a simplicial elimination ordering is
+enumeratively chromatic-choosable at `n`, for every `n`*.
 
 # Chordal graphs
 
@@ -216,11 +219,11 @@ hypothesis borrowed and no tower data in the statement:
 open SimpleGraph in
 example {V : Type} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) [DecidableRel G.Adj] (hG : G.IsChordal) (n : ℕ) :
-    G.Monophilic n :=
-  monophilic_of_isChordal G hG n
+    G.ECCAt n :=
+  ecc_of_isChordal G hG n
 ```
 
-*Every chordal graph is `n`-monophilic, for every `n`.*
+*Every chordal graph is enumeratively chromatic-choosable at `n`, for every `n`.*
 
 # Two corollaries
 
@@ -230,8 +233,8 @@ vertex set builds it:
 ```lean
 open SimpleGraph in
 example (V : Type) [Fintype V] [DecidableEq V] (n : ℕ) :
-    (⊤ : SimpleGraph V).Monophilic n :=
-  monophilic_top V n
+    (⊤ : SimpleGraph V).ECCAt n :=
+  ecc_top V n
 ```
 
 There is a satisfying reason this had to come out true. For a complete graph *every* `n`-list
@@ -248,8 +251,8 @@ cone over a singleton — a one-element set being a clique:
 ```lean
 open SimpleGraph in
 example (n k : ℕ) (d : TowerData (Fin 1) k) :
-    (pendantTower (⊤ : SimpleGraph (Fin 1)) k d).Monophilic n :=
-  (monophilic_pendantTower_iff n k d).mpr (monophilic_top (Fin 1) n)
+    (pendantTower (⊤ : SimpleGraph (Fin 1)) k d).ECCAt n :=
+  (ecc_pendantTower_iff n k d).mpr (ecc_top (Fin 1) n)
 ```
 
 Every tree, every `n`. Concretely: a tree on `v` vertices has $`n(n-1)^{v-1}` colourings from a
@@ -260,7 +263,7 @@ uniform palette, and no assignment of `n`-lists can do better.
 The smallest graph that escapes this chapter is the four-cycle, and the reason is exactly the reason
 Dirac's theorem is about cycles: a cycle of length four or more has no simplicial vertex at all.
 Every vertex of $`C_4` has two neighbours, and they are not adjacent. The cone argument never gets
-started, and nothing above says anything about whether cycles are monophilic.
+started, and nothing above says anything about whether cycles are enumeratively chromatic-choosable.
 
 They are — for every length and every `n` — but that is a genuinely harder theorem, and it is
 {ref "theorem1"}[the subject of the next chapter].

@@ -1,6 +1,6 @@
 import VersoManual
 import Book.Papers
-import Monophilic
+import ListColoring
 
 open Verso.Genre Manual
 open Verso.Genre.Manual.InlineLean
@@ -15,12 +15,16 @@ set_option maxHeartbeats 1000000
 tag := "counting"
 %%%
 
-Source: [Defs.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Defs.lean), [Rename.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Rename.lean), [Basic.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Basic.lean), [Delete.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Delete.lean), [Sum.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Sum.lean).
+Source: [Defs.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Defs.lean),
+[Rename.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Rename.lean),
+[Basic.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Basic.lean),
+[Delete.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Delete.lean),
+[Sum.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Sum.lean).
 
 The whole subject rests on one number. Given a graph `G` and, for each vertex, a finite list of
 permitted colors, how many proper colorings draw each vertex's color from its own list? Everything
-else — monophilicity, the recurrences, the theorems — is a statement about how that number moves as
-the lists move.
+else — enumerative chromatic-choosability, the recurrences, the theorems — is a statement about how
+that number moves as the lists move.
 
 So the first decision is how to make that number a Lean object, and it is worth dwelling on,
 because the obvious choice is the wrong one.
@@ -71,25 +75,26 @@ example {V : Type} [Fintype V] [DecidableEq V]
   colConst_pos_iff_colorable
 ```
 
-# Monophilicity
+# Enumerative chromatic-choosability
 
-A graph is `n`-monophilic when giving every vertex the *same* list of `n` colors minimizes the
-count, over all ways of handing out lists of size `n`. The name is the paper's: the graph "loves
-sameness".
+A graph is enumeratively chromatic-choosable at `n` when giving every vertex the *same* list of `n`
+colors minimizes the count, over all ways of handing out lists of size `n`. The name is the paper's:
+the graph "loves sameness".
 
 ```lean
 open SimpleGraph in
 example {V : Type} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) [DecidableRel G.Adj] (n : ℕ) :
-    G.Monophilic n ↔ ∀ L : ListAssignment V, IsNListAssignment L n → G.colConst n ≤ G.col L :=
+    G.ECCAt n ↔ ∀ L : ListAssignment V, IsNListAssignment L n → G.colConst n ≤ G.col L :=
   Iff.rfl
 ```
 
 Kostochka and Sidorenko {citep kostochkaSidorenko}[] asked which graphs have this property, and
-observed that chordal graphs do. Donner {citep donner}[] showed every graph is `n`-monophilic once
-`n` is large enough. The paper this book accompanies {citep kirovNaimi}[] settles cycles for all
-`n`, characterizes the `2`-monophilic graphs, and shows that `n`-choosability does not imply
-`n`-monophilicity.
+observed that chordal graphs do. Donner {citep donner}[] showed every graph is enumeratively
+chromatic-choosable at `n` once `n` is large enough. The paper this book accompanies
+{citep kirovNaimi}[] settles cycles for all `n`, characterizes the graphs that are enumeratively
+chromatic-choosable at `2`, and shows that `n`-choosability does not imply enumerative
+chromatic-choosability at `n`.
 
 Before any of that, three easy observations locate the interesting range. If `n` is below the
 chromatic number there are no colorings from the uniform list at all, so the inequality holds
@@ -99,20 +104,21 @@ vacuously:
 open SimpleGraph in
 example {V : Type} [Fintype V] [DecidableEq V]
     {G : SimpleGraph V} [DecidableRel G.Adj] {n : ℕ} (h : ¬ G.Colorable n) :
-    G.Monophilic n :=
-  monophilic_of_not_colorable h
+    G.ECCAt n :=
+  ecc_of_not_colorable h
 ```
 
 If `n` is at least the chromatic number but below the *list* chromatic number, there is some
-`n`-assignment with no colorings at all, while the uniform list has some — so monophilicity fails:
+`n`-assignment with no colorings at all, while the uniform list has some — so enumerative
+chromatic-choosability fails:
 
 ```lean
 open SimpleGraph in
 example {V : Type} [Fintype V] [DecidableEq V]
     {G : SimpleGraph V} [DecidableRel G.Adj] {n : ℕ}
     (hcol : G.Colorable n) (hch : ¬ G.Choosable n) :
-    ¬ G.Monophilic n :=
-  not_monophilic_of_colorable_of_not_choosable hcol hch
+    ¬ G.ECCAt n :=
+  not_ecc_of_colorable_of_not_choosable hcol hch
 ```
 
 Everything interesting therefore happens at or above the list chromatic number.
@@ -221,6 +227,6 @@ example {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
   col_sum G H M
 ```
 
-This is what stands behind the paper's remark that a graph is `n`-monophilic exactly when each of
-its connected components is, and it is what makes the bridge decomposition of the next chapter
-possible.
+This is what stands behind the paper's remark that a graph is enumeratively chromatic-choosable at
+`n` exactly when each of its connected components is, and it is what makes the bridge decomposition
+of the next chapter possible.

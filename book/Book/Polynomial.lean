@@ -1,6 +1,6 @@
 import VersoManual
 import Book.Papers
-import Monophilic
+import ListColoring
 
 open Verso.Genre Manual
 open Verso.Genre.Manual.InlineLean
@@ -15,7 +15,9 @@ set_option maxHeartbeats 1000000
 tag := "polynomial"
 %%%
 
-Source: [ChromaticPolynomial.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/ChromaticPolynomial.lean), [ListColorFunction.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/ListColorFunction.lean).
+Source:
+[ChromaticPolynomial.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/ChromaticPolynomial.lean),
+[ListColorFunction.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/ListColorFunction.lean).
 
 Look again at the counts from the previous chapter, read as functions of the number of colours `n`:
 
@@ -233,7 +235,7 @@ example : (⊥ : SimpleGraph (Fin 3)).whitneySum 3 = 27 := by decide
 at `X = 3` — the number computed directly in the previous chapter.
 
 ```lean
-open Monophilic SimpleGraph in
+open ListColoring SimpleGraph in
 example : ((pathG 2).chromaticPolynomial).eval ((3 : ℕ) : ℤ) = 12 := by
   rw [eval_chromaticPolynomial, show (pathG 2).colConst 3 = 12 from by decide]
   norm_num
@@ -243,7 +245,7 @@ example : ((pathG 2).chromaticPolynomial).eval ((3 : ℕ) : ℤ) = 12 := by
 is about. For the cycle on `v = k + 2` vertices and `n = m + 2` colours:
 
 ```lean
-open Monophilic in
+open ListColoring in
 example (m k : ℕ) :
     (((closePath (k + 1)).colConst (m + 2) : ℤ))
       = ((m + 1) : ℤ) ^ (k + 2) + (-1) ^ (k + 2) * ((m + 1) : ℤ) :=
@@ -266,7 +268,8 @@ Two things, and it is worth being precise about which.
 It buys *vocabulary*. The literature on this subject is written in terms of the chromatic polynomial
 $`P(G, n)` and its list analogue $`P_\ell(G, n)`, introduced in the next chapter, and the central
 question is stated as an equality between them. Without the polynomial one can still state the
-question — it is the definition of monophilicity — but not in the words everyone else uses.
+question — it is the definition of enumerative chromatic-choosability — but not in the words
+everyone else uses.
 
 It does *not* buy any of the proofs. Nothing in the argument for cycles, for chordal graphs, or for
 the classification at `n = 2` uses polynomiality. Those arguments count, and counting is enough. The

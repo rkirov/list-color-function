@@ -1,6 +1,6 @@
 import VersoManual
 import Book.Papers
-import Monophilic
+import ListColoring
 
 open Verso.Genre Manual
 open Verso.Genre.Manual.InlineLean
@@ -15,22 +15,27 @@ set_option maxHeartbeats 1000000
 tag := "theorem1"
 %%%
 
-Source: [Cycle.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Cycle.lean), [Recurrence.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Recurrence.lean), [CycleMonophilic.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/CycleMonophilic.lean), [CycleRotate.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/CycleRotate.lean), [ListColorFunction.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/ListColorFunction.lean).
+Source:
+[Cycle.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Cycle.lean),
+[Recurrence.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Recurrence.lean),
+[CycleECC.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/CycleECC.lean),
+[CycleRotate.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/CycleRotate.lean),
+[ListColorFunction.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/ListColorFunction.lean).
 
 This chapter states the first main theorem of Kirov and Naimi {citep kirovNaimi}[] and explains what
 makes it hard. The proof is in Part II; nothing here is proved, only said precisely.
 
 # The statement
 
-*Every cycle is `n`-monophilic, for every `n`.*
+*Every cycle is enumeratively chromatic-choosable at `n`, for every `n`.*
 
 In this development a cycle is a path with its two ends joined, and `closePath k` has `k + 1`
 vertices, so `2 ≤ k` says the cycle is a genuine one — at least a triangle.
 
 ```lean
-open Monophilic in
-example {k m : ℕ} (hk : 2 ≤ k) : (closePath k).Monophilic (m + 2) :=
-  monophilic_closePath_of_two_le hk
+open ListColoring in
+example {k m : ℕ} (hk : 2 ≤ k) : (closePath k).ECCAt (m + 2) :=
+  ecc_closePath_of_two_le hk
 ```
 
 The `m + 2` is how `n ≥ 2` is written without a side condition. The cases `n = 0` and `n = 1` are
@@ -39,16 +44,16 @@ present there are no colourings at all — so the theorem also holds with no hyp
 whatever:
 
 ```lean
-open Monophilic in
-example (k n : ℕ) (hk : 2 ≤ k) : (closePath k).Monophilic n :=
-  monophilic_closePath_all k n hk
+open ListColoring in
+example (k n : ℕ) (hk : 2 ≤ k) : (closePath k).ECCAt n :=
+  ecc_closePath_all k n hk
 ```
 
 In the language of the literature, the list colour function of a cycle equals its chromatic
 polynomial, everywhere:
 
 ```lean
-open Monophilic in
+open ListColoring in
 example (k n : ℕ) (hk : 2 ≤ k) :
     (closePath k).listColorFunction n = (closePath k).colConst n :=
   listColorFunction_closePath k n hk
@@ -63,12 +68,13 @@ neighbours which are not adjacent to each other. So the argument of
 {ref "chordal"}[the previous chapter] never starts. There is no vertex whose removal is a cone over
 a clique, and the count does not factor.
 
-*Monophilicity is not inherited.* It is not a monotone property: a subgraph of a monophilic graph
-need not be monophilic, and neither need a supergraph. So the fact that a cycle is a path plus one
-edge, and that paths are trees and hence monophilic, gives exactly nothing.
+*Enumerative chromatic-choosability is not inherited.* It is not a monotone property: a subgraph of
+an enumeratively chromatic-choosable graph need not be enumeratively chromatic-choosable, and
+neither need a supergraph. So the fact that a cycle is a path plus one edge, and that paths are
+trees and hence enumeratively chromatic-choosable, gives exactly nothing.
 
 *The result is tight, in a way that rules out soft arguments.* Attach one more path of length two
-between two vertices of a `4`-cycle and you get $`\theta_{2,2,4}`, which is *not* `2`-monophilic —
+between two vertices of a `4`-cycle and you get $`\theta_{2,2,4}`, which is *not* enumeratively chromatic-choosable at `2` —
 as {ref "lists"}[the previous chapter] showed with an explicit assignment. So no argument that
 proves Theorem 1 can be robust under adding an edge or a path, and any proof must use the cycle
 structure closely.
@@ -87,7 +93,7 @@ Call a list assignment on a path an `(n, n-1)`-*assignment* when the two end ver
 colours and every interior vertex gets `n`.
 
 ```lean
-open SimpleGraph Monophilic in
+open SimpleGraph ListColoring in
 example {k m : ℕ} {L : ListAssignment (PathV k)} (hL : IsNNAssign k m L) :
     (L (pathEnd k)).card = m + 1 :=
   hL.card_pathEnd
@@ -124,7 +130,7 @@ $`B_k` for a type B one. Neither depends on which colours were removed — only 
 — which is already a small theorem, and it is what makes the two numbers well defined:
 
 ```lean
-open Monophilic in
+open ListColoring in
 example (m : ℕ) : ∀ (k x y : ℕ), x < m + 2 → y < m + 2 →
     (pathG k).col (pathAssign k (m + 2) x y)
       = if x = y then pathA m k else pathB m k :=
@@ -135,22 +141,22 @@ They satisfy a coupled recursion, obtained by deleting the end vertex and splitt
 With `n = m + 2`:
 
 ```lean
-open Monophilic in
+open ListColoring in
 example (m : ℕ) : pathA m 0 = m + 1 := rfl
 ```
 
 ```lean
-open Monophilic in
+open ListColoring in
 example (m k : ℕ) : pathA m (k + 1) = (m + 1) * pathB m k := rfl
 ```
 
 ```lean
-open Monophilic in
+open ListColoring in
 example (m : ℕ) : pathB m 0 = m := rfl
 ```
 
 ```lean
-open Monophilic in
+open ListColoring in
 example (m k : ℕ) : pathB m (k + 1) = pathA m k + m * pathB m k := rfl
 ```
 
@@ -181,12 +187,12 @@ For `n = 3` the first few values are:
 :::
 
 ```lean
-open Monophilic in
+open ListColoring in
 example : pathA 1 2 = 6 := by decide
 ```
 
 ```lean
-open Monophilic in
+open ListColoring in
 example : pathB 1 2 = 5 := by decide
 ```
 
@@ -194,7 +200,7 @@ The pattern in the table is the key identity of the whole argument: the two numb
 exactly one, and *which is larger alternates with the parity of `k`*.
 
 ```lean
-open Monophilic in
+open ListColoring in
 example (m k : ℕ) : ((pathA m k : ℤ) - (pathB m k : ℤ)) = (-1) ^ k :=
   pathA_sub_pathB m k
 ```
@@ -202,7 +208,7 @@ example (m k : ℕ) : ((pathA m k : ℤ) - (pathB m k : ℤ)) = (-1) ^ k :=
 So the minimum of the two is $`A_k` for odd `k` and $`B_k` for even `k`:
 
 ```lean
-open Monophilic in
+open ListColoring in
 example (m k : ℕ) :
     min (pathA m k) (pathB m k) = if Even k then pathB m k else pathA m k :=
   min_pathA_pathB_eq m k
@@ -212,7 +218,7 @@ A closed form follows by solving the recursion. It is stated with the division c
 is an identity in $`\mathbb{Z}` rather than a statement about rounding:
 
 ```lean
-open Monophilic in
+open ListColoring in
 example (m k : ℕ) :
     ((m + 2) * pathA m k : ℤ) = (m + 1) * ((m + 1) ^ (k + 1) + (-1) ^ k) :=
   pathA_closed_form m k
@@ -227,7 +233,7 @@ lose that colour, everything else keeps the full palette, and that is a type A a
 path that remains. There are `n` choices of colour for the deleted vertex, so:
 
 ```lean
-open Monophilic in
+open ListColoring in
 example (m k : ℕ) (hk : 1 ≤ k) :
     (closePath k).colConst (m + 2) = (m + 2) * pathA m (k - 1) :=
   colConst_closePath m k hk
@@ -238,7 +244,7 @@ development's convention. Combined with the closed form for $`A_k`, this is the 
 polynomial of a cycle:
 
 ```lean
-open Monophilic in
+open ListColoring in
 example (m k : ℕ) :
     (((closePath (k + 1)).colConst (m + 2) : ℤ))
       = ((m + 1) : ℤ) ^ (k + 2) + (-1) ^ (k + 2) * ((m + 1) : ℤ) :=
@@ -248,7 +254,7 @@ example (m k : ℕ) :
 A check, at `n = 3` on the four-cycle: $`2^4 + 2 = 18`, and also $`3 \cdot A_2 = 3 \cdot 6 = 18`.
 
 ```lean
-open Monophilic in
+open ListColoring in
 example : (closePath 3).colConst 3 = 18 := by decide
 ```
 
@@ -259,7 +265,7 @@ proved: for the cycle on `v` vertices and `n` colours, *no* `n`-list assignment 
 $`(n-1)^v + (-1)^v (n-1)` colourings, and the uniform one achieves that bound.
 
 ```lean
-open Monophilic in
+open ListColoring in
 example (m k : ℕ) (hk : 1 ≤ k) :
     (((closePath (k + 1)).listColorFunction (m + 2) : ℤ))
       = ((m + 1) : ℤ) ^ (k + 2) + (-1) ^ (k + 2) * ((m + 1) : ℤ) :=

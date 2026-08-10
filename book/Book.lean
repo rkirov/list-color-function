@@ -7,7 +7,7 @@ import Book.Lists
 import Book.Chordal
 import Book.Theorem1
 import Book.TwoChoosable
-import Book.TwoMonophilic
+import Book.TwoECC
 import Book.Threshold
 import Book.ReadingChallenge
 import Book.Counting
@@ -39,9 +39,12 @@ the *same* list — sameness is what creates conflicts. For many graphs that int
 For some it is false.
 
 Kostochka and Sidorenko {citep kostochkaSidorenko}[] raised the question in 1990. Kirov and Naimi
-{citep kirovNaimi}[] call a graph **`n`-monophilic** when the intuition holds for it, prove that
-every cycle is `n`-monophilic for every `n`, characterize the `2`-monophilic graphs, and construct,
-for each `n`, a graph that is `n`-choosable but not `n`-monophilic.
+{citep kirovNaimi}[] call a graph **`n`-monophilic** when the intuition holds for it — the name the
+literature settled on is **enumeratively chromatic-choosable at `n`**, and that is the name used
+throughout this book and the development. They prove that every cycle is enumeratively
+chromatic-choosable at `n` for every `n`, characterize the graphs that are enumeratively
+chromatic-choosable at `2`, and construct, for each `n`, a graph that is `n`-choosable but not
+enumeratively chromatic-choosable at `n`.
 
 This book accompanies a Lean 4 formalization of that paper. Every displayed statement below is
 elaborated when the book is built, and each is discharged against the corresponding theorem in the
@@ -53,12 +56,12 @@ the library states them, with the proofs removed. *Part I* is the path that make
 top to bottom, for a reader who is mathematically strong but has never met a chromatic polynomial.
 It starts from what a proper colouring is ({ref "colouring"}[Colouring a Graph]) and proceeds
 through the chromatic polynomial ({ref "polynomial"}[The Chromatic Polynomial]), list assignments
-and monophilicity ({ref "lists"}[Lists Instead of a Palette]), the first positive answer
-({ref "chordal"}[First Answers: Chordal Graphs]), the theorem about cycles
+and enumerative chromatic-choosability ({ref "lists"}[Lists Instead of a Palette]), the first
+positive answer ({ref "chordal"}[First Answers: Chordal Graphs]), the theorem about cycles
 ({ref "theorem1"}[Theorem 1: Cycles]), the two classifications at `n = 2`
 ({ref "twochoosable"}[Which Graphs Are 2-Choosable?] and
-{ref "twomonophilic"}[Which Graphs Are 2-Monophilic?]) and the eventual-agreement theorem
-({ref "threshold"}[Every Graph, Eventually]), to a guide to the file itself
+{ref "twoecc"}[Which Graphs Are Enumeratively Chromatic-Choosable at 2?]) and the eventual-agreement
+theorem ({ref "threshold"}[Every Graph, Eventually]), to a guide to the file itself
 ({ref "readingchallenge"}[Reading `Challenge.lean`]). Part I states results and explains them; it
 proves nothing.
 
@@ -92,7 +95,7 @@ cross-checks scattered through the development, and the discussion in this book,
 
 {include 1 Book.TwoChoosable}
 
-{include 1 Book.TwoMonophilic}
+{include 1 Book.TwoECC}
 
 {include 1 Book.Threshold}
 

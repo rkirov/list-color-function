@@ -22,15 +22,15 @@ These are known results. The Lean proof is ours; the mathematics is not.
 | Lean name | Result | Credit |
 |---|---|---|
 | `SimpleGraph.eval_chromaticPolynomial` | the Whitney subset expansion evaluates to the colouring count | **Whitney 1932**; Birkhoff 1912 for the polynomial itself |
-| `SimpleGraph.monophilic_iff_listColorFunction_eq_eval` | `n`-monophilic ⟺ `P_ℓ(G,n) = P(G,n)` | definitional bridge; the notions are **Kostochka–Sidorenko 1990/92** and **Kirov–Naimi 2016** |
+| `SimpleGraph.ecc_iff_listColorFunction_eq_eval` | enumeratively chromatic-choosable at `n` (`n`-monophilic) ⟺ `P_ℓ(G,n) = P(G,n)` | definitional bridge; the notions are **Kostochka–Sidorenko 1990/92** and **Kirov–Naimi 2016** |
 | `SimpleGraph.ERT.not_choosable`, `ERT.colorable` | `K_{n,nⁿ}` is `n`-colourable but not `n`-choosable | **Erdős–Rubin–Taylor 1980**; also Kirov–Naimi §5 |
-| `SimpleGraph.monophilic_of_isChordal` | chordal ⟹ `n`-monophilic for every `n` | **Kostochka–Sidorenko 1990/92**; = Thm 2(i) of Chi et al. 2026 |
+| `SimpleGraph.ecc_of_isChordal`, `SimpleGraph.IsChordal.ecc` | chordal ⟹ enumeratively chromatic-choosable at every `n` | **Kostochka–Sidorenko 1990/92**; = Thm 2(i) of Chi et al. 2026 |
 | `SimpleGraph.isChordal_iff_exists_cliqueTower` | chordal ⟺ has a simplicial elimination ordering | **Dirac 1961**; Fulkerson–Gross 1965 |
-| `Monophilic.monophilic_closePath_of_two_le` | **every cycle is `n`-monophilic, every `n ≥ 2`** | **Kirov–Naimi 2016, Theorem 1**; = Thm 2(ii) of Chi et al. 2026 |
-| `Monophilic.choosable_two_of_rubinFamily` | a vertex / even cycle / `θ_{2,2,2m}` is 2-choosable | **Rubin**, in Erdős–Rubin–Taylor 1980 — the *easy* direction |
-| Theorem 2 (`monophilic_two_iff…`) | connected `G` is 2-monophilic ⟺ core is a vertex, a cycle, `K₂,₃`, or `G` has an odd cycle | **Kirov–Naimi 2016, Theorem 2**; = Thm 2(iv) of Chi et al. 2026, there attributed to [1, 6, 13, 16, 17] |
-| `SimpleGraph.exists_monophilic_forall_ge` | `P_ℓ(G,m) = P(G,m)` for all large `m` | **Donner 1992**; threshold via **Wang–Qian–Yan 2017** |
-| `SimpleGraph.monophilic_of_two_pow_lt` | explicit threshold `2^{\|E(G)\|} < m` | weaker form of **Wang–Qian–Yan 2017**; superseded by **Dong–Zhang 2023** (`m ≥ \|E(G)\| − 1`) |
+| `ListColoring.ecc_closePath_of_two_le`, `ListColoring.closePath_ecc` | **every cycle is enumeratively chromatic-choosable, every `n ≥ 2`** | **Kirov–Naimi 2016, Theorem 1**; = Thm 2(ii) of Chi et al. 2026 |
+| `ListColoring.choosable_two_of_rubinFamily` | a vertex / even cycle / `θ_{2,2,2m}` is 2-choosable | **Rubin**, in Erdős–Rubin–Taylor 1980 — the *easy* direction |
+| Theorem 2 (`ecc_two_iff…`) | connected `G` is enumeratively chromatic-choosable at `2` (the paper's "2-monophilic") ⟺ core is a vertex, a cycle, `K₂,₃`, or `G` has an odd cycle | **Kirov–Naimi 2016, Theorem 2**; = Thm 2(iv) of Chi et al. 2026, there attributed to [1, 6, 13, 16, 17] |
+| `SimpleGraph.exists_ecc_forall_ge` | `P_ℓ(G,m) = P(G,m)` for all large `m` | **Donner 1992**; threshold via **Wang–Qian–Yan 2017** |
+| `SimpleGraph.ecc_of_two_pow_lt` | explicit threshold `2^{\|E(G)\|} < m` | weaker form of **Wang–Qian–Yan 2017**; superseded by **Dong–Zhang 2023** (`m ≥ \|E(G)\| − 1`) |
 | Lemmas 1–6 | the supporting lemmas | **Kirov–Naimi 2016**, numbered as in the paper |
 
 ### Rubin's theorem
@@ -38,8 +38,8 @@ These are known results. The Lean proof is ours; the mathematics is not.
 **Rubin's theorem** (A. L. Rubin, in **Erdős–Rubin–Taylor**, *Choosability in graphs*,
 Congr. Numer. **26** (1980), 125–157): *a connected graph is 2-choosable iff its core is a single
 vertex, an even cycle, or `θ_{2,2,2m}` for some `m ≥ 1`.* Kirov–Naimi cite it; it is **proved here**
-(`Monophilic.rubinTheorem`), so Theorem 2 carries no hypothesis
-(`Monophilic.monophilic_two_iff`).
+(`ListColoring.rubinTheorem`), so Theorem 2 carries no hypothesis
+(`ListColoring.ecc_two_iff`).
 
 | piece | Result | Credit |
 |---|---|---|
@@ -53,7 +53,7 @@ vertex, an even cycle, or `θ_{2,2,2m}` for some `m ≥ 1`.* Kirov–Naimi cite 
 
 The structural theorem for 2-connected non-cycles that an earlier plan routed through is **not**
 established here, and is not needed: Rubin's own steps 4–6 replace it. The refutations that killed
-that route are recorded in §3 below and in the module docstring of `Monophilic.Rubin`.
+that route are recorded in §3 below and in the module docstring of `ListColoring.Rubin`.
 
 **None of this is novel.** It is a theorem from 1980 that appears not to have been machine-checked before.
 
@@ -73,7 +73,8 @@ Listed so no reader mistakes an absence for a claim.
 * **Dong–Zhang 2023** — the sharp threshold `m ≥ |E(G)| − 1`. **Not formalized**; we prove a weaker
   exponential bound.
 * **Kirov–Naimi §5, the full `H_{n+1}` construction (Lemmas 7–10)** — for each `n`, a graph that is
-  `n`-choosable but not `n`-monophilic. **Not attempted**; only the building block `K_{n,nⁿ}` is done.
+  `n`-choosable but not enumeratively chromatic-choosable at `n`. **Not attempted**; only the
+  building block `K_{n,nⁿ}` is done.
 
 ## 3. Not from the literature
 
@@ -85,11 +86,11 @@ are the parts a reader could not get from the papers.
 * **A Mathlib `TODO` discharged.** *A graph that is not 2-colourable contains an odd cycle* is listed
   as an open `TODO` in Mathlib's `Combinatorics/SimpleGraph/Bipartite.lean` at the pinned revision.
   Theorem 2's converse needs it, so it is proved here —
-  `Monophilic.exists_odd_isCycle_of_odd_closed_walk` (strong induction on walk length: rotate to a
+  `ListColoring.exists_odd_isCycle_of_odd_closed_walk` (strong induction on walk length: rotate to a
   repeated vertex, cut at its second visit, and one of the two shorter closed walks is odd) plus the
   bridge from Mathlib's `cycleGraph` to `closePath`. Classical mathematics, but a genuine and
   reusable gap in the library rather than a fact about this project. Worth upstreaming.
-* **`Monophilic.const_block`, `armBlockLists_forced`, `alt_chain`** (`ThetaClass.lean`) — the
+* **`ListColoring.const_block`, `armBlockLists_forced`, `alt_chain`** (`ThetaClass.lean`) — the
   induction along an arm of unbounded length. The informal proofs say "it is then easy to check";
   these lemmas are what that phrase expands to. Presentation, not mathematics.
 * **Lemma 3(c) fails at `k = 0`.** Kirov–Naimi's hypothesis "path of length at least one" is
@@ -114,7 +115,7 @@ are the parts a reader could not get from the papers.
 
   All are defects in this repository's scaffolding; none appears in Kirov–Naimi. `plan.md` records
   a corrected three-branch alternative, which is **empirical and unproved**.
-* **`Monophilic.not_choosable_two_of_dumbbell`** — two cycles joined by a path are not 2-choosable.
+* **`ListColoring.not_choosable_two_of_dumbbell`** — two cycles joined by a path are not 2-choosable.
   A standard step of Rubin's argument, proved here. Mildly notable: it needs **no parity case
   split**, because the forcing chain kills a prescribed colour at a cycle's base point regardless
   of the cycle's parity.
@@ -158,6 +159,19 @@ all**; `n`-monophilic remains the only one anyone has proposed.
 and Question 1 of Chi et al. 2026, and both trace it to Kirov–Naimi.
 
 **This repository's naming.** The pointwise predicate is the workhorse (Theorem 1 is "for every
-`n`", Theorem 2 is at `n = 2`), so it **will be** `ECCAt`, with `ECC := ∀ n, ECCAt n`, each expanded
-in the module docstrings, and `n`-monophilic recorded as the historical name. **Not yet done:** the
-predicate in the code is still `SimpleGraph.Monophilic n`, and there is as yet no `∀ n` version.
+`n`", Theorem 2 is at `n = 2`), so it is **`SimpleGraph.ECCAt G n`**, with
+**`SimpleGraph.ECC G := ∀ n, G.ECCAt n`**, both expanded in the module docstring of
+`ListColoring.Defs`, and `n`-monophilic recorded there as the historical name. Every declaration
+that used to read `monophilic_…` now reads `ecc_…`; the module namespace and directory are
+`ListColoring`, since the library is about list colourings and not only about this one predicate.
+Prose throughout the development leads with the modern term and mentions `n`-monophilic in passing;
+the one place the old wording is kept verbatim is where the docstrings of
+`ListColoring.ecc_two_iff` and `ListColoring.ecc_two_iff_of_rubin` quote Theorem 2 as the paper
+prints it.
+
+Two caveats about the fit, both recorded above. First, `ECC` quantifies over every `n`, including
+`n < χ(G)` where the property is vacuous (`SimpleGraph.ecc_of_not_colorable`), so it agrees with
+`τ(G) = χ(G)`; `SimpleGraph.ecc_iff_forall_two_le` is the reformulation that drops the free cases.
+Second, at `χ(G) = 2` the paper's Theorem 2 characterizes `ν(G) = 2`, the *weak* notion, so
+`ListColoring.ecc_two_iff` is a statement about `ECCAt _ 2` and **not** about `ECC`; whether the two
+coincide is the open question above.

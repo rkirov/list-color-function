@@ -1,6 +1,6 @@
 import VersoManual
 import Book.Papers
-import Monophilic
+import ListColoring
 
 open Verso.Genre Manual
 open Verso.Genre.Manual.InlineLean
@@ -96,62 +96,62 @@ Each Lean name below is the exact statement proved; each file link goes to the s
   * File
 *
   * Lemma 1
-  * {name}`SimpleGraph.Monophilic.coneOn`
-  * [Cone.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Cone.lean)
+  * {name}`SimpleGraph.ECCAt.coneOn`
+  * [Cone.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Cone.lean)
 *
   * Kostochka–Sidorenko
-  * {name}`SimpleGraph.monophilic_cliqueTower_of_isEmpty`
-  * [Chordal.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Chordal.lean)
+  * {name}`SimpleGraph.ecc_cliqueTower_of_isEmpty`
+  * [Chordal.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Chordal.lean)
 *
   * Lemma 2
   * {name}`SimpleGraph.exists_nested_of_bridge`
-  * [Bridge.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Bridge.lean)
+  * [Bridge.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Bridge.lean)
 *
   * Lemma 3(a)
-  * {name}`Monophilic.col_pathAssign`, {name}`Monophilic.pathA_closed_form`
-  * [PathCount.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/PathCount.lean), [Recurrence.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Recurrence.lean)
+  * {name}`ListColoring.col_pathAssign`, {name}`ListColoring.pathA_closed_form`
+  * [PathCount.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/PathCount.lean), [Recurrence.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Recurrence.lean)
 *
   * Lemma 3(b)
-  * {name}`Monophilic.min_pathA_pathB_le_col`
-  * [PathMinimizing.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/PathMinimizing.lean)
+  * {name}`ListColoring.min_pathA_pathB_le_col`
+  * [PathMinimizing.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/PathMinimizing.lean)
 *
   * Lemma 3(c)
-  * {name}`Monophilic.isPathShape_parity_of_minimizing`
-  * [PathMinimizing.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/PathMinimizing.lean)
+  * {name}`ListColoring.isPathShape_parity_of_minimizing`
+  * [PathMinimizing.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/PathMinimizing.lean)
 *
   * Lemma 4
-  * {name}`Monophilic.col_lt_col_of_ssubset`
-  * [PathColorable.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/PathColorable.lean)
+  * {name}`ListColoring.col_lt_col_of_ssubset`
+  * [PathColorable.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/PathColorable.lean)
 *
   * **Theorem 1**
-  * {name}`Monophilic.monophilic_closePath_of_two_le`
-  * [CycleRotate.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/CycleRotate.lean)
+  * {name}`ListColoring.ecc_closePath_of_two_le`
+  * [CycleRotate.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/CycleRotate.lean)
 *
   * Lemma 5
-  * {name}`SimpleGraph.monophilic_pendantTower_iff`
-  * [Core.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Core.lean)
+  * {name}`SimpleGraph.ecc_pendantTower_iff`
+  * [Core.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Core.lean)
 *
   * Lemma 6
-  * {name}`SimpleGraph.monophilic_K23`
-  * [K23.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/K23.lean)
+  * {name}`SimpleGraph.ecc_K23`
+  * [K23.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/K23.lean)
 *
   * **Theorem 2**
-  * {name}`Monophilic.monophilic_two_iff_of_rubin`
-  * [Theorem2.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Theorem2.lean)
+  * {name}`ListColoring.ecc_two_iff_of_rubin`
+  * [Theorem2.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Theorem2.lean)
 *
   * Rubin's theorem
-  * {name}`Monophilic.RubinTheorem`, {name}`Monophilic.choosable_two_of_rubinAlternatives`
-  * [Theorem2.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Theorem2.lean), [Rubin.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Rubin.lean)
+  * {name}`ListColoring.RubinTheorem`, {name}`ListColoring.choosable_two_of_rubinAlternatives`
+  * [Theorem2.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Theorem2.lean), [Rubin.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Rubin.lean)
 *
   * §5 building block
   * {name}`SimpleGraph.ERT.not_choosable`
-  * [NotChoosable.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/NotChoosable.lean)
+  * [NotChoosable.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/NotChoosable.lean)
 :::
 
 # The core vocabulary
 
 Four definitions carry the whole development. They live in
-[Defs.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Defs.lean).
+[Defs.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Defs.lean).
 
 :::table +header (align := left)
 *
@@ -170,7 +170,7 @@ Four definitions carry the whole development. They live in
   * `G.colConst n`
   * $`\mathrm{col}(G,n)` — the same count when every list is $`\{0,\dots,n-1\}`
 *
-  * `G.Monophilic n`
+  * `G.ECCAt n`
   * $`\mathrm{col}(G,n) \le \mathrm{col}(G,L)` for every $`n`-list assignment $`L`
 :::
 

@@ -1,6 +1,6 @@
 import VersoManual
 import Book.Papers
-import Monophilic
+import ListColoring
 
 open Verso.Genre Manual
 open Verso.Genre.Manual.InlineLean
@@ -27,7 +27,8 @@ this restriction, and it is easy to read past. Part (c) of Lemma 3 is precisely 
 it. At length zero the two terminal vertices coincide, every `(n,n-1)`-assignment is therefore
 minimizing, and every such assignment is type A — while zero is even, so (c) would demand type B.
 The development contains a machine-checked witness. What mechanization contributes here is not a
-correction but a sharpening: it identifies the unique claim that fails and produces the counterexample.
+correction but a sharpening: it identifies the unique claim that fails and produces the
+counterexample.
 
 **`n ≥ 3` in part (c), but not in part (b).** Part (b) holds with no hypothesis on `n` at all: at
 `n = 2` the bound `min(A_k, B_k) ≤ col` is true because the minimum is zero. The `n ≥ 3` in the
@@ -81,9 +82,9 @@ this development:
   a path of length two carries `6` and `5`. Those pin down the `k = 0` convention — the one place
   where the two types have *different* list sizes — before it could cost anything inside an
   induction.
-* The isomorphism exhibiting a path as a bridge of two shorter paths has four plausible orientations.
-  The wrong pairing gives `29` where the truth is `32` at lengths `(2,2)`. Checking first turned a
-  potentially long debugging session into a one-line decision.
+* The isomorphism exhibiting a path as a bridge of two shorter paths has four plausible
+  orientations. The wrong pairing gives `29` where the truth is `32` at lengths `(2,2)`. Checking
+  first turned a potentially long debugging session into a one-line decision.
 * For the theta graphs of Theorem 2, the paper's figure gives a witness for `m = 2`. A search found
   `48` such witnesses, and from them a *uniform* family that works for every `m` — which is what a
   formalization needs and what a figure cannot supply.
@@ -147,11 +148,12 @@ Vizing. There is also, contrary to a claim we started from, no `Fintype` instanc
 coloring type — which is what forced the design decision in the first chapter.
 
 One gap turned into a small by-product. "A graph that is not `2`-colourable contains an odd cycle" —
-the classical characterization of bipartite graphs — is an open `TODO` in Mathlib's `Bipartite.lean`.
-Kirov and Naimi's proof of Theorem 2 opens with exactly that sentence, so it had to be built here,
-and it is: the middle step, that an odd closed *walk* contains an odd *cycle*, is proved by rotating
-the walk to a repeated vertex and cutting it there. It is textbook material and no kind of
-contribution, but it is a piece of the standard library that this project happens to have supplied.
+the classical characterization of bipartite graphs — is an open `TODO` in Mathlib's
+`Bipartite.lean`. Kirov and Naimi's proof of Theorem 2 opens with exactly that sentence, so it had
+to be built here, and it is: the middle step, that an odd closed *walk* contains an odd *cycle*, is
+proved by rotating the walk to a repeated vertex and cutting it there. It is textbook material and
+no kind of contribution, but it is a piece of the standard library that this project happens to have
+supplied.
 
 More broadly, list coloring and choosability appear not to have been formalized in any major proof
 assistant. The adjacent mechanized results are Gonthier's Four Color Theorem in Coq
@@ -181,9 +183,9 @@ sufficed; there, a rotation automorphism of the cycle had to be built to supply 
 **Rubin's theorem, and therefore the converse half of Theorem 2 unconditionally.** Rubin's
 characterization of `2`-choosable graphs {citep erdosRubinTaylor}[] is a 1979 result that appears
 not to have been machine-checked before. It is not treated as an external dependency here: it is a
-named proposition {name Monophilic.RubinTheorem}`RubinTheorem` in the development, it is being proved, and Theorem 2 takes it as
-its first explicit argument so that supplying a term makes Theorem 2 unconditional with no other
-edit anywhere.
+named proposition {name ListColoring.RubinTheorem}`RubinTheorem` in the development, it is being
+proved, and Theorem 2 takes it as its first explicit argument so that supplying a term makes Theorem
+2 unconditional with no other edit anywhere.
 
 How far that has got: the ⟸ direction is proved. So is the whole colouring content of the forward
 direction — a theta graph is `2`-choosable exactly when its shape is $`(2,2,\text{even})`. What

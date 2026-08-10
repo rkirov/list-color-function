@@ -1,4 +1,4 @@
-# List coloring and *n*-monophilic graphs — a Lean 4 formalization
+# List coloring and enumeratively chromatic-choosable graphs — a Lean 4 formalization
 
 [![CI](https://github.com/rkirov/list-color-function/actions/workflows/ci.yml/badge.svg)](https://github.com/rkirov/list-color-function/actions/workflows/ci.yml)
 
@@ -8,10 +8,19 @@ A machine-checked development of Kirov & Naimi, *List coloring and n-monophilic 
 Ars Combinatoria **124** (2016), 329–340 ([arXiv:1004.5183](https://arxiv.org/abs/1004.5183)).
 
 Give each vertex of a graph its own list of `n` permitted colors and count the proper colorings
-respecting those lists. A graph is **`n`-monophilic** when that count is minimized by giving every
-vertex the *same* list. Kostochka and Sidorenko raised the question in 1990; Kirov and Naimi prove
-that every cycle is `n`-monophilic for every `n`, characterize the `2`-monophilic graphs, and
-construct, for each `n`, a graph that is `n`-choosable but not `n`-monophilic.
+respecting those lists. A graph is **enumeratively chromatic-choosable at `n`** when that count is
+minimized by giving every vertex the *same* list. Kostochka and Sidorenko raised the question in
+1990; Kirov and Naimi prove that every cycle is enumeratively chromatic-choosable at `n` for every
+`n`, characterize the graphs that are enumeratively chromatic-choosable at `2`, and construct, for
+each `n`, a graph that is `n`-choosable but not enumeratively chromatic-choosable at `n`.
+
+**A note on the name.** Kirov and Naimi call this property "`n`-monophilic". The name the literature
+settled on is *enumeratively chromatic-choosable* (Kaul et al., Involve **16** (2023) 849–882;
+Allred–Mudrock, [arXiv:2505.05662](https://arxiv.org/abs/2505.05662); Chi et al.,
+[arXiv:2605.10861](https://arxiv.org/abs/2605.10861)), and that is the name used throughout this
+development: `SimpleGraph.ECCAt G n` for the property at one `n`, and `SimpleGraph.ECC G` for
+`∀ n, G.ECCAt n`. `provenance.md` §4 records the history, the relation to Ohba's
+*chromatic-choosable*, and the invariants `ν(G)` and `τ(G)` the modern papers state things with.
 
 As far as we can determine, **list coloring and choosability have not been formalized in any proof
 assistant before**, and Mathlib at the revision targeted here has no chromatic polynomial, no
@@ -22,7 +31,7 @@ choosability, no DP-coloring, no chordality, and no Brooks or Vizing. Everything
 
 | | |
 |---|---|
-| `Monophilic/` | the formalization |
+| `ListColoring/` | the formalization |
 | `book/` | a Verso textbook companion (see `book/README.md`) |
 | `plan.md` | milestones, design decisions, progress log, and findings |
 | `references.md` | verified bibliography, with corrections to the literature |
@@ -65,30 +74,30 @@ Two notes carried over from development, both recorded in `plan.md`:
 | Lemma 2 (list swap → nested lists) | ✅ |
 | Lemma 3(a),(b),(c) — the `A_k`/`B_k` recurrences and minimizing assignments | ✅ |
 | Lemma 4 (strict monotonicity on paths) | ✅ |
-| **Theorem 1 — every cycle is `n`-monophilic, every `n ≥ 2`** | ✅ |
+| **Theorem 1 — every cycle is enumeratively chromatic-choosable at `n`, every `n ≥ 2`** | ✅ |
 | Lemma 5 (cores, as pendant towers) | ✅ |
-| Lemma 6 (`K₂,₃` is 2-monophilic) | ✅ |
-| **Theorem 2** — the 2-monophilic characterization, unconditionally | ✅ |
+| Lemma 6 (`K₂,₃` is enumeratively chromatic-choosable at `2`) | ✅ |
+| **Theorem 2** — the characterization of the graphs enumeratively chromatic-choosable at `2`, unconditionally | ✅ |
 | §5 building block — `K_{n,nⁿ}` is `n`-colourable but not `n`-choosable | ✅ |
 | §5 full `H_{n+1}` construction (Lemmas 7–10) | not attempted |
 
 One dependency is worth stating plainly. **Rubin's characterization of 2-choosable graphs** (A. L.
 Rubin, in Erdős–Rubin–Taylor 1980, pp. 131–134) had not, as far as we can determine, been formalized
-anywhere. It is proved here, in both directions — `Monophilic.rubinTheorem` — out of
+anywhere. It is proved here, in both directions — `ListColoring.rubinTheorem` — out of
 `choosable_two_of_rubinFamily` (⟸), the generalized-theta classification
 `choosable_two_gtheta_iff` (arbitrary arity), the dumbbell case `not_choosable_two_of_dumbbell`,
 Rubin's steps 4–6 (`rubin_structure`) and the core extraction (`hasCore`). It is a theorem from
 1980; none of the mathematics is ours.
 
-Kirov–Naimi's Theorem 2 is stated in `Monophilic/Theorem2.lean` with `RubinTheorem` as its first
+Kirov–Naimi's Theorem 2 is stated in `ListColoring/Theorem2.lean` with `RubinTheorem` as its first
 explicit argument and the core alternatives as **real definitions** rather than abstract
-propositions; `Monophilic.monophilic_two_iff` supplies that argument, so Theorem 2 now assumes
+propositions; `ListColoring.ecc_two_iff` supplies that argument, so Theorem 2 now assumes
 nothing beyond connectivity. (The two live in different files only because everything Rubin's
-theorem is proved from imports `Monophilic/Theorem2.lean`.)
+theorem is proved from imports `ListColoring/Theorem2.lean`.)
 
 ## Standard of proof
 
-* No `sorry`, `admit`, or `native_decide` anywhere in `Monophilic/`.
+* No `sorry`, `admit`, or `native_decide` anywhere in `ListColoring/`.
 * Every headline result depends on exactly the three standard Lean axioms — `propext`,
   `Classical.choice`, `Quot.sound` — enforced by the comparator's `permitted_axioms`.
 * Statements were checked by brute-force evaluation *before* being proved, which repeatedly caught
@@ -116,8 +125,8 @@ bridge to `Colorable` / `chromaticNumber`.
 suggests a dependency on deletion–contraction and Whitney's broken-cycle theorem, but the paper
 needs the *number* of colorings, never the polynomial. Dropping that layer kept edge contraction —
 absent from Mathlib — off the critical path. The polynomial is nevertheless built here, separately,
-in `Monophilic/ChromaticPolynomial.lean` via the Whitney subset expansion, so that
-`monophilic_iff_listColorFunction_eq_eval` can say `P_ℓ(G,n) = P(G,n)` with a genuine polynomial on
+in `ListColoring/ChromaticPolynomial.lean` via the Whitney subset expansion, so that
+`ecc_iff_listColorFunction_eq_eval` can say `P_ℓ(G,n) = P(G,n)` with a genuine polynomial on
 the right. Likewise Kostochka–Sidorenko needs only a simplicial elimination ordering, so **Dirac's
 theorem is not on its critical path** — though it is proved here anyway, as
 `isChordal_iff_exists_cliqueTower`.

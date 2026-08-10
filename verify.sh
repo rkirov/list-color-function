@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Run leanprover/comparator against this repository's `comparator/` workspace, mirroring
 # lean-eval's own CI check: a Challenge.lean of placeholder statements, a Submission.lean that
-# delegates to the real `Monophilic` library, the real comparator (statement match +
+# delegates to the real `ListColoring` library, the real comparator (statement match +
 # permitted-axiom check + kernel replay via lean4export, in a landrun sandbox), and the
 # independent nanoda kernel that lean-eval's WorkspaceTest forces on for every problem.
 #

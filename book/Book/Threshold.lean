@@ -1,6 +1,6 @@
 import VersoManual
 import Book.Papers
-import Monophilic
+import ListColoring
 
 open Verso.Genre Manual
 open Verso.Genre.Manual.InlineLean
@@ -15,14 +15,17 @@ set_option maxHeartbeats 1000000
 tag := "threshold"
 %%%
 
-Source: [Threshold.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Threshold.lean), [ChromaticPolynomial.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/ChromaticPolynomial.lean).
+Source:
+[Threshold.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Threshold.lean),
+[ChromaticPolynomial.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/ChromaticPolynomial.lean).
 
-Cycles are monophilic for every `n`. Chordal graphs are monophilic for every `n`.
-$`\theta_{2,2,4}` is not `2`-monophilic. Is it `3`-monophilic? `10`-monophilic?
+Cycles are enumeratively chromatic-choosable for every `n`. Chordal graphs are enumeratively
+chromatic-choosable for every `n`. $`\theta_{2,2,4}` is not enumeratively chromatic-choosable at
+`2`. Is it `3`-enumeratively chromatic-choosable? `10`-enumeratively chromatic-choosable?
 
 Donner {citep donner}[] answered the general form of that question in 1992: *every* graph is
-`n`-monophilic once `n` is large enough. This chapter states his theorem, gives an explicit
-threshold, and says why the threshold here is far worse than the best one known.
+enumeratively chromatic-choosable at `n` once `n` is large enough. This chapter states his theorem,
+gives an explicit threshold, and says why the threshold here is far worse than the best one known.
 
 # Donner's theorem
 
@@ -30,8 +33,8 @@ threshold, and says why the threshold here is far worse than the best one known.
 open SimpleGraph in
 example {V : Type} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) [DecidableRel G.Adj] :
-    ∃ N, ∀ k, N ≤ k → G.Monophilic k :=
-  exists_monophilic_forall_ge G
+    ∃ N, ∀ k, N ≤ k → G.ECCAt k :=
+  exists_ecc_forall_ge G
 ```
 
 Equivalently, in the notation of the literature: for every graph the list colour function eventually
@@ -45,9 +48,9 @@ example {V : Type} [Fintype V] [DecidableEq V]
   exists_listColorFunction_eq_forall_ge G
 ```
 
-So the failures of monophilicity are always a low-`n` phenomenon. That reframes everything in this
-book: the classification at `n = 2` is a description of the *hardest* case, and the theorem about
-cycles says that for cycles the hard case never occurs at all.
+So the failures of enumerative chromatic-choosability are always a low-`n` phenomenon. That reframes
+everything in this book: the classification at `n = 2` is a description of the *hardest* case, and
+the theorem about cycles says that for cycles the hard case never occurs at all.
 
 Donner's own proof is non-constructive and yields no bound. What is proved here is a bound, from
 which the theorem follows immediately.
@@ -61,8 +64,8 @@ open Finset SimpleGraph in
 example {V : Type} [Fintype V] [DecidableEq V]
     {G : SimpleGraph V} [DecidableRel G.Adj] {k : ℕ}
     (hk : 2 ^ #G.edgeFinset < k) :
-    G.Monophilic k :=
-  monophilic_of_two_pow_lt hk
+    G.ECCAt k :=
+  ecc_of_two_pow_lt hk
 ```
 
 *More than $`2^m` colours suffice.* Donner's theorem is then one line: take $`N = 2^m + 1`.
@@ -90,13 +93,14 @@ example {V : Type} [Fintype V] [DecidableEq V]
 The bound is crude. $`\theta_{2,2,4}` has eight edges,
 
 ```lean
-open Monophilic in
+open ListColoring in
 example : (theta 2).edgeFinset.card = 8 := by decide
 ```
 
-so the theorem above guarantees `k`-monophilicity only from `k = 257` onwards, while the graph is in
-fact already not-`2`-monophilic-and-nothing-worse. No claim is made that the threshold is anywhere
-near sharp; the claim is that it is explicit and self-contained.
+so the theorem above guarantees enumerative chromatic-choosability at `k` only from `k = 257`
+onwards, while the graph is in fact already not enumeratively chromatic-choosable at `2`, and
+nothing worse. No claim is made that the threshold is anywhere near sharp; the claim is that it is
+explicit and self-contained.
 
 # How it is proved
 
@@ -157,7 +161,8 @@ $`t = \sum_{e \in S}\bigl(k - |L(u) \cap L(v)|\bigr)`, a quantity depending only
 *Two distinct edges of a simple graph span at least three vertices and merge two independent pairs*,
 so $`c(S) \le |V| - 2` as soon as $`|S| \ge 2`.
 
-*The singleton terms are exact*: the terms with $`|S| = 1` contribute precisely $`k^{|V|-2} \cdot t`.
+*The singleton terms are exact*: the terms with $`|S| = 1` contribute precisely
+$`k^{|V|-2} \cdot t`.
 
 Put together: the term $`S = \emptyset` contributes nothing, the singletons contribute
 $`k^{|V|-2} t` with a favourable sign, and each of the fewer than $`2^m` remaining terms is at most
@@ -166,8 +171,8 @@ $`t \cdot k^{|V|-3} \cdot (k - 2^m) \ge 0`, which is the theorem.
 
 Two things are worth noticing about this argument. It needs no connectivity hypothesis, because
 $`t \ge 0` unconditionally — in the sharp forms of the theorem connectivity is assumed and does
-work. And it never mentions choosability, monophilicity at smaller `n`, or any of the structure the
-rest of the book is about; it is pure counting with a crude bound at the end.
+work. And it never mentions choosability, enumerative chromatic-choosability at smaller `n`, or any
+of the structure the rest of the book is about; it is pure counting with a crude bound at the end.
 
 # The sharper threshold, and why we stop short
 
@@ -203,7 +208,7 @@ this book:
 :::
 
 ```lean
-open Monophilic in
+open ListColoring in
 example : (theta 1).edgeFinset.card = 6 := by decide
 ```
 
@@ -228,10 +233,10 @@ argument that needs none may cost only a constant.
 # Where this leaves the subject
 
 Between them the results of this book bracket the question. Below the list chromatic number
-monophilicity is either vacuous or impossible. Above $`2^m` it is automatic. In between lies
-everything interesting, and what is known there is: chordal graphs always, cycles always, and at
-`n = 2` a complete classification. For `n ≥ 3` on a general graph, the honest answer is that
-nobody knows.
+enumerative chromatic-choosability is either vacuous or impossible. Above $`2^m` it is automatic. In
+between lies everything interesting, and what is known there is: chordal graphs always, cycles
+always, and at `n = 2` a complete classification. For `n ≥ 3` on a general graph, the honest answer
+is that nobody knows.
 
 Two directions in the modern literature are worth naming. Kaul and Mudrock {citep kaulMudrock}[]
 study the same equality for DP-colourings, a strengthening of list colouring in which even the
@@ -244,5 +249,5 @@ And choosability itself remains a subject without a classification. On the posit
 index equals the chromatic index — one of the few places where lists cost nothing at all. On the
 negative side, deciding `2`-choosability is easy by Rubin's theorem, while deciding
 `3`-choosability is NP-hard even for planar graphs {citep gutner}[]. The `n = 2` classification of
-{ref "twomonophilic"}[the previous chapter] sits right at that boundary, which is part of why it is
+{ref "twoecc"}[the previous chapter] sits right at that boundary, which is part of why it is
 the case that could be settled.

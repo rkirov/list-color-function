@@ -1,6 +1,6 @@
 import VersoManual
 import Book.Papers
-import Monophilic
+import ListColoring
 
 open Verso.Genre Manual
 open Verso.Genre.Manual.InlineLean
@@ -15,7 +15,9 @@ set_option maxHeartbeats 1000000
 tag := "paths"
 %%%
 
-Source: [Path.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Path.lean), [Recurrence.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Recurrence.lean), [PathCount.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/PathCount.lean).
+Source: [Path.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Path.lean),
+[Recurrence.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Recurrence.lean),
+[PathCount.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/PathCount.lean).
 
 Section 3 of the paper computes the number of colorings of a path from a very particular shape of
 list assignment, and everything about cycles follows from that computation. This chapter is about
@@ -32,7 +34,7 @@ Instead, define paths by the operation the proof actually performs. A path of le
 of length `k` with one new vertex attached to its current endpoint:
 
 ```lean
-open SimpleGraph Monophilic in
+open SimpleGraph ListColoring in
 example (k : ℕ) : pathG (k + 1) = (pathG k).addPendant (pathEnd k) := rfl
 ```
 
@@ -40,14 +42,14 @@ The payoff is that deleting the new vertex returns the shorter path *definitiona
 isomorphism, not up to a transport, but by `rfl`:
 
 ```lean
-open SimpleGraph Monophilic in
+open SimpleGraph ListColoring in
 example (k : ℕ) : (pathG (k + 1)).delNone = pathG k := rfl
 ```
 
 so the deletion identity from the previous chapter applies with nothing in the way:
 
 ```lean
-open Finset SimpleGraph Monophilic in
+open Finset SimpleGraph ListColoring in
 example (k : ℕ) (M : ListAssignment (PathV (k + 1))) :
     (pathG (k + 1)).col M
       = ∑ c ∈ M (pathEnd (k + 1)), (pathG k).col ((pathG (k + 1)).inducedList M c) :=
@@ -93,7 +95,7 @@ In type A the two ends are missing the *same* colour; in type B, different ones.
 then a two-line mutual definition:
 
 ```lean
-open SimpleGraph Monophilic in
+open SimpleGraph ListColoring in
 example (m k : ℕ) :
     pathA m (k + 1) = (m + 1) * pathB m k ∧
     pathB m (k + 1) = pathA m k + m * pathB m k :=
@@ -114,7 +116,7 @@ again carries an `(n,n-1)`-assignment, now missing `c` at its new endpoint and s
 the far end.
 
 ```lean
-open SimpleGraph Monophilic in
+open SimpleGraph ListColoring in
 example (k n x y c : ℕ) :
     (pathG (k + 1)).inducedList (pathAssign (k + 1) n x y) c = pathAssign k n c y :=
   inducedList_pathAssign k n x y c
@@ -129,7 +131,7 @@ equation (3).
 Both cases at once:
 
 ```lean
-open SimpleGraph Monophilic in
+open SimpleGraph ListColoring in
 example (m k x y : ℕ) (hx : x < m + 2) (hy : y < m + 2) :
     (pathG k).col (pathAssign k (m + 2) x y) = if x = y then pathA m k else pathB m k :=
   col_pathAssign m k x y hx hy
@@ -141,7 +143,7 @@ Subtracting the recurrences gives `A_k - B_k = (-1)^k`, the paper's equation (5)
 are always adjacent integers, with the order flipping at each step:
 
 ```lean
-open SimpleGraph Monophilic in
+open SimpleGraph ListColoring in
 example (m k : ℕ) : ((pathA m k : ℤ) - (pathB m k : ℤ)) = (-1) ^ k :=
   pathA_sub_pathB m k
 ```
@@ -149,7 +151,7 @@ example (m k : ℕ) : ((pathA m k : ℤ) - (pathB m k : ℤ)) = (-1) ^ k :=
 and unwinding gives the closed form, stated with the denominator cleared:
 
 ```lean
-open SimpleGraph Monophilic in
+open SimpleGraph ListColoring in
 example (m k : ℕ) : ((m + 2) * pathA m k : ℤ) = (m + 1) * ((m + 1) ^ (k + 1) + (-1) ^ k) :=
   pathA_closed_form m k
 ```
@@ -158,7 +160,7 @@ The consequence that gets used is the one about which of the two is smaller, and
 the parity of `k`:
 
 ```lean
-open SimpleGraph Monophilic in
+open SimpleGraph ListColoring in
 example (m k : ℕ) :
     min (pathA m k) (pathB m k) = if Even k then pathB m k else pathA m k :=
   min_pathA_pathB_eq m k

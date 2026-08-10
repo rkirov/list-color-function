@@ -1,6 +1,6 @@
 import VersoManual
 import Book.Papers
-import Monophilic
+import ListColoring
 
 open Verso.Genre Manual
 open Verso.Genre.Manual.InlineLean
@@ -15,7 +15,10 @@ set_option maxHeartbeats 1000000
 tag := "lists"
 %%%
 
-Source: [Defs.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Defs.lean), [Basic.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Basic.lean), [NotChoosable.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/NotChoosable.lean), [ListColorFunction.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/ListColorFunction.lean).
+Source: [Defs.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Defs.lean),
+[Basic.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Basic.lean),
+[NotChoosable.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/NotChoosable.lean),
+[ListColorFunction.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/ListColorFunction.lean).
 
 So far every vertex drew its colour from the same palette $`\{0, \dots, n-1\}`. Now give each vertex
 its own private list of permitted colours, all lists of the same size `n`, and ask the same two
@@ -56,8 +59,8 @@ that freedom constantly — the deletion identity produces shorter lists at the 
 deleted vertex. But the statements we care about always compare assignments of one fixed common
 size, because comparing counts across different list sizes is not meaningful.
 
-Second, only the sizes and the *pattern of overlaps* matter, never the names of the colours. Renaming
-the colours by any injection changes nothing, and that is proved once so that the paper's
+Second, only the sizes and the *pattern of overlaps* matter, never the names of the colours.
+Renaming the colours by any injection changes nothing, and that is proved once so that the paper's
 innumerable "without loss of generality" steps have something to appeal to.
 
 # Choosability
@@ -197,7 +200,7 @@ example {V : Type} [Fintype V] [DecidableEq V]
 
 Everything in this book is about when that inequality is an equality.
 
-# Monophilicity
+# Enumerative chromatic-choosability
 
 Kostochka and Sidorenko {citep kostochkaSidorenko}[] asked the question in the following form. Give
 every vertex the same list. Intuitively that should be the *worst* case for the count: identical
@@ -205,13 +208,18 @@ lists at adjacent vertices create the maximum number of conflicts, and any devia
 colourings. Is the uniform assignment always a minimizer?
 
 Kirov and Naimi {citep kirovNaimi}[] call a graph for which the answer is yes `n`-*monophilic* —
-it loves sameness. The Lean definition is the inequality, unadorned:
+it loves sameness. That is the historical name. The one the literature settled on is
+*enumeratively chromatic-choosable at `n`*, because `P_ℓ` is the enumerative analogue of the
+chromatic polynomial and so agreement of the two lifts Ohba's *chromatic-choosable*,
+$`\chi(G) = \chi_\ell(G)`, from a number to a counting function. The development uses the modern
+name: `SimpleGraph.ECCAt` for the property at a single `n`, and `SimpleGraph.ECC` for all `n` at
+once. The Lean definition is the inequality, unadorned:
 
 ```lean
 open SimpleGraph in
 example {V : Type} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) [DecidableRel G.Adj] (n : ℕ) :
-    G.Monophilic n ↔
+    G.ECCAt n ↔
       ∀ L : ListAssignment V, IsNListAssignment L n → G.colConst n ≤ G.col L :=
   Iff.rfl
 ```
@@ -222,8 +230,8 @@ and it is exactly the statement that the two functions of the previous section a
 open SimpleGraph in
 example {V : Type} [Fintype V] [DecidableEq V]
     {G : SimpleGraph V} [DecidableRel G.Adj] (n : ℕ) :
-    G.Monophilic n ↔ G.listColorFunction n = G.colConst n :=
-  monophilic_iff_listColorFunction_eq n
+    G.ECCAt n ↔ G.listColorFunction n = G.colConst n :=
+  ecc_iff_listColorFunction_eq n
 ```
 
 or, in the notation the literature uses, that $`P_\ell(G, n) = P(G, n)` with a genuine polynomial on
@@ -233,18 +241,18 @@ the right:
 open SimpleGraph in
 example {V : Type} [Fintype V] [DecidableEq V]
     {G : SimpleGraph V} [DecidableRel G.Adj] (n : ℕ) :
-    G.Monophilic n ↔
+    G.ECCAt n ↔
       (G.listColorFunction n : ℤ) = (G.chromaticPolynomial).eval (n : ℤ) :=
-  monophilic_iff_listColorFunction_eq_eval n
+  ecc_iff_listColorFunction_eq_eval n
 ```
 
-The two phrasings are interchangeable and both appear below; "monophilic" is shorter, and
-$`P_\ell = P` is what you will find in the literature.
+The two phrasings are interchangeable and both appear below; "enumeratively chromatic-choosable" is
+shorter, and $`P_\ell = P` is what you will find in the literature.
 
 # Three regimes
 
-Whether a graph is `n`-monophilic is only interesting for some `n`, and the boundaries are the two
-chromatic numbers. Fix `G` and vary `n`.
+Whether a graph is enumeratively chromatic-choosable at `n` is only interesting for some `n`, and
+the boundaries are the two chromatic numbers. Fix `G` and vary `n`.
 
 *Below $`\chi(G)`.* There are no colourings from the uniform palette at all, so the inequality
 $`\mathrm{col}(G,n) \le \mathrm{col}(G,L)` reads `0 ≤ ...` and holds for nothing better than
@@ -254,35 +262,35 @@ vacuous reasons.
 open SimpleGraph in
 example {V : Type} [Fintype V] [DecidableEq V]
     {G : SimpleGraph V} [DecidableRel G.Adj] {n : ℕ} (h : ¬ G.Colorable n) :
-    G.Monophilic n :=
-  monophilic_of_not_colorable h
+    G.ECCAt n :=
+  ecc_of_not_colorable h
 ```
 
-The five-cycle is `2`-monophilic for this reason and no other:
+The five-cycle is enumeratively chromatic-choosable at `2` for this reason and no other:
 
 ```lean
-open SimpleGraph Monophilic in
-example : (closePath 4).Monophilic 2 :=
-  monophilic_of_not_colorable
+open SimpleGraph ListColoring in
+example : (closePath 4).ECCAt 2 :=
+  ecc_of_not_colorable
     (not_colorable_two_closePath_of_even (by decide) (by norm_num))
 ```
 
 *Between $`\chi(G)` and $`\chi_\ell(G)`.* Here the uniform assignment has colourings but some other
-`n`-assignment has none, so the minimum is `0` and the uniform count is not. Monophilicity fails,
-always.
+`n`-assignment has none, so the minimum is `0` and the uniform count is not. Enumerative
+chromatic-choosability fails, always.
 
 ```lean
 open SimpleGraph in
 example {V : Type} [Fintype V] [DecidableEq V]
     {G : SimpleGraph V} [DecidableRel G.Adj] {n : ℕ}
     (hcol : G.Colorable n) (hch : ¬ G.Choosable n) :
-    ¬ G.Monophilic n :=
-  not_monophilic_of_colorable_of_not_choosable hcol hch
+    ¬ G.ECCAt n :=
+  not_ecc_of_colorable_of_not_choosable hcol hch
 ```
 
-$`K_{2,4}` is the example: `2`-colourable, not `2`-choosable, hence not `2`-monophilic. Its uniform
-count is `2` — one colour on each side, two ways round — and the assignment drawn above achieves
-`0`.
+$`K_{2,4}` is the example: `2`-colourable, not `2`-choosable, hence not enumeratively
+chromatic-choosable at `2`. Its uniform count is `2` — one colour on each side, two ways round — and
+the assignment drawn above achieves `0`.
 
 ```lean
 open SimpleGraph SimpleGraph.ERT in
@@ -291,21 +299,21 @@ example : (K 2).colConst 2 = 2 := by decide
 
 ```lean
 open SimpleGraph SimpleGraph.ERT in
-example : ¬ (K 2).Monophilic 2 :=
-  not_monophilic 2 (by norm_num)
+example : ¬ (K 2).ECCAt 2 :=
+  not_ecc 2 (by norm_num)
 ```
 
 *At or above $`\chi_\ell(G)`.* This is the only regime with content, and the reason is worth stating
-as its own implication: a monophilic graph that is colourable is automatically choosable, because
-the minimum count is then positive.
+as its own implication: an enumeratively chromatic-choosable graph that is colourable is
+automatically choosable, because the minimum count is then positive.
 
 ```lean
 open SimpleGraph in
 example {V : Type} [Fintype V] [DecidableEq V]
     {G : SimpleGraph V} [DecidableRel G.Adj] {n : ℕ}
-    (hmono : G.Monophilic n) (hcol : G.Colorable n) :
+    (hmono : G.ECCAt n) (hcol : G.Colorable n) :
     G.Choosable n :=
-  choosable_of_monophilic_of_colorable hmono hcol
+  choosable_of_ecc_of_colorable hmono hcol
 ```
 
 :::table +header (align := left)
@@ -313,7 +321,7 @@ example {V : Type} [Fintype V] [DecidableEq V]
   * range of `n`
   * $`P(G,n)`
   * $`P_\ell(G,n)`
-  * monophilic?
+  * enumeratively chromatic-choosable?
 *
   * $`n < \chi(G)`
   * `0`
@@ -331,8 +339,8 @@ example {V : Type} [Fintype V] [DecidableEq V]
   * the real question
 :::
 
-So monophilicity is a strengthening of choosability, and the interesting content of the notion is
-what happens *after* choosability has been achieved.
+So enumerative chromatic-choosability is a strengthening of choosability, and the interesting
+content of the notion is what happens *after* choosability has been achieved.
 
 # It really can fail
 
@@ -342,7 +350,7 @@ book is the theta graph $`\theta_{2,2,4}`: two vertices joined by three internal
 lengths `2`, `2` and `4`. It is `2`-choosable, its uniform count at `n = 2` is `2`,
 
 ```lean
-open Monophilic in
+open ListColoring in
 example (m : ℕ) (hm : 1 ≤ m) : (theta m).colConst 2 = 2 :=
   colConst_theta m hm
 ```
@@ -350,11 +358,11 @@ example (m : ℕ) (hm : 1 ≤ m) : (theta m).colConst 2 = 2 :=
 and there is an explicit `2`-list assignment achieving `1`:
 
 ```lean
-open Monophilic in
+open ListColoring in
 example (m : ℕ) (hm : 2 ≤ m) : (theta m).col (thetaWitness m) = 1 :=
   col_theta_witness m hm
 ```
 
-One is less than two, so $`\theta_{2,2,4}` is not `2`-monophilic. The intuition that sameness is
-worst is simply false in general, and the rest of this book is about the graphs for which it is
-nevertheless true.
+One is less than two, so $`\theta_{2,2,4}` is not enumeratively chromatic-choosable at `2`. The
+intuition that sameness is worst is simply false in general, and the rest of this book is about the
+graphs for which it is nevertheless true.

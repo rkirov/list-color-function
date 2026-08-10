@@ -28,6 +28,17 @@ immaterial — see M1.4).
 the *count*. Polynomiality is a separate (unneeded) theorem. This drops the entire
 deletion-contraction/chromatic-polynomial dependency that `survey.md` Stage 1 assumed.
 
+**D0 — The predicate is named for the literature, not for the paper.** Kirov–Naimi's
+"`n`-monophilic" did not take hold; the term the literature settled on is *enumeratively
+chromatic-choosable* (Kaul et al. 2023; Allred–Mudrock 2025; Chi et al. 2026). The pointwise
+predicate is the workhorse — Theorem 1 is "for every `n`", Theorem 2 is at `n = 2` — so it is
+`SimpleGraph.ECCAt G n`, with `SimpleGraph.ECC G := ∀ n, G.ECCAt n` alongside it, and every
+declaration that used to read `monophilic_…` now reads `ecc_…`. The module namespace and directory
+are `ListColoring`, not the name of one predicate. Prose leads with the modern term and keeps
+`n`-monophilic as the historical name; `provenance.md` §4 is the record, and the docstrings of
+`ListColoring.ecc_two_iff` and `ListColoring.ecc_two_iff_of_rubin` still quote Theorem 2 in the
+paper's own words.
+
 **D4 — Chordality via simplicial elimination ordering, not via cycles-have-chords.** Lemma 1 +
 induction along an SEO yields Kostochka–Sidorenko immediately. Dirac's theorem (chordal ⟺ SEO) is
 the *only* place the cycle-based definition is needed, and it is not required for any Kirov–Naimi
@@ -41,15 +52,15 @@ result. Deferred to an optional milestone.
 |----|---------|-----------|------|
 | **M0** | Project scaffold, shared Mathlib build | — | ✅ done |
 | — | *(status of M1–M9 is in the progress log below; M1–M5 done, M6 done for `n ≥ 3`, M7 Lemma 5 done, M9 foundation done)* | | |
-| **M1** | `ListAssignment`, `colorings`, `col`, `Monophilic`; renaming invariance; `Colorable` bridge | M0 | low |
-| **M2** | Regime facts: `n < χ(G) ⟹` monophilic; `χ ≤ n < χ_ℓ ⟹` not monophilic; `col` multiplies over components | M1 | low |
-| **M3** | **Lemma 1** (adding a simplicial vertex) → **Kostochka–Sidorenko**: SEO ⟹ n-monophilic ∀n. Corollaries: complete graphs, trees | M1 | low–med |
+| **M1** | `ListAssignment`, `colorings`, `col`, `ECCAt`; renaming invariance; `Colorable` bridge | M0 | low |
+| **M2** | Regime facts: `n < χ(G) ⟹` enumeratively chromatic-choosable; `χ ≤ n < χ_ℓ ⟹` not enumeratively chromatic-choosable; `col` multiplies over components | M1 | low |
+| **M3** | **Lemma 1** (adding a simplicial vertex) → **Kostochka–Sidorenko**: SEO ⟹ enumeratively chromatic-choosable at `n` ∀n. Corollaries: complete graphs, trees | M1 | low–med |
 | **M4** | **Lemma 2** (list-swap: force `L(v₁) ⊆ L(v₂)`), **Lemma 4** (strict monotonicity in lists on a path) | M1 | med |
 | **M5** | **Lemma 3**: `(n,n−1)`-assignments on paths; recurrences `Aₖ=(n−1)Bₖ₋₁`, `Bₖ=Aₖ₋₁+(n−2)Bₖ₋₁`; `Aₖ−Bₖ=(−1)ᵏ`; closed form `Aₖ=((n−1)/n)((n−1)^{k+1}+(−1)ᵏ)`; minimizing ⟹ type A/B | M4 | **high** |
-| **M6** | **Theorem 1: every cycle is n-monophilic for all n ≥ 2** ← *primary target* | M5 | **high** |
-| **M7** | **Lemma 5** (core), **Lemma 6** (K₂,₃ is 2-monophilic) | M4 | med |
-| **M8** | **Theorem 2**: 2-monophilic ⟺ core is a vertex / a cycle / K₂,₃ / contains an odd cycle | M6, M7, *Rubin* | **blocked** |
-| **M9** | **§5**: `H_{n+1}` is `(n+1)`-choosable but not `(n+1)`-monophilic (Lemmas 7–10) | M1 | high |
+| **M6** | **Theorem 1: every cycle is enumeratively chromatic-choosable at `n` for all n ≥ 2** ← *primary target* | M5 | **high** |
+| **M7** | **Lemma 5** (core), **Lemma 6** (K₂,₃ is enumeratively chromatic-choosable at `2`) | M4 | med |
+| **M8** | **Theorem 2**: enumeratively chromatic-choosable at `2` ⟺ core is a vertex / a cycle / K₂,₃ / contains an odd cycle | M6, M7, *Rubin* | **blocked** |
+| **M9** | **§5**: `H_{n+1}` is `(n+1)`-choosable but not enumeratively chromatic-choosable at `n+1` (Lemmas 7–10) | M1 | high |
 | **M10** | *(optional)* Dirac: chordal ⟺ SEO | M3 | med |
 | **R** | Verified bibliography, maintained continuously | — | low |
 | **B** | Verso textbook companion in `book/` | M1–M6 | ✅ done |
@@ -59,36 +70,36 @@ result. Deferred to an optional milestone.
 **2026-08-08.** M0, M1, M2 complete and machine-checked; no `sorry`, axioms are exactly
 `propext, Classical.choice, Quot.sound` throughout.
 
-* `Monophilic/Defs.lean` — `ListAssignment`, `colorings`, `col`, `colConst`, `Monophilic`,
+* `ListColoring/Defs.lean` — `ListAssignment`, `colorings`, `col`, `colConst`, `ECCAt`,
   monotonicity in the lists, positivity.
-* `Monophilic/Rename.lean` — `col_image_of_injOn` (renaming colors by any function injective on the
+* `ListColoring/Rename.lean` — `col_image_of_injOn` (renaming colors by any function injective on the
   available colors preserves `col`) and `col_const_eq_colConst` (any `n`-element color set computes
   `col(G,n)`). This licenses the paper's constant "WLOG `L(x) = {1,2}`" moves.
-* `Monophilic/Basic.lean` — `Colorable` bridge, `Choosable`, and all three regimes of p. 2:
-  `n < χ ⟹` monophilic, `χ ≤ n < χ_ℓ ⟹` not monophilic, `χ ≤ χ_ℓ`. Plus `colFix` and `sum_colFix`.
-* `Monophilic/Delete.lean` — **the deletion identity**
+* `ListColoring/Basic.lean` — `Colorable` bridge, `Choosable`, and all three regimes of p. 2:
+  `n < χ ⟹` enumeratively chromatic-choosable, `χ ≤ n < χ_ℓ ⟹` not enumeratively chromatic-choosable, `χ ≤ χ_ℓ`. Plus `colFix` and `sum_colFix`.
+* `ListColoring/Delete.lean` — **the deletion identity**
   `col(G, M, v, c) = col(G − v, M_c)` and its corollary `col(G,M) = ∑_{c ∈ M v} col(G − v, M_c)`.
   This is the engine of every counting argument in §3. The deleted vertex is `none : Option V`, so
   the graph after deletion lives on `V` itself — no subtypes, no instance transport.
-* `Monophilic/Sum.lean` — `col` is multiplicative over disjoint unions, and a disjoint union of
-  `n`-monophilic graphs is `n`-monophilic.
+* `ListColoring/Sum.lean` — `col` is multiplicative over disjoint unions, and a disjoint union of
+  graphs that are enumeratively chromatic-choosable at `n` is enumeratively chromatic-choosable at `n`.
 
-*Caveat on M2:* "`G` is monophilic iff each component is" is proved in the ⟸ direction over an
+*Caveat on M2:* "`G` is enumeratively chromatic-choosable iff each component is" is proved in the ⟸ direction over an
 explicit disjoint-union decomposition, not over `G.ConnectedComponent` for an abstract `G`. The
 paper only ever uses this direction; the abstract version is deferred.
 
-**M3 complete.** `Monophilic/Iso.lean` — `col`, `colConst` and `Monophilic` transfer along a graph
-isomorphism. `Monophilic/Cone.lean` — `coneOn G K` (attach a new vertex to `K`), the extension count
+**M3 complete.** `ListColoring/Iso.lean` — `col`, `colConst` and `ECCAt` transfer along a graph
+isomorphism. `ListColoring/Cone.lean` — `coneOn G K` (attach a new vertex to `K`), the extension count
 `col(coneOn G K, M) = ∑_f |M(none) \ f(K)|`, the exact identity
 `colConst(coneOn G K, n) = (n − |K|)·colConst(G, n)` for a clique `K`, and **Lemma 1**. Corollary:
-**complete graphs are `n`-monophilic for every `n`**. Note items (1) and (3) turned out not to need
+**complete graphs are enumeratively chromatic-choosable at `n` for every `n`**. Note items (1) and (3) turned out not to need
 the clique hypothesis, so they are stated for arbitrary `K`.
 
-**M5 half complete.** `Monophilic/Recurrence.lean` — the `A_k`, `B_k` recurrences with
+**M5 half complete.** `ListColoring/Recurrence.lean` — the `A_k`, `B_k` recurrences with
 `A_k − B_k = (−1)^k` (eq. 5), both closed forms, and the `min` classification.
-`Monophilic/Path.lean` — paths built by attaching a pendant vertex, so that deleting the new vertex
+`ListColoring/Path.lean` — paths built by attaching a pendant vertex, so that deleting the new vertex
 returns the shorter path *definitionally*; `col_pathG_succ` is the peeling recursion.
-`Monophilic/PathCount.lean` — **`col_pathAssign`**: the number of colorings of a path of length `k`
+`ListColoring/PathCount.lean` — **`col_pathAssign`**: the number of colorings of a path of length `k`
 from an `(n,n−1)`-assignment is `A_k` (type A) or `B_k` (type B). This is Lemma 3(a).
 
 The proof is the single recursion `inducedList_pathAssign`: colouring the endpoint `c` turns an
@@ -101,7 +112,7 @@ type B terms — eq. (3).
 `col(P₁, B) = 3 = B₁`, `col(P₂, A) = 6 = A₂`, `col(P₂, B) = 5 = B₂` at `n = 3` — together with
 `col(P_k, [n]) = n(n−1)^k`. This confirmed the indexing before any effort went into the induction.
 
-**M4 half complete — Lemma 2 is done.** `Monophilic/Bridge.lean` — `bridge G H v₀ w₀` (disjoint union
+**M4 half complete — Lemma 2 is done.** `ListColoring/Bridge.lean` — `bridge G H v₀ w₀` (disjoint union
 plus one edge), `colAvoid`, the decomposition
 `col(bridge, M) = ∑_c colFix(G, v₀, c)·colAvoid(H, w₀, c)`, the swap `swapRight`, equation (1) in
 additive form, its strict version, and **Lemma 2** proper (`exists_nested_of_bridge`).
@@ -116,11 +127,11 @@ Two things the formalization turned up:
   `L(v₁) ⊄ L(v₂)` and `L(v₂) ⊄ L(v₁)`") covers this correctly; a naive induction on the measure does
   not, and the second disjunct has to be produced directly with `L' = L`.
 
-**M4 complete — Lemma 4 done.** `Monophilic/PathColorable.lean` — a path is colorable when one end
+**M4 complete — Lemma 4 done.** `ListColoring/PathColorable.lean` — a path is colorable when one end
 has `≥ 1` color and the rest `≥ 2`; any prescribed color at any vertex extends to a full coloring
 when all lists have `≥ 2`; and **Lemma 4** (`col_lt_col_of_ssubset`).
 
-**Path splitting done.** `Monophilic/PathSplit.lean` — `pathSplitIso a b : pathG (a+b+1) ≃g
+**Path splitting done.** `ListColoring/PathSplit.lean` — `pathSplitIso a b : pathG (a+b+1) ≃g
 bridge (pathG a) (pathG b) (pathStart a) (pathEnd b)`, plus the counting corollaries. This is what
 lets Lemma 2 be applied at an interior edge of a path, as Lemma 3(c) requires. The orientation was
 pinned down numerically first: the wrong pairing gives `29` where the truth is `32` at `(a,b)=(2,2)`.
@@ -133,9 +144,9 @@ reports "target expression is not type-correct under `instances` transparency". 
 separate agents a build round each. **Pattern to follow:** state every inductive step lemma for an
 arbitrary graph over `Option V` (e.g. for `G.addPendant v₀`), where `rw` works, and cross into
 `PathV (k+1)` only via term-mode `exact`/`refine`, which unify at default transparency.
-`Monophilic/PathColorable.lean` and `Monophilic/PathSplit.lean` both follow this.
+`ListColoring/PathColorable.lean` and `ListColoring/PathSplit.lean` both follow this.
 
-**Cycles done — half of Theorem 1.** `Monophilic/Cycle.lean` — `closePath k` (the cycle on `k+1`
+**Cycles done — half of Theorem 1.** `ListColoring/Cycle.lean` — `closePath k` (the cycle on `k+1`
 vertices, `pathG k` plus the edge `pathStart–pathEnd`), the fact that deleting a vertex and fixing
 its color leaves a **type A** assignment on the shorter path
 (`inducedList_closePath_constList`), and
@@ -150,7 +161,7 @@ fails. Verified against the cycle chromatic polynomial `(n−1)^v + (−1)^v (n�
 which is where Lemma 3(b)/(c) and the odd/even case split come in, plus the separate `n = 2`
 argument via the paper's "forces" relation.
 
-**M5 complete — Lemma 3(a), (b), (c) all proved.** `Monophilic/PathMinimizing.lean` —
+**M5 complete — Lemma 3(a), (b), (c) all proved.** `ListColoring/PathMinimizing.lean` —
 `IsPathShape` / `IsNNAssign` predicates, `col_of_isPathShape` (any type A/B-shaped assignment counts
 as `A_k`/`B_k`, via renaming), `exists_minimizing`, `nested_of_minimizing`,
 `min_pathA_pathB_le_col` (**3(b)**) and `isPathShape_parity_of_minimizing` (**3(c)**).
@@ -171,13 +182,13 @@ remaining work is the canonical-form-up-to-renaming lemma, existence of a minimi
 range over all of `ℕ`, so this needs a relabelling into a finite palette first), and the
 nestedness argument.
 
-**M6 — Theorem 1 proved for `n ≥ 3`.** `Monophilic/CycleMonophilic.lean`:
+**M6 — Theorem 1 proved for `n ≥ 3`.** `ListColoring/CycleECC.lean`:
 
-  `monophilic_closePath (hk : 2 ≤ k) (hm : 1 ≤ m) : (closePath k).Monophilic (m + 2)`
+  `ecc_closePath (hk : 2 ≤ k) (hm : 1 ≤ m) : (closePath k).ECCAt (m + 2)`
 
 covering **every cycle for every `n ≥ 3`**, plus `n = 2` on odd-vertex cycles (vacuous there:
 `colConst = 0`). Remaining gap: `n = 2` on even-vertex cycles, the paper's separate "forces"
-argument — in progress in `Monophilic/CycleTwo.lean`.
+argument — in progress in `ListColoring/CycleTwo.lean`.
 
 Three things worth recording from the assembly:
 * **The odd case needs nothing extra.** For an odd number of vertices, Lemma 3(b) alone gives the
@@ -192,11 +203,11 @@ Three things worth recording from the assembly:
   forces the two neighbours of the deleted vertex to have different lists, which is all the
   argument uses. A genuine simplification of the paper's presentation.
 
-**M7 half complete — Lemma 5 done.** `Monophilic/Core.lean` — a pendant vertex is a cone over a
+**M7 half complete — Lemma 5 done.** `ListColoring/Core.lean` — a pendant vertex is a cone over a
 singleton (`addPendant_eq_coneOn`), the exact pendant counts
 `colConst (coneOn G {v}) n = (n−1)·colConst G n` and `col (coneOn G {v}) (extendList L v) = (n−1)·col G L`,
-and **both directions** of the pendant step (`monophilic_addPendant_iff`). Lemma 5 itself is taken in
-*tower* form — `monophilic_pendantTower_iff`, for any finite sequence of pendant attachments,
+and **both directions** of the pendant step (`ecc_addPendant_iff`). Lemma 5 itself is taken in
+*tower* form — `ecc_pendantTower_iff`, for any finite sequence of pendant attachments,
 including attachments to previously-added vertices — which is the form the paper actually uses.
 "Core" is not defined as a fixpoint of degree-1 deletion over an arbitrary vertex type; the tower is
 the reversed deletion sequence.
@@ -204,12 +215,12 @@ the reversed deletion sequence.
 Two things from it:
 * **`2 ≤ n` is a proof artifact, not a real hypothesis.** It is needed to cancel `n−1`, and genuinely
   so — at `n ≤ 1` the cone identity degenerates to `0 ≤ 0` and carries no information. But the
-  *conclusion* holds anyway, because `monophilic_of_le_one` shows every graph is `n`-monophilic for
+  *conclusion* holds anyway, because `ecc_of_le_one` shows every graph is enumeratively chromatic-choosable at `n` for
   `n ≤ 1`. So the `iff` is stated with no hypothesis on `n` at all.
 * A good validation of the tower definition: `pendantTower (pathG 0) 2 … = pathG 2` holds by `rfl` —
   the tower type and the independently-built path type are definitionally identical.
 
-**M7 complete — Lemma 6 done.** `Monophilic/K23.lean` — the product decomposition
+**M7 complete — Lemma 6 done.** `ListColoring/K23.lean` — the product decomposition
 `col(K₂,₃, L) = ∑_{a ∈ L(x)} ∑_{b ∈ L(y)} ∏_j |L(zⱼ) \ {a,b}|`, `colConst = 2`, and **Lemma 6**.
 The decomposition is proved by fibering colorings over the pair of colours on the small side and
 then a bijection from each fibre to a `piFinset`.
@@ -220,47 +231,47 @@ then a bijection from each fibre to a `piFinset`.
 split on `|Lx ∩ Ly|`. Only the disjoint case needs its own argument. Renaming invariance turned out
 not to be needed at all.
 
-**M9 foundation done.** `Monophilic/NotChoosable.lean` — `K_{n,nⁿ}` with the large side indexed by
+**M9 foundation done.** `ListColoring/NotChoosable.lean` — `K_{n,nⁿ}` with the large side indexed by
 *functions* `Fin n → Fin n`, the separating assignment `L₀`, `col = 0`, hence not `n`-choosable but
-`n`-colourable, hence not `n`-monophilic. The `0 < n` hypothesis proved unnecessary (at `n = 0` the
+`n`-colourable, hence not enumeratively chromatic-choosable at `n`. The `0 < n` hypothesis proved unnecessary (at `n = 0` the
 single vertex gets an empty list). The full `H_{n+1}` construction of §5 remains unformalized.
 
 *Arithmetic note:* `a * n + c = b * n + d` with `c, d < n` forcing `a = b ∧ c = d` is **not**
 reachable by `omega` — `a * n` is nonlinear with both factors variable. The `Nat.div`/`Nat.mod`
 route is the fix.
 
-**M3 complete in general form.** `Monophilic/Chordal.lean` — `cliqueTower` (iterated coning over
+**M3 complete in general form.** `ListColoring/Chordal.lean` — `cliqueTower` (iterated coning over
 cliques, generalizing `pendantTower` from singletons), `IsSimplicial`, and
 
-  `monophilic_cliqueTower : G.Monophilic n → ∀ k d, IsSimplicial G k d → (cliqueTower G k d).Monophilic n`
+  `ecc_cliqueTower : G.ECCAt n → ∀ k d, IsSimplicial G k d → (cliqueTower G k d).ECCAt n`
 
 with the corollary over an empty base: **any graph built along a simplicial elimination ordering is
-`n`-monophilic for every `n`** — Kostochka–Sidorenko in full. Dirac's theorem is what would connect
+enumeratively chromatic-choosable at `n` for every `n`** — Kostochka–Sidorenko in full. Dirac's theorem is what would connect
 this to "chordal" as usually defined and is deliberately not part of the development.
 
 Cross-checks: a pendant tower *is* a clique tower (`pendantTower_eq_cliqueTower`, an honest `Eq` of
-graphs), so Lemma 5's forward direction is rederived from this; `monophilic_top_fin` is recovered
+graphs), so Lemma 5's forward direction is rederived from this; `ecc_top_fin` is recovered
 from the general theorem; and `∀ a b, Adj a b ↔ a ≠ b` on the 2-step tower over `⊥` closes by
 `decide`, confirming it really is `K₃`.
 
-**M8 complete — Theorem 2, relative to Rubin.** `Monophilic/Theta.lean` — `θ_{2,2,2m}` built as a
+**M8 complete — Theorem 2, relative to Rubin.** `ListColoring/Theta.lean` — `θ_{2,2,2m}` built as a
 *double cone* `coneOn (coneOn (pathG (2m)) {pathStart, pathEnd}) {…}` (attaching a vertex adjacent to
 both branch vertices *is* a path of length 2 between them, so `coneOn` does the work and no new graph
 construction is needed), the product formula `col_theta`, the witness assignment, and
 
-  `not_monophilic_theta (m) (hm : 2 ≤ m) : ¬ (theta m).Monophilic 2`
+  `not_ecc_theta (m) (hm : 2 ≤ m) : ¬ (theta m).ECCAt 2`
 
-via `col = 1 < 2 = colConst`. Then `monophilic_two_iff_of_rubin`.
+via `col = 1 < 2 = colConst`. Then `ecc_two_iff_of_rubin`.
 
 Two boundary facts came out of it. `colConst_theta` holds from `m ≥ 1`, not just `m ≥ 2`. And the
-`m ≥ 2` in `not_monophilic_theta` is **essential, not an artifact**: `θ_{2,2,2}` *is* `K₂,₃`, where
+`m ≥ 2` in `not_ecc_theta` is **essential, not an artifact**: `θ_{2,2,2}` *is* `K₂,₃`, where
 the same witness gives `col = 2 = colConst` — exactly as it must, since Lemma 6 proves `K₂,₃` is
-`2`-monophilic. That the two independent files agree at the boundary is a good check on both.
+enumeratively chromatic-choosable at `2`. That the two independent files agree at the boundary is a good check on both.
 
 The quarantine design is worth recording. Rubin's characterization enters as an **explicit
 hypothesis**, and the three alternatives are kept as *abstract propositions*
 (`CoreIsVertex`, `CoreIsEvenCycle`, `CoreIsTheta m`) rather than being defined. Nothing about cores
-can therefore be smuggled in: the only facts used about them are the four monophilicity inputs, each
+can therefore be smuggled in: the only facts used about them are the four enumerative chromatic-choosability inputs, each
 of which is proved in this development — trees (Kostochka–Sidorenko), cycles (Theorem 1), `K₂,₃`
 (Lemma 6), and `θ_{2,2,2m}` for `m ≥ 2` (this file). The borrowed ingredient is visible in the
 statement's own signature and cannot be mistaken for something proved here.
@@ -312,7 +323,7 @@ Adding a third branch closes every one of the 129,073 cases:
 
 Coverage over the sweep: dumbbell 122,494 / bad theta 4,162 / generalized theta 2,417.
 `K₃,₃ − e` lands in the middle branch via `θ(1,3,3)`, subdivided `K₄` via `θ(2,4,4)` — both already
-proved non-2-choosable by `Monophilic.not_choosable_two_thetaGen`.
+proved non-2-choosable by `ListColoring.not_choosable_two_thetaGen`.
 
 **This is an empirical observation from `n ≤ 9`, not a theorem.** Given the track record above,
 it should be checked to `n = 10–12` (nauty) and hand-verified *before* any Lean effort is spent on
@@ -324,7 +335,7 @@ That phrase is *false* as a standalone non-2-choosability criterion: two **disjo
 are 2-choosable, since each is and colourings of a disjoint union are independent
 (`#guard`: `C₄ ⊔ C₄` has 4 colourings from the constant list `{1,2}`). Connectivity supplies the
 path in Rubin's setting, so the proved statement is about the **dumbbell**, with path length `0`
-degenerating to the figure-eight. `Monophilic.not_choosable_two_of_dumbbell`.
+degenerating to the figure-eight. `ListColoring.not_choosable_two_of_dumbbell`.
 
 A pleasant surprise in that proof: **no parity case split is needed.** The forcing chain kills a
 prescribed colour at a cycle's base point regardless of the cycle's parity, so there is no
@@ -359,7 +370,7 @@ turn a `c : G.Walk v v` with `c.IsCycle` into the index-sequence form
 `IsCycle.support_nodup`), and show a shortest path between two vertex sets is internally disjoint
 from both. Then "connected + two cycles meeting in ≤ 1 vertex ⟹ not 2-choosable" is a corollary.
 
-**The coded `ThetaAlternative` never absorbed this correction, and is false.** `Monophilic.ThetaAlternative`
+**The coded `ThetaAlternative` never absorbed this correction, and is false.** `ListColoring.ThetaAlternative`
 in `RubinHard.lean` offers only *three-arm* thetas (`thetaGen a b c`), so `K₂,₄` refutes it — the very
 graph the paragraph above was written about. Machine-checked, by brute force over all injective
 edge-preserving maps out of every candidate:
@@ -388,7 +399,7 @@ Chi, Lee, Morrissette, Mudrock, Nguyen and Whatley, *Enumeratively Chromatic-Cho
 * **The name.** `G` is **enumeratively chromatic-choosable** when `P_ℓ(G,m) = P(G,m)` for *every*
   `m ∈ ℕ`. The term was first formally defined in Kaul et al., *Bounding the list color function
   threshold from above*, Involve **16** (2023) 849–882. Note this is the "for all `m`" notion; the
-  paper's `n`-monophilic is the **pointwise** one, and the literature gives that no separate name —
+  paper's enumeratively chromatic-choosable at `n` is the **pointwise** one, and the literature gives that no separate name —
   it simply writes `P_ℓ(G,m) = P(G,m)`. The two are not known to coincide: whether
   `P_ℓ(G,m) = P(G,m)` propagates from `m` to `m+1` is **open** (their Question 1, from Kirov–Naimi).
 * **Kirov–Naimi is [16]**, and their Theorem 2(iv) — *a connected `G` with `χ(G) = 2` is
@@ -398,7 +409,7 @@ Chi, Lee, Morrissette, Mudrock, Nguyen and Whatley, *Enumeratively Chromatic-Cho
   `G` is *not* enumeratively chromatic-choosable iff `l₁, l₂, l₃` all have the same parity and
   `{l₁,l₂,l₃} ≠ {2}`. The proof goes through **DP-coloring**, not list coloring directly.
 * **Dong–Zhang, JCTB 161 (2023) 109–119** prove `P_ℓ(G,m) = P(G,m)` for all `m ≥ |E(G)| − 1`. Our
-  `monophilic_of_two_pow_lt` gives `2^{|E(G)|} < m`, which is exponentially weaker. Wang–Qian–Yan
+  `ecc_of_two_pow_lt` gives `2^{|E(G)|} < m`, which is exponentially weaker. Wang–Qian–Yan
   [26] is the earlier bound we followed; Dong–Zhang supersedes it.
 
 **A false lead, recorded so it is not chased again.** "Rubin's Block Lemma" — *every 2-connected
@@ -431,7 +442,7 @@ spent on it. This is cheap and has repeatedly paid for itself.
 ## M11 — attempting Rubin's theorem
 
 *A connected graph is `2`-choosable iff its core is a single vertex, an even cycle, or
-`θ_{2,2,2m}`.* Currently borrowed as an explicit hypothesis by `monophilic_two_iff_of_rubin`.
+`θ_{2,2,2m}`.* Currently borrowed as an explicit hypothesis by `ecc_two_iff_of_rubin`.
 
 **Easy direction (the three families are 2-choosable).**
 * Even cycles: **essentially free** — `col(C,L) ≥ colConst(C,2) = 2 > 0` straight from Theorem 1.
@@ -454,12 +465,12 @@ machinery that Mathlib does not have, and "follow a path until it returns to the
 induction over walks. Note also that our `theta m` is hardwired as two *length-2* paths, so ruling
 out general `θ_{a,b,c}` would need a general theta construction as well.
 
-**Outcome: the easy direction is proved.** `Monophilic/Choosable.lean`, `ThetaChoosable.lean`,
+**Outcome: the easy direction is proved.** `ListColoring/Choosable.lean`, `ThetaChoosable.lean`,
 `Rubin.lean`:
 
 * `Choosable.mono` / `Choosable.comap` — choosability passes to subgraphs, on the same vertex type
   and (via `Function.extend`, giving the full palette off the image) on a smaller one;
-* `choosable_pendantTower_iff` — the core reduction, mirroring the monophilic version. Unlike that
+* `choosable_pendantTower_iff` — the core reduction, mirroring the version for enumerative chromatic-choosability. Unlike that
   one this genuinely needs `2 ≤ n`: at `n ≤ 1` the equivalence is false, since a single vertex is
   `1`-choosable and a single edge is not;
 * `choosable_two_closePath_of_odd` — even cycles, four lines from Theorem 1;
@@ -477,7 +488,7 @@ checked to agree on `col` for **all 243** assignments drawn from three candidate
 explicit vertex correspondence, as well as on vertex count, edge count and `colConst` at `n = 2,3,4`.
 
 **The loan is now smaller.** Only `rubin.mp` was ever used, so
-`monophilic_two_iff_of_rubin_hard` takes a one-way implication rather than an `↔`; the old form
+`ecc_two_iff_of_rubin_hard` takes a one-way implication rather than an `↔`; the old form
 survives as a corollary. What is still borrowed reduces to a purely *structural* fact with no
 colouring content: a connected graph with minimum degree `≥ 2` that is not a cycle contains a theta
 subgraph.
@@ -498,7 +509,7 @@ of the four length-`2` paths, and between two large-side vertices only two such 
 machine-checked.
 
 So a structural loan strong enough to finish Rubin must also supply *generalized* thetas (four or
-more internally disjoint paths) and pairs of cycles meeting in at most one vertex. `Monophilic/
+more internally disjoint paths) and pairs of cycles meeting in at most one vertex. `ListColoring/
 RubinHard.lean` therefore states the structural input as `ThetaAlternative H` — a property *of the
 graph at hand* rather than a universal lemma — and documents the gap.
 
@@ -522,7 +533,7 @@ visible. Formalizing Rubin itself is a separate project, tracked as a stretch go
 ## Execution
 
 Sequential where the API contract matters (M1), parallel subagents for independent lemmas once M1 is
-frozen. **Invariant: no `sorry` is ever left in `Monophilic/` without being listed in this file.**
+frozen. **Invariant: no `sorry` is ever left in `ListColoring/` without being listed in this file.**
 Every milestone ends with a clean `lake build` and a `grep -c sorry` check.
 
 ## Where the paper stands
@@ -541,7 +552,7 @@ Every milestone ends with a clean `lake build` and a `grep -c sorry` check.
 | Theorem 1, `n = 2`, even-vertex cycles | ✅ |
 | **Theorem 1 in full — every cycle, every `n ≥ 2`** | ✅ |
 | Lemma 5 (cores / pendant towers) | ✅ |
-| Lemma 6 (K₂,₃ is 2-monophilic) | ✅ |
+| Lemma 6 (K₂,₃ is enumeratively chromatic-choosable at `2`) | ✅ |
 | Theorem 2 (θ-graphs; rest relative to Rubin) | ✅ |
 | §5 foundation (`K_{n,nⁿ}` colourable not choosable) | ✅ |
 | §5 full `H_{n+1}` construction (Lemmas 7–10) | not attempted |
@@ -556,12 +567,12 @@ one part of the paper deliberately left for later.
 
 ### Theorem 1 at `n = 2` — closed
 
-  `monophilic_closePath_of_two_le (hk : 2 ≤ k) : (closePath k).Monophilic (m + 2)`
+  `ecc_closePath_of_two_le (hk : 2 ≤ k) : (closePath k).ECCAt (m + 2)`
 
-**Every cycle, every `n ≥ 2`, unconditionally.** The `n ≥ 3` half is `CycleMonophilic`; the `n = 2`
+**Every cycle, every `n ≥ 2`, unconditionally.** The `n ≥ 3` half is `CycleECC`; the `n = 2`
 half is `CycleTwo` (forcing and propagation) plus `CycleRotate` (the rotation automorphism).
 
-`Monophilic/CycleRotate.lean` supplies what the fixed-edge presentation was missing: `pathIdx` /
+`ListColoring/CycleRotate.lean` supplies what the fixed-edge presentation was missing: `pathIdx` /
 `pathVtxEquiv` numbering the cycle by `Fin (k+1)`, an index characterization of adjacency
 (`closePath_adj_pathVtx_fin`: adjacent iff `i + 1 = j ∨ j + 1 = i` in `Fin (k+1)`), and
 `rotIso : closePath k ≃g closePath k` built from `Equiv.addRight`. That is exactly the freedom the
@@ -584,7 +595,7 @@ working tree before concluding an agent produced nothing.
 
 ### Historical note: what the gap had been
 
-`Monophilic/CycleTwo.lean` (543 lines) gets almost all the way. Proved there:
+`ListColoring/CycleTwo.lean` (543 lines) gets almost all the way. Proved there:
 
 * `colConst_closePath_two_of_odd` : `col(C,2) = 2` for a cycle on an even number of vertices, via
   the degenerate `n = 2` case of the recurrences (`A_k, B_k` just alternate `1, 0`);
@@ -599,12 +610,12 @@ working tree before concluding an agent produced nothing.
 * `col_closePath_const` : the constant case.
 
 **What is left is exactly one configuration**: `L` non-constant with `L(pathEnd) = L(pathStart)`.
-`monophilic_closePath_two_of_odd` is stated conditionally on it, so the gap is quarantined in a
+`ecc_closePath_two_of_odd` is stated conditionally on it, so the gap is quarantined in a
 hypothesis rather than hidden.
 
 That configuration is precisely where the paper *chooses a different edge* `vw` with `L(v) ≠ L(w)`
 and deletes that one. `closePath` can only delete its distinguished edge, so closing it needs a
-**rotation automorphism** of the cycle — `Monophilic/CycleRotate.lean`, in progress. All the
+**rotation automorphism** of the cycle — `ListColoring/CycleRotate.lean`, in progress. All the
 ingredients exist: `pathVtx` with `pathVtx_inj` and `exists_pathVtx`, `closePath_adj`, and
 Mathlib's `finRotate`.
 

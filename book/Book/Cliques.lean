@@ -1,6 +1,6 @@
 import VersoManual
 import Book.Papers
-import Monophilic
+import ListColoring
 
 open Verso.Genre Manual
 open Verso.Genre.Manual.InlineLean
@@ -15,12 +15,15 @@ set_option maxHeartbeats 1000000
 tag := "cliques"
 %%%
 
-Source: [Iso.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Iso.lean), [Cone.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Cone.lean), [Chordal.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Chordal.lean).
+Source: [Iso.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Iso.lean),
+[Cone.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Cone.lean),
+[Chordal.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Chordal.lean).
 
 The first substantial result in the paper is also the cheapest, and it is a good place to see the
-counting machinery earn its keep. Attach a new vertex to a clique of an `n`-monophilic graph; the
-result is still `n`-monophilic. Iterating gives Kostochka and Sidorenko's observation
-{citep kostochkaSidorenko}[] that chordal graphs are `n`-monophilic for every `n`.
+counting machinery earn its keep. Attach a new vertex to a clique of a graph enumeratively
+chromatic-choosable at `n`; the result is still enumeratively chromatic-choosable at `n`. Iterating
+gives Kostochka and Sidorenko's observation {citep kostochkaSidorenko}[] that chordal graphs are
+enumeratively chromatic-choosable at `n` for every `n`.
 
 # The construction
 
@@ -101,45 +104,46 @@ For an arbitrary `n`-assignment the same argument gives an inequality rather tha
 open SimpleGraph in
 example {V : Type} [Fintype V] [DecidableEq V]
     {G : SimpleGraph V} [DecidableRel G.Adj] {K : Finset V}
-    (hK : G.IsClique (K : Set V)) {n : ℕ} (hG : G.Monophilic n) :
-    (coneOn G K).Monophilic n :=
-  SimpleGraph.Monophilic.coneOn hK hG
+    (hK : G.IsClique (K : Set V)) {n : ℕ} (hG : G.ECCAt n) :
+    (coneOn G K).ECCAt n :=
+  SimpleGraph.ECCAt.coneOn hK hG
 ```
 
 That is Lemma 1. The proof is three lines of arithmetic on top of the two counting results: the
 cone's uniform count is `(n - |K|)` times `G`'s, the cone's arbitrary count is at least `(n - |K|)`
-times `G`'s, and `G` is monophilic.
+times `G`'s, and `G` is enumeratively chromatic-choosable.
 
 # Complete graphs
 
 Iterating Lemma 1 along a simplicial elimination ordering gives Kostochka and Sidorenko's corollary.
-The cleanest instance is the complete graph, obtained by coning repeatedly over the whole vertex set:
+The cleanest instance is the complete graph, obtained by coning repeatedly over the whole vertex
+set:
 
 ```lean
 open SimpleGraph in
-example (m n : ℕ) : (⊤ : SimpleGraph (Fin m)).Monophilic n :=
-  monophilic_top_fin m n
+example (m n : ℕ) : (⊤ : SimpleGraph (Fin m)).ECCAt n :=
+  ecc_top_fin m n
 ```
 
 # The general statement
 
 Complete graphs are only the easiest instance. What Kostochka and Sidorenko actually observed is
-that *every chordal graph* is `n`-monophilic, and the route is an induction along a simplicial
-elimination ordering — which is to say, along a tower of cones over cliques. That is directly
-expressible:
+that *every chordal graph* is enumeratively chromatic-choosable at `n`, and the route is an
+induction along a simplicial elimination ordering — which is to say, along a tower of cones over
+cliques. That is directly expressible:
 
 ```lean
 open SimpleGraph in
 example {V : Type} [Fintype V] [DecidableEq V]
-    {G : SimpleGraph V} [DecidableRel G.Adj] {n : ℕ} (hG : G.Monophilic n) :
+    {G : SimpleGraph V} [DecidableRel G.Adj] {n : ℕ} (hG : G.ECCAt n) :
     ∀ (k : ℕ) (d : CliqueTowerData V k), CliqueTowerData.IsSimplicial G k d →
-      (cliqueTower G k d).Monophilic n :=
-  monophilic_cliqueTower hG
+      (cliqueTower G k d).ECCAt n :=
+  ecc_cliqueTower hG
 ```
 
 Starting the tower from the empty graph gives the corollary in the form the paper uses: anything
-built along a simplicial elimination ordering is `n`-monophilic, for every `n`. Each step is one
-application of Lemma 1; the induction adds nothing beyond bookkeeping.
+built along a simplicial elimination ordering is enumeratively chromatic-choosable at `n`, for every
+`n`. Each step is one application of Lemma 1; the induction adds nothing beyond bookkeeping.
 
 Two remarks on what this does and does not settle. Dirac's theorem {citep dirac}[] is what connects
 "has a simplicial elimination ordering" to the usual definition of chordal — every cycle longer than

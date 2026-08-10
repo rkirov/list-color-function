@@ -1,4 +1,9 @@
-# References — List Color Function / n-Monophilic Graphs (Lean 4 formalization project)
+# References — List Color Function / Enumerative Chromatic-Choosability
+
+The property Kirov and Naimi call *n*-monophilic is what the later literature calls
+*enumeratively chromatic-choosable at n*; the development uses the modern name
+(`SimpleGraph.ECCAt`, `SimpleGraph.ECC`), and this bibliography keeps whichever term each
+cited paper actually uses. See `provenance.md` §4.
 
 Verified bibliography. Every entry below was checked against at least one authoritative
 index (Crossref DOI metadata via content negotiation, zbMATH Open API, dblp API, arXiv,
@@ -74,7 +79,7 @@ Compiled 2026-08-08.
   DOI [10.1016/j.jctb.2023.02.002](https://doi.org/10.1016/j.jctb.2023.02.002).
   — ***The best known threshold:*** $P_\ell(G,m) = P(G,m)$ for every $m \ge |E(G)| - 1$. This
   supersedes Wang–Qian–Yan above, and is far stronger than what this repository formalizes
-  (`monophilic_of_two_pow_lt`, which needs $2^{|E(G)|} < m$).
+  (`ecc_of_two_pow_lt`, which needs $2^{|E(G)|} < m$).
 
 - **H. Kaul, A. Kumar, J. A. Mudrock, P. Rewers, P. Shin, and K. To**, "On the list color function
   threshold," *Journal of Graph Theory* **105** (3) (2024), 386–397.

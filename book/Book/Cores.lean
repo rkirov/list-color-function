@@ -1,6 +1,6 @@
 import VersoManual
 import Book.Papers
-import Monophilic
+import ListColoring
 
 open Verso.Genre Manual
 open Verso.Genre.Manual.InlineLean
@@ -15,12 +15,13 @@ set_option maxHeartbeats 1000000
 tag := "cores"
 %%%
 
-Source: [Core.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Core.lean), [K23.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/K23.lean).
+Source: [Core.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Core.lean),
+[K23.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/K23.lean).
 
-Theorem 2 of the paper characterizes the `2`-monophilic graphs, and it does so in terms of a graph's
-**core** — what is left after repeatedly deleting vertices of degree 1 until every remaining vertex
-has degree at least 2. Lemma 5 is what makes that reduction legitimate: a connected graph is
-`n`-monophilic exactly when its core is.
+Theorem 2 of the paper characterizes the graphs that are enumeratively chromatic-choosable at `2`,
+and it does so in terms of a graph's **core** — what is left after repeatedly deleting vertices of
+degree 1 until every remaining vertex has degree at least 2. Lemma 5 is what makes that reduction
+legitimate: a connected graph is enumeratively chromatic-choosable at `n` exactly when its core is.
 
 # A pendant vertex is a cone over a singleton
 
@@ -29,7 +30,7 @@ construction already used for Lemma 1 — coning over a clique — because a one
 trivially a clique:
 
 ```lean
-open SimpleGraph Monophilic in
+open SimpleGraph ListColoring in
 example {V : Type} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) [DecidableRel G.Adj] (v : V) :
     G.addPendant v = coneOn G {v} :=
@@ -44,7 +45,7 @@ Specializing the cone's extension count to `K = {v}` gives an identity with no e
 a coloring uses exactly one color at `v`:
 
 ```lean
-open SimpleGraph Monophilic in
+open SimpleGraph ListColoring in
 example {V : Type} [Fintype V] [DecidableEq V]
     {G : SimpleGraph V} [DecidableRel G.Adj] (v : V) (n : ℕ) :
     (coneOn G {v}).colConst n = (n - 1) * G.colConst n :=
@@ -57,7 +58,7 @@ same list as its neighbor**. Then every coloring already uses one of those color
 `n - 1` remain — the count is again exact rather than merely bounded:
 
 ```lean
-open SimpleGraph Monophilic in
+open SimpleGraph ListColoring in
 example {V : Type} [Fintype V] [DecidableEq V]
     {G : SimpleGraph V} [DecidableRel G.Adj] {L : ListAssignment V} {n : ℕ}
     (hL : IsNListAssignment L n) (v : V) :
@@ -65,15 +66,15 @@ example {V : Type} [Fintype V] [DecidableEq V]
   col_coneOn_singleton_extend hL v
 ```
 
-Monophilicity of the cone now reads `(n-1) · colConst G n ≤ (n-1) · col G L`, and cancelling `n-1`
-gives monophilicity of `G`. Both directions together:
+Enumerative chromatic-choosability of the cone now reads `(n-1) · colConst G n ≤ (n-1) · col G L`,
+and cancelling `n-1` gives enumerative chromatic-choosability of `G`. Both directions together:
 
 ```lean
-open SimpleGraph Monophilic in
+open SimpleGraph ListColoring in
 example {V : Type} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) [DecidableRel G.Adj] (v : V) (n : ℕ) :
-    (G.addPendant v).Monophilic n ↔ G.Monophilic n :=
-  monophilic_addPendant_iff v n
+    (G.addPendant v).ECCAt n ↔ G.ECCAt n :=
+  ecc_addPendant_iff v n
 ```
 
 # A hypothesis that turned out to be an artifact
@@ -84,14 +85,14 @@ hypothesis really is needed *for that argument*: at `n ≤ 1` the cone identity 
 colored.
 
 But the conclusion survives anyway, for a reason that has nothing to do with the argument: at
-`n ≤ 1` every graph is `n`-monophilic outright.
+`n ≤ 1` every graph is enumeratively chromatic-choosable at `n` outright.
 
 ```lean
-open SimpleGraph Monophilic in
+open SimpleGraph ListColoring in
 example {V : Type} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) [DecidableRel G.Adj] {n : ℕ} (hn : n ≤ 1) :
-    G.Monophilic n :=
-  monophilic_of_le_one hn
+    G.ECCAt n :=
+  ecc_of_le_one hn
 ```
 
 So the equivalence is stated with no hypothesis on `n`. This is a small thing, but it is the kind of
@@ -103,16 +104,16 @@ happens without it, and then the degenerate case turns out to be trivially true 
 Lemma 5 as printed speaks of "the core", defined by repeated deletion. Formalizing a fixpoint of
 degree-1 deletion over an arbitrary vertex type is awkward and, it turns out, unnecessary: what the
 paper's arguments actually use is the reverse direction — that building a graph up from its core by
-repeatedly attaching pendant vertices preserves monophilicity in both directions. That is directly
-expressible, and it allows a new pendant to attach to a previously added one, which is the general
-case:
+repeatedly attaching pendant vertices preserves enumerative chromatic-choosability in both
+directions. That is directly expressible, and it allows a new pendant to attach to a previously
+added one, which is the general case:
 
 ```lean
-open SimpleGraph Monophilic in
+open SimpleGraph ListColoring in
 example {V : Type} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) [DecidableRel G.Adj] (n k : ℕ) (d : TowerData V k) :
-    (pendantTower G k d).Monophilic n ↔ G.Monophilic n :=
-  monophilic_pendantTower_iff n k d
+    (pendantTower G k d).ECCAt n ↔ G.ECCAt n :=
+  ecc_pendantTower_iff n k d
 ```
 
 A pleasant check on the definition: a path is nothing but a tower of pendant attachments, and the
@@ -120,7 +121,7 @@ two constructions — built independently, in different files, for different pur
 *definitionally* the same graph:
 
 ```lean
-open SimpleGraph Monophilic in
+open SimpleGraph ListColoring in
 example : pendantTower (pathG 0) 2 ((PUnit.unit, pathEnd 0), pathEnd 1) = pathG 2 :=
   rfl
 ```
@@ -170,8 +171,8 @@ example : (completeBipartiteGraph (Fin 2) (Fin 3)).colConst 2 = 2 :=
 
 ```lean
 open SimpleGraph in
-example : (completeBipartiteGraph (Fin 2) (Fin 3)).Monophilic 2 :=
-  monophilic_K23
+example : (completeBipartiteGraph (Fin 2) (Fin 3)).ECCAt 2 :=
+  ecc_K23
 ```
 
 The paper splits the argument by `|L(x) ∩ L(y)|` into three cases. Mechanizing it showed that the

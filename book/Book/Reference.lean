@@ -1,6 +1,6 @@
 import VersoManual
 import Book.Papers
-import Monophilic
+import ListColoring
 
 open Verso.Genre Manual
 open Verso.Genre.Manual.InlineLean
@@ -60,13 +60,15 @@ colour from its own list — and on the special case where all the lists agree.
 
 # The two properties
 
-Choosability asks for *some* colouring from every list assignment; monophilicity asks that the
-uniform assignment be the worst case for the *count*. The second implies the first whenever the
-uniform count is positive, and is strictly stronger.
+Choosability asks for *some* colouring from every list assignment; enumerative
+chromatic-choosability asks that the uniform assignment be the worst case for the *count*. The
+second implies the first whenever the uniform count is positive, and is strictly stronger.
 
 {docstring SimpleGraph.Choosable}
 
-{docstring SimpleGraph.Monophilic}
+{docstring SimpleGraph.ECCAt}
+
+{docstring SimpleGraph.ECC}
 
 {docstring SimpleGraph.colCounts}
 
@@ -94,13 +96,13 @@ vertices and hence cores, and twice over the ends of a path it gives the theta g
 
 {docstring SimpleGraph.cliqueTower}
 
-{docstring Monophilic.pathG}
+{docstring ListColoring.pathG}
 
-{docstring Monophilic.closePath}
+{docstring ListColoring.closePath}
 
-{docstring Monophilic.theta}
+{docstring ListColoring.theta}
 
-{docstring Monophilic.thetaGen}
+{docstring ListColoring.thetaGen}
 
 {docstring SimpleGraph.ERT.K}
 
@@ -110,27 +112,27 @@ The core of a graph is what remains after repeatedly deleting vertices of degree
 backwards, that says the graph is its core with a tower of pendant vertices on top, which is the
 form a formalization can use directly.
 
-{docstring Monophilic.Contains}
+{docstring ListColoring.Contains}
 
-{docstring Monophilic.CoreIs}
+{docstring ListColoring.CoreIs}
 
-{docstring Monophilic.CoreIsVertex}
+{docstring ListColoring.CoreIsVertex}
 
-{docstring Monophilic.CoreIsCycle}
+{docstring ListColoring.CoreIsCycle}
 
-{docstring Monophilic.CoreIsEvenCycle}
+{docstring ListColoring.CoreIsEvenCycle}
 
-{docstring Monophilic.CoreIsK23}
+{docstring ListColoring.CoreIsK23}
 
-{docstring Monophilic.CoreIsTheta}
+{docstring ListColoring.CoreIsTheta}
 
-{docstring Monophilic.HasOddCycle}
+{docstring ListColoring.HasOddCycle}
 
-{docstring Monophilic.RubinFamily}
+{docstring ListColoring.RubinFamily}
 
-{docstring Monophilic.ValidShape}
+{docstring ListColoring.ValidShape}
 
-{docstring Monophilic.GoodShape}
+{docstring ListColoring.GoodShape}
 
 # The ten claims
 
@@ -139,36 +141,36 @@ These are the theorems `comparator/Challenge.lean` states, in its own order;
 
 {docstring SimpleGraph.eval_chromaticPolynomial}
 
-{docstring SimpleGraph.monophilic_iff_listColorFunction_eq_eval}
+{docstring SimpleGraph.ecc_iff_listColorFunction_eq_eval}
 
 {docstring SimpleGraph.ERT.not_choosable}
 
 {docstring SimpleGraph.ERT.colorable}
 
-{docstring SimpleGraph.monophilic_of_isChordal}
+{docstring SimpleGraph.ecc_of_isChordal}
 
 {docstring SimpleGraph.isChordal_iff_exists_cliqueTower}
 
-{docstring Monophilic.monophilic_closePath_of_two_le}
+{docstring ListColoring.ecc_closePath_of_two_le}
 
-{docstring Monophilic.choosable_two_of_rubinFamily}
+{docstring ListColoring.choosable_two_of_rubinFamily}
 
-{docstring SimpleGraph.monophilic_two_iff_of_rubin_hard}
+{docstring SimpleGraph.ecc_two_iff_of_rubin_hard}
 
-{docstring SimpleGraph.exists_monophilic_forall_ge}
+{docstring SimpleGraph.exists_ecc_forall_ge}
 
 # Transport along cores
 
 Kirov and Naimi's Lemma 5 and its choosability counterpart are what make a classification of cores
 a classification of graphs.
 
-{docstring SimpleGraph.monophilic_pendantTower_iff}
+{docstring SimpleGraph.ecc_pendantTower_iff}
 
 {docstring SimpleGraph.choosable_pendantTower_iff}
 
-{docstring Monophilic.monophilic_iff_of_coreIs}
+{docstring ListColoring.ecc_iff_of_coreIs}
 
-{docstring Monophilic.choosable_iff_of_coreIs}
+{docstring ListColoring.choosable_iff_of_coreIs}
 
 # Rubin's theorem
 
@@ -176,38 +178,38 @@ Rubin's characterization of the `2`-choosable graphs is a named proposition here
 not a hypothesis tailored to what Theorem 2 needs. Its ⟸ direction is proved, and so is its whole
 content about theta graphs; what remains is the forward implication.
 
-{docstring Monophilic.RubinTheorem}
+{docstring ListColoring.RubinTheorem}
 
-{docstring Monophilic.choosable_two_of_rubinAlternatives}
+{docstring ListColoring.choosable_two_of_rubinAlternatives}
 
-{docstring Monophilic.ThetaClassification}
+{docstring ListColoring.ThetaClassification}
 
-{docstring Monophilic.thetaClassification}
+{docstring ListColoring.thetaClassification}
 
-{docstring Monophilic.not_choosable_two_thetaGen}
+{docstring ListColoring.not_choosable_two_thetaGen}
 
-{docstring Monophilic.choosable_two_thetaGen_iff}
+{docstring ListColoring.choosable_two_thetaGen_iff}
 
 # Theorem 2
 
-{docstring Monophilic.monophilic_two_of_alternatives}
+{docstring ListColoring.ecc_two_of_alternatives}
 
-{docstring Monophilic.hasOddCycle_of_not_colorable_two}
+{docstring ListColoring.hasOddCycle_of_not_colorable_two}
 
-{docstring Monophilic.exists_odd_isCycle_of_odd_closed_walk}
+{docstring ListColoring.exists_odd_isCycle_of_odd_closed_walk}
 
-{docstring Monophilic.alternatives_of_rubinAlternatives}
+{docstring ListColoring.alternatives_of_rubinAlternatives}
 
-{docstring Monophilic.monophilic_two_iff_of_rubin}
+{docstring ListColoring.ecc_two_iff_of_rubin}
 
 # The families, one by one
 
-{docstring SimpleGraph.monophilic_K23}
+{docstring SimpleGraph.ecc_K23}
 
-{docstring Monophilic.choosable_theta}
+{docstring ListColoring.choosable_theta}
 
-{docstring Monophilic.not_monophilic_theta}
+{docstring ListColoring.not_ecc_theta}
 
-{docstring Monophilic.monophilic_closePath_all}
+{docstring ListColoring.ecc_closePath_all}
 
-{docstring SimpleGraph.monophilic_of_two_pow_lt}
+{docstring SimpleGraph.ecc_of_two_pow_lt}

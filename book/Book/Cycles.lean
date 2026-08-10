@@ -1,6 +1,6 @@
 import VersoManual
 import Book.Papers
-import Monophilic
+import ListColoring
 
 open Verso.Genre Manual
 open Verso.Genre.Manual.InlineLean
@@ -15,7 +15,13 @@ set_option maxHeartbeats 1000000
 tag := "cycles"
 %%%
 
-Source: [PathSplit.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/PathSplit.lean), [PathMinimizing.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/PathMinimizing.lean), [Cycle.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Cycle.lean), [CycleMonophilic.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/CycleMonophilic.lean), [CycleTwo.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/CycleTwo.lean), [CycleRotate.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/CycleRotate.lean).
+Source:
+[PathSplit.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/PathSplit.lean),
+[PathMinimizing.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/PathMinimizing.lean),
+[Cycle.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Cycle.lean),
+[CycleECC.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/CycleECC.lean),
+[CycleTwo.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/CycleTwo.lean),
+[CycleRotate.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/CycleRotate.lean).
 
 Everything now assembles. This chapter covers the second half of Lemma 3 — which assignments
 actually achieve the minimum — and then Theorem 1.
@@ -28,7 +34,7 @@ assignments is infinite, because colors range over all of `ℕ`; but the set of 
 a nonempty set of naturals, so it has a least element:
 
 ```lean
-open SimpleGraph Monophilic in
+open SimpleGraph ListColoring in
 example {V : Type} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) [DecidableRel G.Adj] (L₀ : ListAssignment V) :
     ∃ L, (∀ v, (L v).card = (L₀ v).card) ∧ G.Minimizing L :=
@@ -56,7 +62,7 @@ The immediate consequence is part (b) of Lemma 3 — a lower bound for *every* `
 minimizing or not:
 
 ```lean
-open SimpleGraph Monophilic in
+open SimpleGraph ListColoring in
 example {k m : ℕ} {L : ListAssignment (PathV k)} (hL : IsNNAssign k m L) :
     min (pathA m k) (pathB m k) ≤ (pathG k).col L :=
   min_pathA_pathB_le_col hL
@@ -72,7 +78,7 @@ which, given `A_k - B_k = (-1)^k`, is just the statement that the minimizer real
 the two.
 
 ```lean
-open SimpleGraph Monophilic in
+open SimpleGraph ListColoring in
 example {k m : ℕ} {L : ListAssignment (PathV k)}
     (hm : 1 ≤ m) (hk : 1 ≤ k) (hL : IsNNAssign k m L) (hmin : (pathG k).Minimizing L) :
     ∃ S x y, IsPathShape k m L S x y ∧ ((Odd k ∧ x = y) ∨ (Even k ∧ x ≠ y)) :=
@@ -112,7 +118,7 @@ let labels := [translate 0 26 (text "pathEnd"), translate 300 26 (text "pathStar
 So `closePath k` is `pathG k` plus the single edge joining `pathStart k` to `pathEnd k`:
 
 ```lean
-open SimpleGraph Monophilic in
+open SimpleGraph ListColoring in
 example (k : ℕ) : closePath (k + 1) = (pathG k).addPendantPair (pathEnd k) (pathStart k) := rfl
 ```
 
@@ -121,7 +127,7 @@ keep the full palette — a type A assignment on the shorter path. So each of th
 contributes `A_{k-1}`, giving the paper's `col(C, n) = n · A_{k-2}`:
 
 ```lean
-open SimpleGraph Monophilic in
+open SimpleGraph ListColoring in
 example (m k : ℕ) : (closePath (k + 1)).colConst (m + 2) = (m + 2) * pathA m k :=
   colConst_closePath_succ m k
 ```
@@ -140,9 +146,9 @@ The total is `B + (A+1) + (n-2)A = nA` exactly. There is no slack in it.
 Putting the parities together:
 
 ```lean
-open SimpleGraph Monophilic in
-example {m k : ℕ} (hk : 2 ≤ k) (hm : 1 ≤ m) : (closePath k).Monophilic (m + 2) :=
-  monophilic_closePath hk hm
+open SimpleGraph ListColoring in
+example {m k : ℕ} (hk : 2 ≤ k) (hm : 1 ≤ m) : (closePath k).ECCAt (m + 2) :=
+  ecc_closePath hk hm
 ```
 
 Every cycle, every `n ≥ 3`.
@@ -171,7 +177,7 @@ deletable edge is fixed, so what is needed is the ability to *move* the cycle: a
 automorphism.
 
 ```lean
-open SimpleGraph Monophilic in
+open SimpleGraph ListColoring in
 example {k : ℕ} (hk : 1 ≤ k) (r : Fin (k + 1)) : closePath k ≃g closePath k :=
   rotIso hk r
 ```
@@ -190,9 +196,9 @@ would already be constant.
 # Theorem 1, in full
 
 ```lean
-open SimpleGraph Monophilic in
-example {k m : ℕ} (hk : 2 ≤ k) : (closePath k).Monophilic (m + 2) :=
-  monophilic_closePath_of_two_le hk
+open SimpleGraph ListColoring in
+example {k m : ℕ} (hk : 2 ≤ k) : (closePath k).ECCAt (m + 2) :=
+  ecc_closePath_of_two_le hk
 ```
 
 Every cycle, every `n ≥ 2`.

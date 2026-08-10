@@ -1,6 +1,6 @@
 import VersoManual
 import Book.Papers
-import Monophilic
+import ListColoring
 
 open Verso.Genre Manual
 open Verso.Genre.Manual.InlineLean
@@ -15,7 +15,9 @@ set_option maxHeartbeats 1000000
 tag := "swapping"
 %%%
 
-Source: [Bridge.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/Bridge.lean), [PathColorable.lean](https://github.com/rkirov/list-color-function/blob/main/Monophilic/PathColorable.lean).
+Source:
+[Bridge.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Bridge.lean),
+[PathColorable.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/PathColorable.lean).
 
 Lemma 2 is the technical heart of the paper. It says that if a graph splits into two pieces joined
 by a single edge, then the lists at the two ends of that edge can be made *nested* — one contained
@@ -47,7 +49,7 @@ let labels := [translate (-70) 26 (text "v0"), translate 70 26 (text "w0"),
 Cutting that edge disconnects the graph, and the counting factors accordingly.
 
 ```lean
-open SimpleGraph Monophilic in
+open SimpleGraph ListColoring in
 example {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
     (G : SimpleGraph V) [DecidableRel G.Adj] (H : SimpleGraph W) [DecidableRel H.Adj]
     (v₀ : V) (w₀ : W) :
@@ -61,7 +63,7 @@ that `w₀` must avoid that color. Writing `colAvoid` for the number of coloring
 vertex anything *other* than a given color:
 
 ```lean
-open SimpleGraph Monophilic in
+open SimpleGraph ListColoring in
 example {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
     {G : SimpleGraph V} [DecidableRel G.Adj] {H : SimpleGraph W} [DecidableRel H.Adj]
     {v₀ : V} {w₀ : W} (M : ListAssignment (V ⊕ W)) (c : ℕ) :
@@ -75,7 +77,7 @@ Throughout, `colAvoid` and `colFix` are related additively rather than by subtra
 the whole development inside `ℕ`:
 
 ```lean
-open SimpleGraph Monophilic in
+open SimpleGraph ListColoring in
 example {V : Type} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) [DecidableRel G.Adj] (L : ListAssignment V) (v : V) (c : ℕ) :
     G.colAvoid L v c + G.colFix L v c = G.col L :=
@@ -89,7 +91,7 @@ at `w₀`, and a color `c₂` available at `w₀` but not at `v₀`. Swap `c₁`
 on the `w₀` side only. Transpositions are injective, so no list changes size:
 
 ```lean
-open SimpleGraph Monophilic in
+open SimpleGraph ListColoring in
 example {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
     (M : ListAssignment (V ⊕ W)) (c₁ c₂ : ℕ) (x : V ⊕ W) :
     (swapRight M c₁ c₂ x).card = (M x).card :=
@@ -100,7 +102,7 @@ and the count strictly drops by a computable amount — the paper's equation (1)
 form:
 
 ```lean
-open SimpleGraph Monophilic in
+open SimpleGraph ListColoring in
 example {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
     {G : SimpleGraph V} [DecidableRel G.Adj] {H : SimpleGraph W} [DecidableRel H.Adj]
     {v₀ : V} {w₀ : W} (M : ListAssignment (V ⊕ W)) {c₁ c₂ : ℕ}
@@ -127,7 +129,7 @@ Each swap moves `c₁` into `w₀`'s list, so it strictly decreases the number o
 `v₀` but not at `w₀`. Iterating terminates, and Lemma 2 is the result:
 
 ```lean
-open SimpleGraph Monophilic in
+open SimpleGraph ListColoring in
 example {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
     {G : SimpleGraph V} [DecidableRel G.Adj] {H : SimpleGraph W} [DecidableRel H.Adj]
     {v₀ : V} {w₀ : W} (M : ListAssignment (V ⊕ W)) :
@@ -142,8 +144,8 @@ obvious measure is the number of colors at `v₀` not available at `w₀`. When 
 first list is contained in the second and we are done. But the process can also halt with the
 measure still positive — when the *second* list is contained in the first and there is simply no
 `c₂` to swap. The paper's own phrasing anticipates this: it says to repeat "as long as
-`L(v₁) ⊄ L(v₂)` and `L(v₂) ⊄ L(v₁)`", which is exactly the right loop condition. A naive induction on
-the measure is what goes wrong, and the second disjunct has to be produced directly.
+`L(v₁) ⊄ L(v₂)` and `L(v₂) ⊄ L(v₁)`", which is exactly the right loop condition. A naive induction
+on the measure is what goes wrong, and the second disjunct has to be produced directly.
 
 # Strict monotonicity on paths
 
@@ -153,7 +155,7 @@ containment is anywhere strict and all lists have at least two colors, the count
 increases:
 
 ```lean
-open SimpleGraph Monophilic in
+open SimpleGraph ListColoring in
 example (k : ℕ) {L L' : ListAssignment (PathV k)}
     (hsub : ∀ v, L v ⊆ L' v) (hne : L ≠ L') (hcard : ∀ v, 2 ≤ (L' v).card) :
     (pathG k).col L < (pathG k).col L' :=
