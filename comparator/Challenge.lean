@@ -28,39 +28,49 @@ statements below, plus the paper's named constructions:
 * paths, cycles and thetas: `PathV`, `pathG`, `pathStart`, `pathEnd`, `pathVtx`, `pathA`, `pathB`,
   `pathAssign`, `pathSplitIso`, `IsNNAssign`, `IsPathShape`, `closePath`, `rotIso`, `reach`,
   `ThetaV`, `theta`, `RubinFamily`;
+* chordality (`Monophilic.Dirac`): `IsChordal`, `IsSimplicialVertex`, `deleteVertex`,
+  `HasSimplicialVertex`;
 * the `DecidableRel` / `Fintype` / `DecidableEq` instances that the statements above elaborate
   through (`instDecidableRelPathG`, `coneOn.instDecidableRel`, …).  These are part of the
   statements whether or not one likes it: `G.col L` does not typecheck without them.
 
-Three definitions carry their real bodies rather than a placeholder, because other *statements*
-need them to reduce: `ListAssignment` (its values are applied as functions), `ThetaV` and `ERT.K`
-(their `Fintype` / `DecidableRel` instances are found by unfolding), and `edgeGraph` (likewise).
-The comparator never inspects the body of a `definition_names` entry, so this gives nothing away.
+Five definitions carry their real bodies rather than a placeholder: `ListAssignment` (its values
+are applied as functions in other statements), `ThetaV`, `ERT.K` and `edgeGraph` (their `Fintype` /
+`DecidableRel` instances are found by unfolding the abbreviation), and `HasSimplicialVertex` (a
+universe-polymorphic `Prop` constant whose universe parameter lives only in its body).  The
+comparator never inspects the body of a `definition_names` entry, so this gives nothing away.
 
 The library also contains a substantial number of *internal* helper definitions — `pathSplitIsoAux`,
 `coneAdj`, `addPendantAdj`, `addPendantPairAdj`, `pathInterior`, `pathIdx`, `pathVtxEquiv`,
 `rotEquiv`, `pathSplitEquiv`, `pathGCongr`, `optionSumEquiv`, `thetaBaseOf`, `thetaOf`, `lvl`,
 `levelAssign`, `thetaAssign`, `eraseEnds`, `thetaWitness`, `optAssign`, `endPair`, `testM'`,
 `extendList`, `whitneySum`, `ConstOnEdge`, `edgeDef`, `listInter`, `compFinset`, `compEdges`,
-`rhsL`, `univTowerData`, `topIsoTopOfEquiv`, `towerVEquivFin`, the `#guard` fixtures `L1`, `L4`,
-… — which are **deliberately omitted**: they are implementation details of the proofs, not part of
-the mathematical statement of any result.  Of the library's 86 non-private top-level
-`def`/`abbrev`/`structure` declarations and 26 `instance`s, this file declares the 69 that the
-statements below actually mention or that the paper names: 67 of them are listed in
-`definition_names`, and the remaining two are the `structure`s `IsNNAssign` and `IsPathShape`,
-which the comparator compares structurally (as inductive types) rather than as definition holes,
-and which are therefore reproduced here field for field.
+`rhsL`, `univTowerData`, `topIsoTopOfEquiv`, `towerVEquivFin`, and from `Monophilic.Dirac`
+`someEquivNeNone`, `coneOnInduceIso`, `coneOnDeleteIso`, `coneOnCongr`, `neighborsAway`, `ReachIn`,
+`IsSimplicialIn`, the `#guard` fixtures `L1`, `L4`, `c4`, `c5`, … — which are **deliberately
+omitted**: they are implementation details of the proofs, not part of the mathematical statement of
+any result.  Of the library's 113 non-private top-level `def`/`abbrev`/`structure` declarations and
+28 `instance`s, this file declares the 73 that the statements below actually mention or that the
+paper names: 71 of them are listed in `definition_names`, and the remaining two are the
+`structure`s `IsNNAssign` and `IsPathShape`, which the comparator compares structurally (as
+inductive types) rather than as definition holes, and which are therefore reproduced here field for
+field.
 
-**Results (`theorem_names` in `config.json`, 59 entries).** The 55 results audited by
+**Results (`theorem_names` in `config.json`, 78 entries).** The 55 results audited by
 `scripts/AxiomAudit.lean` — of which 51 are theorems and four (`pathSplitIso`, `rotIso`,
-`listColorFunction`, `chromaticPolynomial`) are data and so belong to `definition_names` — together
-with the eight theorems of `Monophilic.Threshold` (the explicit threshold and Donner's theorem;
-its ninth new declaration, `listCount`, is again data).
+`listColorFunction`, `chromaticPolynomial`) are data and so belong to `definition_names` — plus the
+eight theorems of `Monophilic.Threshold` (the explicit threshold and Donner's theorem; its ninth
+new declaration, `listCount`, is again data) and the nineteen theorems of `Monophilic.Dirac`
+(Dirac's lemma, Dirac's theorem in both directions, and the unconditional Kostochka–Sidorenko
+theorem `monophilic_of_isChordal`).
 
 ## Layout
 
 The sections follow the paper, with dependencies pulled forward where Lean requires it (the path
-vocabulary appears with Lemma 4, the tower vocabulary with Kostochka–Sidorenko).
+vocabulary appears with Lemma 4, the tower vocabulary with Kostochka–Sidorenko).  The two sections
+that have no counterpart in the paper — Dirac's theorem, and the threshold/Donner material — sit
+where they belong mathematically: Dirac immediately after Kostochka–Sidorenko, whose chordal-graph
+statement it completes, and Donner at the end, after the chromatic polynomial.
 -/
 
 open Finset
