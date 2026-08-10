@@ -22,8 +22,8 @@ sequences** — a function `A : ℕ → V` with `G.Adj (A i) (A (i+1))` for `i <
 cycle as a `SimpleGraph.Walk` together with `Walk.IsCycle`. Rubin's argument produces the latter, so
 something has to convert.
 
-That conversion is this file. `Monophilic.ofCycleWalk` takes `hc : c.IsCycle` for `c : G.Walk v v`
-and produces the index data, with the three facts the dumbbell and figure-eight results need:
+That conversion is this file: for `c : G.Walk v v` with `hc : c.IsCycle`, take `A := c.getVert` and
+`m := c.length - 1`, and supply the three facts the dumbbell and figure-eight results need —
 adjacency along the cycle, closure at the end, and injectivity.
 
 ## The proof this feeds
@@ -48,6 +48,9 @@ needs **no** ear decomposition, Menger, or 2-connectivity.
 * `Monophilic.cycleWalk_injOn` — injectivity on `Set.Iic (c.length - 1)`
 * `Monophilic.two_le_cycleWalk_bound` — a cycle has `2 ≤ c.length - 1`
 * `Monophilic.not_choosable_two_of_two_cycle_walks` — types 2 and 3, from Mathlib cycles
+* `Monophilic.exists_isCycle_of_two_le_degree` — E1: a connected graph of minimum degree `≥ 2` has
+  a cycle
+* `Monophilic.exists_shortest_isCycle` — E1: and a shortest one, which is Rubin's `C₁`
 -/
 
 namespace Monophilic
@@ -89,6 +92,48 @@ theorem cycleWalk_closes {v : V} {c : G.Walk v v} (hc : c.IsCycle) :
 theorem cycleWalk_injOn {v : V} {c : G.Walk v v} (hc : c.IsCycle) :
     Set.InjOn c.getVert (Set.Iic (c.length - 1)) :=
   hc.getVert_injOn'
+
+/-! ### E1 — a core contains a cycle
+
+Rubin's argument opens by taking a **shortest cycle** `C₁` in the core. That presupposes a cycle
+exists, which is where minimum degree `≥ 2` is used, and it is the one thing in this step Mathlib
+does not already supply.
+
+The proof is a count rather than the usual longest-path argument: a connected acyclic graph is a
+tree, so it has `n - 1` edges, while minimum degree `≥ 2` forces at least `n`. The core of a
+connected graph is connected, so restricting to the connected case costs nothing here. -/
+
+/-- **A connected graph of minimum degree `≥ 2` contains a cycle.** Classical; the shape Rubin's
+argument needs at its first step. -/
+theorem exists_isCycle_of_two_le_degree (hconn : G.Connected) (hdeg : ∀ v : V, 2 ≤ G.degree v) :
+    ∃ (v : V) (c : G.Walk v v), c.IsCycle := by
+  by_contra hno
+  push_neg at hno
+  have hacyc : G.IsAcyclic := fun v c hc => hno v c hc
+  have htree : G.IsTree := ⟨hconn, hacyc⟩
+  have hcard : G.edgeFinset.card + 1 = Fintype.card V := htree.card_edgeFinset
+  have hsum : ∑ v : V, G.degree v = 2 * G.edgeFinset.card := G.sum_degrees_eq_twice_card_edges
+  have hle : 2 * Fintype.card V ≤ ∑ v : V, G.degree v := by
+    calc 2 * Fintype.card V = ∑ _v : V, 2 := by
+          rw [Finset.sum_const, Finset.card_univ]; ring
+      _ ≤ ∑ v : V, G.degree v := Finset.sum_le_sum fun v _ => hdeg v
+  have hpos : 0 < Fintype.card V := Fintype.card_pos_iff.mpr hconn.nonempty
+  omega
+
+/-- **A shortest cycle exists.** Well-ordering on lengths, given `exists_isCycle_of_two_le_degree`.
+Rubin names this cycle `C₁`; minimality is used in his case analysis. -/
+theorem exists_shortest_isCycle (hconn : G.Connected) (hdeg : ∀ v : V, 2 ≤ G.degree v) :
+    ∃ (v : V) (c : G.Walk v v), c.IsCycle ∧
+      ∀ (w : V) (d : G.Walk w w), d.IsCycle → c.length ≤ d.length := by
+  classical
+  obtain ⟨v₀, c₀, hc₀⟩ := exists_isCycle_of_two_le_degree hconn hdeg
+  -- the set of lengths of cycles is a nonempty set of naturals, so it has a least element
+  set S : Set ℕ := {n | ∃ (w : V) (d : G.Walk w w), d.IsCycle ∧ d.length = n} with hS
+  have hne : S.Nonempty := ⟨c₀.length, v₀, c₀, hc₀, rfl⟩
+  obtain ⟨w, d, hd, hdlen⟩ : sInf S ∈ S := Nat.sInf_mem hne
+  refine ⟨w, d, hd, fun w' d' hd' => ?_⟩
+  have : sInf S ≤ d'.length := Nat.sInf_le ⟨w', d', hd', rfl⟩
+  omega
 
 /-! ### Rubin's types 2 and 3, from Mathlib cycles
 
