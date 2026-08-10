@@ -360,15 +360,24 @@ def TowerData (V : Type u) : ℕ → Type u
   | 0 => PUnit
   | k + 1 => TowerData V k × TowerV V k
 
+end
+
+-- `pendantTower` is deliberately stated with `Type*`, and so is deliberately NOT inside the
+-- `universe u` section above.  The comparator compares `ConstantVal`s, and a `ConstantVal`
+-- carries `levelParams` as a list of *names*: alpha-equivalence is not enough, the universe
+-- parameter has to end up with the same name here as in the library.  `ListColoring/Core.lean`
+-- writes `TowerV` and `TowerData` as `(V : Type u)` against an explicit `universe u`, but
+-- declares `pendantTower` against `variable {V : Type*}`, which auto-binds the universe as
+-- `u_1`.  Reproducing that split is the only reason this one definition sits on its own.
+-- (`ListAssignment` and `constList` above are pinned to `u_2` for the same reason.)
+
 /-- **A tower of pendant attachments.** `pendantTower G k d` is the graph obtained from `G` by
 attaching `k` pendant vertices one after another, the `i`-th of them at the vertex recorded in `d`
 (which may itself be one of the earlier new vertices). -/
-def pendantTower {V : Type u} (G : SimpleGraph V) :
+def pendantTower {V : Type*} (G : SimpleGraph V) :
     (k : ℕ) → TowerData V k → SimpleGraph (TowerV V k)
   | 0, _ => G
   | k + 1, d => (pendantTower G k d.1).addPendant d.2
-
-end
 
 end SimpleGraph
 
