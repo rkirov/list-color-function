@@ -76,3 +76,8 @@ open SimpleGraph Monophilic
 #print axioms Monophilic.choosable_theta
 #print axioms Monophilic.choosable_two_of_rubinFamily
 #print axioms SimpleGraph.monophilic_two_iff_of_rubin_hard
+
+/-! ### The list color function of a cycle -/
+#print axioms Monophilic.monophilic_closePath_all
+#print axioms Monophilic.isLeast_col_closePath
+#print axioms Monophilic.colConst_closePath_chromatic
