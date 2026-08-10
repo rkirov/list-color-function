@@ -33,15 +33,22 @@ can be fed into the proof of Rubin's theorem without circularity — `Monophilic
 the three-arm case as `Monophilic.ThetaClassification`. Nothing here may therefore appeal to
 Rubin's theorem, and nothing does.
 
-The other half of Rubin's hard direction is a structural statement — that a connected graph of
-minimum degree `≥ 2` which is not a cycle contains a generalized theta with `n ≥ 3` paths, or two
-cycles meeting in at most one vertex — and it is **not yet formalized** in this library. What must
-not be tried is the three-arm form of it: see the section "A removed definition, and why it must
-stay removed" in `Monophilic.RubinHard`, which records why. The counterexample is the very graph
-this file's arity-four case settles: `K₂,₄ = Θ(2, 2, 2, 2)` is connected, has minimum degree `≥ 2`,
-is not a cycle and is bipartite, and the only three-arm theta inside it is the *good* `θ_{2,2,2}` —
-yet it is not `2`-choosable (`Monophilic.not_choosable_two_K24`). Three-arm thetas alone therefore
-do not suffice, which is exactly what the arity-`≥ 4` half of this file supplies.
+The other half of Rubin's hard direction is a structural statement about connected graphs of
+minimum degree `≥ 2` that are not cycles, and **no correct form of it is formalized here**. Two
+candidate forms have already been refuted in this repository, both of them its own inventions and
+neither the literature's; `Monophilic.Rubin` and the section "A removed definition, and why it must
+stay removed" in `Monophilic.RubinHard` record the refutations, and `plan.md` records what a
+correct statement would need. Neither should be reintroduced.
+
+The first refutation is the reason this file exists. Reading "theta" as the *three-path* graph
+makes the claim false, and the counterexample is exactly the graph the arity-four case below
+settles: `K₂,₄ = Θ(2, 2, 2, 2)` is connected, has minimum degree `2`, is not a cycle, is bipartite,
+and the only three-arm theta inside it is the *good* `θ_{2,2,2}` — yet it is not `2`-choosable
+(`Monophilic.not_choosable_two_K24`). Three-arm thetas alone therefore do not suffice, which is
+what the arity-`≥ 4` half of this file supplies. The natural repair — replacing three-arm thetas by
+generalized ones, together with two cycles meeting in at most one vertex — is *also* false, as
+`K₃,₃` minus an edge shows. So the classification proved here is necessary for the structural step
+and nowhere near sufficient.
 
 No part of this file is claimed as new mathematics. Everything that is not Rubin's is
 mechanization scaffolding: the inductions along an arm of unbounded length, and the bookkeeping
