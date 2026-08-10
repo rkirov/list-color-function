@@ -1,16 +1,17 @@
 import Mathlib
 /-!
-# List coloring and `n`-monophilic graphs — the challenge statements
+# List coloring and enumerative chromatic-choosability — the challenge statements
 
 This file is the *statement surface* of the `graph_coloring` development, a formalization of
 
 > Radoslav Kirov and Ramin Naimi, *List coloring and `n`-monophilic graphs*,
 > Ars Combinatoria (arXiv:1004.5183),
 
-together with the chromatic-polynomial / list-color-function reformulation, Dirac's theorem and
-Donner's theorem.  Every declaration below is stated exactly as in the library; the theorems are
-left with a placeholder proof, so that the comparator can check a submission's statements against
-these.  Compiling this file is *expected* to report "declaration uses `sorry`" — that is the point.
+together with the chromatic-polynomial / list-color-function reformulation, Dirac's theorem,
+Rubin's theorem and Donner's theorem.  Every declaration below is stated exactly as in the library;
+the theorems are left with a placeholder proof, so that the comparator can check a submission's
+statements against these.  Compiling this file is *expected* to report "declaration uses `sorry`" —
+that is the point.
 
 `Submission.lean` supplies the real definitions and proofs by importing `ListColoring`.
 
@@ -29,46 +30,71 @@ nothing else is claimed here:
 6. `isChordal_iff_exists_cliqueTower` — **Dirac**: chordal ⟺ a simplicial elimination ordering
 7. `ecc_closePath_of_two_le` — **Kirov–Naimi, Theorem 1**: every cycle is enumeratively
    chromatic-choosable at `n`
-8. `choosable_two_of_rubinFamily` — **Rubin**, the direction that is proved
-9. `ecc_two_iff_of_rubin_hard` — **Kirov–Naimi, Theorem 2**
+8. `rubinTheorem` — **Rubin**: the `2`-choosable connected graphs, classified by their core
+9. `ecc_two_iff` — **Kirov–Naimi, Theorem 2**, with no hypothesis beyond connectivity
 10. `exists_ecc_forall_ge` — **Donner**: every graph is enumeratively chromatic-choosable at `n` for
     large `n`
 
 `ERT.colorable` is the tenth; on its own `not_choosable` says only that `χ_ℓ > n`, and the point of
 the example is the *separation*.
 
+Claims 8 and 9 replace the two weaker ones this file used to carry.  Rubin's theorem is now proved
+in the library rather than borrowed, so `ListColoring.choosable_two_of_rubinFamily` (its `⟸` half,
+all that was provable before) is subsumed by claim 8, and `SimpleGraph.ecc_two_iff_of_rubin_hard`
+(Theorem 2 with Rubin's `⟹` as a hypothesis and the core alternatives left as abstract `Prop`s) is
+superseded by claim 9: it understated what is proved, and abstract `CoreIsVertex`/`CoreIsTheta`
+variables say nothing about cores, so certifying it certified less than the library has.  Both are
+still in the library, in `ListColoring/Rubin.lean`, as a record of the shape of the loan that was
+outstanding; neither is claimed here.  `RubinFamily`, which this file carried only in order to state
+the first of them, is deleted rather than delisted.
+
 ## What is defined
 
-`definition_names` is exactly what those ten statements need, computed rather than curated: the 18
-definitions reachable from their types, plus the 16 notions those 18 are written in terms of, so
+`definition_names` is exactly what those ten statements need, computed rather than curated: the 22
+definitions reachable from their types, plus the 24 notions those 22 are written in terms of, so
 that the file can be read without the library.  No definition is here for any other reason; in
-particular only four are `Fintype`/`DecidableEq`/`DecidableRel` instances, and each of the four
-occurs in the *type* of a listed theorem — `(closePath k).ECCAt (m + 2)` does not typecheck
-without them.
+particular only six are `Fintype`/`DecidableEq`/`DecidableRel` instances.  Four of the six occur in
+the *type* of a listed theorem — `(closePath k).ECCAt (m + 2)` does not typecheck without them — and
+the other two, `instDecidableRelPathG` and `instDecidableRelTheta`, are what `CoreIsVertex` and
+`CoreIsK23` need in order to name `pathG 0` and `theta 1` as graphs at all.
 
 Most definitions carry their **real bodies**, so the file reads as a specification; the comparator
 never inspects the body of a `definition_names` entry.  Placeholders remain only where the body is
 not a statement: the graph constructions built as `SimpleGraph` structure instances with
-tactic-proved `symm`/`loopless` fields (`coneOn`, `addPendant`, `addPendantPair`), and the four
-decidability instances.  Two bodies are forced rather than chosen — `ListAssignment`, whose values
+tactic-proved `symm`/`loopless` fields (`coneOn`, `addPendant`, `addPendantPair`), and the
+decidability instances — the six listed ones, and `decidableRelFromEdgeSetCoe` below.  Ten
+declarations in all, so this file's twenty `sorry`s are ten theorems and ten placeholders.  Two
+bodies are forced rather than chosen — `ListAssignment`, whose values
 are applied as functions in other statements, and `ThetaV`, whose instances are found by unfolding
 the abbreviation.  Two declarations appear without being listed, because a *body* rather than a
 statement needs them: `instDecidableIsProperColoring` (so `colorings` can be a `Finset.filter`) and
 `decidableRelFromEdgeSetCoe` (so `compCount` can count components).
+
+One body is load-bearing in a way no other is.  `rubinTheorem`'s type is the bare constant
+`RubinTheorem`, so **the statement of Rubin's theorem is the body of `RubinTheorem`** — unfolding it
+is the only way to see what claim 8 says.  That body is therefore reproduced verbatim, and the
+library is where it is checked: the comparator matches `RubinTheorem` by type, which is `Prop`.
 
 ## How to read it
 
 The nine sections follow the path the book's Part I takes.  Sections that no longer carry a claim
 still carry the story: §1 introduces the vocabulary the rest is written in, and §6 is prose only,
 pointing at the machinery in the library.  Everything the library proves and this file does not
-claim — Kirov–Naimi's Lemmas 1–6, the three regimes, the explicit threshold `n > 2^{|E|}`, Rubin's
-`⟸` for each family separately, Dirac's lemma, the chromatic polynomial of a cycle in closed form —
-is still there, under the names given in the section headers below.
+claim — Kirov–Naimi's Lemmas 1–6, the three regimes, the explicit threshold `n > 2^{|E|}`, Dirac's
+lemma, the chromatic polynomial of a cycle in closed form, the `2`-choosable generalized theta
+graphs of arbitrary arity (`ListColoring.choosable_two_gtheta_iff`) — is still there, under the
+names given in the section headers below.  The last of those was weighed as an eleventh claim and
+left out on this file's own rule: its statement is written in `ListColoring.ValidArms` and
+`ListColoring.GoodArms`, a *normalization convention* on the list of arm lengths (sorted, at most
+one arm of length one) rather than mathematics, and a keystone should not drag a proof's
+bookkeeping into the certified surface.
 
-Two places where Lean fought the teaching order.  `ListAssignment` and `constList` are declared in
+Three places where Lean fought the teaching order.  `ListAssignment` and `constList` are declared in
 §1 although they belong to §3, because `col` is defined on a list assignment and the palette count
-`colConst` is its special case.  And the chromatic polynomial sits at §2, before lists, which pulls
-`compCount` and the `fromEdgeSet` decidability instance forward with it.
+`colConst` is its special case.  The chromatic polynomial sits at §2, before lists, which pulls
+`compCount` and the `fromEdgeSet` decidability instance forward with it.  And `TowerData` and
+`pendantTower` — the core reduction that §7 and §8 are stated with — are declared in §5 beside
+`addPendant`, because iterated `addPendant` is all they are.
 -/
 
 open Finset
@@ -308,6 +334,14 @@ recursive `A_k`, `B_k` of `ListColoring.pathA`/`pathB` (`colConst_closePath`), t
 rotation (`rotIso`, `ecc_closePath_two`), and the closed form
 `(n-1)^v + (-1)^v (n-1)` for the cycle on `v` vertices (`colConst_closePath_chromatic`,
 `listColorFunction_closePath_chromatic`).  Only the theorem itself is claimed.
+
+The *same* attachment, iterated, is the **pendant tower**: the reading of a graph as its core with
+degree-one vertices grown back on, which §7 and §8 are stated with.  `TowerData` and `pendantTower`
+are declared here, next to `addPendant`, because that is all they are made of; Kirov–Naimi's
+**Lemma 5** (`SimpleGraph.ecc_pendantTower_iff`) and its choosability analogue
+(`SimpleGraph.choosable_pendantTower_iff`) are the two facts about them, and are in the library.
+The vertex type they run over is §4's `TowerV`, shared with the cone towers: `Option` iterated `k`
+times, whatever the new vertices are attached to.
 -/
 
 /-- `G` with one new pendant vertex `none`, attached to `v`. -/
@@ -315,6 +349,26 @@ def addPendant {V : Type*} (G : SimpleGraph V) (v : V) : SimpleGraph (Option V) 
 
 /-- `G` with one new vertex `none`, joined to both `u` and `v`. -/
 def addPendantPair {V : Type*} (G : SimpleGraph V) (u v : V) : SimpleGraph (Option V) := sorry
+
+section
+
+universe u
+
+/-- The data specifying a tower of `k` pendant attachments: for each step, the already-existing
+vertex at which the new pendant vertex is attached. -/
+def TowerData (V : Type u) : ℕ → Type u
+  | 0 => PUnit
+  | k + 1 => TowerData V k × TowerV V k
+
+/-- **A tower of pendant attachments.** `pendantTower G k d` is the graph obtained from `G` by
+attaching `k` pendant vertices one after another, the `i`-th of them at the vertex recorded in `d`
+(which may itself be one of the earlier new vertices). -/
+def pendantTower {V : Type u} (G : SimpleGraph V) :
+    (k : ℕ) → TowerData V k → SimpleGraph (TowerV V k)
+  | 0, _ => G
+  | k + 1, d => (pendantTower G k d.1).addPendant d.2
+
+end
 
 end SimpleGraph
 
@@ -346,6 +400,8 @@ def pathG : (k : ℕ) → SimpleGraph (PathV k)
   | 0 => ⊥
   | k + 1 => (pathG k).addPendant (pathEnd k)
 
+instance instDecidableRelPathG : (k : ℕ) → DecidableRel (pathG k).Adj := sorry
+
 /-- The path of length `k` closed up: `pathG k` together with one extra edge joining its two
 terminal vertices.  For `k ≥ 2` this is the cycle on `k + 1` vertices. -/
 def closePath : (k : ℕ) → SimpleGraph (PathV k)
@@ -376,19 +432,30 @@ has the shape dictated by the parity of `k` — with the predicates `ListColorin
 `ListColoring.pathSplitIso`.
 -/
 
-/-! ### 7. `2`-choosability: Rubin's list
+/-! ### 7. `2`-choosability: Rubin's theorem
 
 Which graphs are `2`-choosable? Choosability is inherited by subgraphs
 (`SimpleGraph.Choosable.mono`, `.comap`) and — the key reduction — is unchanged by attaching or
-removing pendant vertices (`SimpleGraph.choosable_pendantTower_iff`, with the `pendantTower`
-construction), so a connected graph may be replaced by its **core**. Rubin's theorem says the
-`2`-choosable cores are exactly a single vertex, an even cycle, and the theta graphs `θ_{2,2,2m}`;
-`RubinFamily` is that list.
+removing pendant vertices (`SimpleGraph.choosable_pendantTower_iff`), so a connected graph may be
+replaced by its **core**: what is left after deleting degree-one vertices until none remain, or,
+read backwards, the graph of which `G` is a `pendantTower`.  `CoreIs` spells that out, and the
+alternatives `CoreIsVertex`, `CoreIsEvenCycle`, `CoreIsTheta` are the three cases Rubin's theorem
+names.
 
-The `⟸` direction is claimed here.  Its three cases are in the library: the even-cycle case is a
-corollary of Theorem 1 (`ListColoring.choosable_two_closePath_of_odd`) and the theta case is
-`ListColoring.choosable_theta`.  The `⟹` direction is the one piece of the story no proof assistant
-has, and §8 borrows it explicitly.
+Rubin's theorem says the `2`-choosable cores are exactly a single vertex, an even cycle, and the
+theta graphs `θ_{2,2,2m}`.  **It is proved in this development**, and claimed here in full: both
+directions, with the cases concrete rather than abstract propositions.  The `⟸` half is assembled
+from Theorem 1 (`ListColoring.choosable_two_closePath_of_odd`) and
+`ListColoring.choosable_theta`; the `⟹` half runs Rubin's own argument — pass to the core
+(`ListColoring.hasCore`), which has minimum degree at least `2`, and extract from
+`ListColoring.rubin_structure` either a spanning even cycle or a labelled `θ_{2,2,2m}`
+(`ListColoring.exists_iso_closePath_of_two_regular`,
+`ListColoring.exists_iso_theta_of_thetaData`).  The arity-general input to that argument is
+`ListColoring.choosable_two_gtheta_iff`, in the library.
+
+`instDecidableRelPathG` and `instDecidableRelTheta` are in the list for this section's sake alone:
+`CoreIs G H` asks for a decidable `H`, and `pathG 0` and `theta m` are the `H`s that `CoreIsVertex`,
+`CoreIsTheta` and §8's `CoreIsK23` name.
 -/
 
 /-- The vertex type of `θ_{2,2,2m}`. -/
@@ -399,46 +466,105 @@ def theta (m : ℕ) : SimpleGraph (ThetaV m) :=
   coneOn (coneOn (pathG (2 * m)) {pathStart (2 * m), pathEnd (2 * m)})
     {some (pathStart (2 * m)), some (pathEnd (2 * m))}
 
-/-- A graph is on **Rubin's list** when it is a single vertex, an even cycle, or `θ_{2,2,2m}`,
-stated up to isomorphism. -/
-def RubinFamily {V : Type} [Fintype V] [DecidableEq V]
-    (G : SimpleGraph V) [DecidableRel G.Adj] : Prop :=
-  Subsingleton V ∨
-  (∃ k, Odd k ∧ 2 ≤ k ∧ Nonempty (G ≃g closePath k)) ∨
-  (∃ m, 1 ≤ m ∧ Nonempty (G ≃g theta m))
+instance instDecidableRelTheta : (m : ℕ) → DecidableRel (theta m).Adj := sorry
 
-/-- **Rubin's theorem, ⟸ direction: every graph on Rubin's list is `2`-choosable.** -/
-theorem choosable_two_of_rubinFamily {V : Type} [Fintype V] [DecidableEq V]
-    (G : SimpleGraph V) [DecidableRel G.Adj] (h : RubinFamily G) : G.Choosable 2 := sorry
+/-- **The core of `G` is `H`**: `G` is `H` with a finite tower of pendant vertices attached.
+
+Kirov–Naimi's core is obtained from `G` by deleting vertices of degree one until none remain. Read
+in reverse, that says `G` is built from its core by attaching pendant vertices one at a time, each
+one at an arbitrary vertex of the graph built so far — which is `SimpleGraph.pendantTower`. The
+statement is up to isomorphism because the tower lives on its own vertex type. -/
+def CoreIs {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+    (G : SimpleGraph V) [DecidableRel G.Adj] (H : SimpleGraph W) [DecidableRel H.Adj] : Prop :=
+  ∃ (k : ℕ) (d : TowerData W k), Nonempty (G ≃g pendantTower H k d)
+
+/-- **The core of `G` is a single vertex.** `ListColoring.pathG 0` is the one-vertex graph — a
+path of length zero. Equivalently, `G` is a tree. First alternative of Theorem 2, and of Rubin's
+theorem. -/
+def CoreIsVertex {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V)
+    [DecidableRel G.Adj] : Prop := CoreIs G (pathG 0)
+
+/-- **The core of `G` is an even cycle**, i.e. a cycle on an even number of vertices. Since
+`closePath k` has `k + 1` vertices, that is `Odd k`. Second alternative of Rubin's theorem. -/
+def CoreIsEvenCycle {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V)
+    [DecidableRel G.Adj] : Prop := ∃ k, Odd k ∧ 2 ≤ k ∧ CoreIs G (closePath k)
+
+/-- **The core of `G` is `θ_{2,2,2m}` for some `m ≥ 1`.** Third alternative of Rubin's theorem. -/
+def CoreIsTheta {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V)
+    [DecidableRel G.Adj] : Prop := ∃ m, 1 ≤ m ∧ CoreIs G (theta m)
+
+/-- **Rubin's theorem.**
+
+> A connected graph is `2`-choosable iff its core is a single vertex, an even cycle, or
+> `θ_{2,2,2m}` for some `m ≥ 1`.
+
+Due to **A. L. Rubin**, and published in P. Erdős, A. L. Rubin and H. Taylor, *Choosability in
+graphs*, Congr. Numer. **26** (1980), 125–157, pp. 131–134.  This `Prop` *is* the statement of
+claim 8: the theorem below has it as its bare type. -/
+def RubinTheorem : Prop :=
+  ∀ {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V) [DecidableRel G.Adj],
+    G.Connected → (G.Choosable 2 ↔ (CoreIsVertex G ∨ CoreIsEvenCycle G ∨ CoreIsTheta G))
+
+/-- **Rubin's theorem, proved.**  Kirov–Naimi cite it; this development proves it, so nothing about
+`2`-choosability is borrowed and Theorem 2 below needs no hypothesis.  Its statement is the body of
+`RubinTheorem` above; there is no other place to read it. -/
+theorem rubinTheorem : RubinTheorem := sorry
+
+/-! ### 8. Enumerative chromatic-choosability at `2`: Theorem 2
+
+The classification, and the end of the paper. `K₂,₃ = θ_{2,2,2}` is enumeratively
+chromatic-choosable at `2` (Kirov–Naimi's Lemma 6, `SimpleGraph.ecc_K23`) while `θ_{2,2,2m}` is not
+for `m ≥ 2` (`ListColoring.not_ecc_theta`); those two facts, plus §5's cycles and §4's chordal
+graphs and the core reduction (Lemma 5, `SimpleGraph.ecc_pendantTower_iff`), turn §7's list of the
+`2`-choosable graphs into a list of the enumeratively chromatic-choosable ones.
+
+Where Rubin's theorem says "even cycle", Theorem 2 says "cycle": *every* cycle is enumeratively
+chromatic-choosable at `2`, and the odd ones get there by not being `2`-colourable at all.  That is
+the fourth alternative, `HasOddCycle`, and the bridge to it — a graph is `2`-colourable iff it
+contains no odd cycle — is `ListColoring.hasOddCycle_of_not_colorable_two`, proved from scratch
+here because Mathlib records the bipartite characterization as an open `TODO`.
+-/
+
+/-- **The core of `G` is a cycle.** `closePath k` is the cycle on `k + 1` vertices, and `2 ≤ k`
+says it really is a cycle rather than a point or a single edge. No parity restriction: Theorem 2
+says "is a cycle", not "is an even cycle". Second alternative of Theorem 2. -/
+def CoreIsCycle {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V)
+    [DecidableRel G.Adj] : Prop := ∃ k, 2 ≤ k ∧ CoreIs G (closePath k)
+
+/-- **The core of `G` is `K₂,₃`.** `ListColoring.theta 1` is `θ_{2,2,2}`, which is `K₂,₃`; the
+isomorphism is `ListColoring.k23IsoThetaOne`. Third alternative of Theorem 2. -/
+def CoreIsK23 {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V)
+    [DecidableRel G.Adj] : Prop := CoreIs G (theta 1)
+
+/-- `G` **contains** a copy of `K`: an injection of the vertices of `K` into those of `G` carrying
+edges to edges. Only a *subgraph* is asked for, not an induced one, which is all that a
+choosability argument ever needs. -/
+def Contains {V W : Type*} (G : SimpleGraph V) (K : SimpleGraph W) : Prop :=
+  ∃ f : W → V, Function.Injective f ∧ ∀ a b, K.Adj a b → G.Adj (f a) (f b)
+
+/-- **`G` contains an odd cycle**: a subgraph copy of a cycle on an odd number of vertices.
+
+`closePath k` is the cycle on `k + 1` vertices, so `Even k` is what makes it odd. Fourth
+alternative of Theorem 2. -/
+def HasOddCycle {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V)
+    [DecidableRel G.Adj] : Prop := ∃ k, Even k ∧ 2 ≤ k ∧ Contains G (closePath k)
+
+/-- **Theorem 2 of Kirov–Naimi, with no hypothesis beyond connectivity.**
+
+> A connected graph is 2-monophilic iff its core is a single vertex, is a cycle, is `K₂,₃`, or
+> contains an odd cycle.
+
+That is the paper's wording; "2-monophilic" is `SimpleGraph.ECCAt G 2`, *enumeratively
+chromatic-choosable at `2`*.  Kirov–Naimi, Ars Combin. **124** (2016), 329–340
+(arXiv:1004.5183), Theorem 2.  The one result they borrow — Rubin's theorem — is claim 8 above
+rather than a hypothesis, so this is the theorem as they state it. -/
+theorem ecc_two_iff {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V)
+    [DecidableRel G.Adj] (hconn : G.Connected) :
+    G.ECCAt 2 ↔ CoreIsVertex G ∨ CoreIsCycle G ∨ CoreIsK23 G ∨ HasOddCycle G := sorry
 
 end ListColoring
 
 namespace SimpleGraph
-
-/-! ### 8. Enumerative chromatic-choosability at `2`: Theorem 2
-
-The classification. `K₂,₃ = θ_{2,2,2}` is enumeratively chromatic-choosable at `2` (Kirov–Naimi's
-Lemma 6, `SimpleGraph.ecc_K23`) while `θ_{2,2,2m}` is not for `m ≥ 2`
-(`ListColoring.not_ecc_theta`); those two facts, plus §5's cycles and §4's chordal graphs and the
-core reduction (Lemma 5, `SimpleGraph.ecc_pendantTower_iff`), turn Rubin's list into a list of the
-graphs that are enumeratively chromatic-choosable at `2`.
-
-Rubin's `⟹` direction enters as an explicit hypothesis, with the three alternatives kept abstract
-so that exactly what is borrowed is visible in the signature and nothing about cores can be
-smuggled in.
--/
-
-/-- **Theorem 2 of Kirov–Naimi, borrowing only the hard direction of Rubin's theorem.** -/
-theorem ecc_two_iff_of_rubin_hard {V : Type*} [Fintype V] [DecidableEq V]
-    {G : SimpleGraph V} [DecidableRel G.Adj]
-    {CoreIsVertex CoreIsEvenCycle : Prop} {CoreIsTheta : ℕ → Prop}
-    (rubin : G.Choosable 2 →
-      CoreIsVertex ∨ CoreIsEvenCycle ∨ ∃ m, 1 ≤ m ∧ CoreIsTheta m)
-    (hvertex : CoreIsVertex → G.ECCAt 2)
-    (hcycle : CoreIsEvenCycle → G.ECCAt 2)
-    (hK23 : CoreIsTheta 1 → G.ECCAt 2)
-    (htheta : ∀ m, 2 ≤ m → CoreIsTheta m → ¬ G.ECCAt 2) :
-    G.ECCAt 2 ↔ ¬ G.Colorable 2 ∨ CoreIsVertex ∨ CoreIsEvenCycle ∨ CoreIsTheta 1 := sorry
 
 /-! ### 9. Every graph, eventually
 

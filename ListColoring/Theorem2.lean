@@ -364,7 +364,7 @@ def CoreIsTheta : Prop := ∃ m, 1 ≤ m ∧ CoreIs G (theta m)
 > `θ_{2,2,2m}` for some `m ≥ 1`.
 
 Due to **A. L. Rubin**, and published in P. Erdős, A. L. Rubin and H. Taylor, *Choosability in
-graphs*, Congr. Numer. **26** (1979), 125–157. Kirov–Naimi's proof of Theorem 2 uses it.
+graphs*, Congr. Numer. **26** (1980), 125–157. Kirov–Naimi's proof of Theorem 2 uses it.
 
 It is **proved in this development**, as `ListColoring.rubinTheorem` in
 `ListColoring/RubinProof.lean`. This file cannot name that term — every file the proof is built from
@@ -507,7 +507,7 @@ Mudrock, Nguyen and Whatley (arXiv:2605.10861, 2026), there attributed to [1, 6,
 Kirov–Naimi as [16].
 
 The single hypothesis `rubin` is **Rubin's theorem** (A. L. Rubin, in Erdős–Rubin–Taylor,
-*Choosability in graphs*, Congr. Numer. **26** (1979), 125–157), which is proved in this
+*Choosability in graphs*, Congr. Numer. **26** (1980), 125–157), which is proved in this
 development, as `ListColoring.rubinTheorem` in `ListColoring/RubinProof.lean`. It is the *first
 explicit argument*, and `ecc_two_iff_of_rubin ListColoring.rubinTheorem` is therefore the
 unconditional theorem — that is exactly what `ListColoring.ecc_two_iff` is. It cannot be
