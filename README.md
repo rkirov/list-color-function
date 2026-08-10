@@ -26,6 +26,7 @@ choosability, no DP-coloring, no chordality, and no Brooks or Vizing. Everything
 | `book/` | a Verso textbook companion (see `book/README.md`) |
 | `plan.md` | milestones, design decisions, progress log, and findings |
 | `references.md` | verified bibliography, with corrections to the literature |
+| `provenance.md` | **credit ledger** — which theorem in which paper each result is, and what is not claimed |
 | `survey.md` | the original scoping report that started the project |
 
 ## Building
