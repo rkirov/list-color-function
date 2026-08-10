@@ -281,6 +281,84 @@ see it. The correct structural input is therefore
 
 with the classification then covering `Θ_{k₁,…,k_n}` for all `n ≥ 3`, not just `n = 3`.
 
+### …and that two-branch statement is *also* false. `K₃,₃ − e` refutes it
+
+**Third structural claim written here, third refutation.** An exhaustive sweep of all bipartite,
+2-connected, minimum-degree-`≥ 2`, non-cycle graphs on `≤ 9` vertices — **129,073** of them; only
+bipartite matters, since a non-bipartite graph is already killed by its odd cycle — found **4,162**
+that satisfy neither branch. The smallest is `K₃,₃` minus an edge, on **six** vertices:
+
+* 8 edges, degree sequence `3,3,2,3,3,2`, 2-connected, bipartite, not a cycle;
+* **four** vertices of degree `≥ 3`, whereas a generalized theta has exactly two — so it is not one;
+* girth 4, so two cycles meeting in at most one vertex would need `≥ 4 + 4 − 1 = 7` vertices, and
+  there are only six — so that branch is unreachable, not merely unused.
+
+Independently re-verified here by brute force over all injective edge-preserving maps. The
+best-known member of the 4,162 is the **subdivision of `K₄`** (10 vertices, 12 edges, 4 branch
+vertices, 7 cycles, no two of which meet in `≤ 1` vertex), which Rubin's theorem says is not
+2-choosable while neither branch reaches it.
+
+**"Contains a generalized theta" was the wrong predicate.** `K₃,₃ − e` contains `θ(1,3,3)` *and*
+`θ(2,2,2)`; `K₂,₄` contains only `θ(2,2,2)`. Containing *some* generalized theta says nothing —
+what matters is containing a **bad** one.
+
+### The corrected alternative — empirical, not proved
+
+Adding a third branch closes every one of the 129,073 cases:
+
+> connected, minimum degree `≥ 2`, not a cycle ⟹ **is** a generalized theta `Θ(k₁,…,k_n)`,
+> **or** contains a **dumbbell** (two cycles joined by a path, meeting in at most one vertex),
+> **or** contains a theta `θ(a,b,c)` whose shape is *not* `(2,2,\text{even})`.
+
+Coverage over the sweep: dumbbell 122,494 / bad theta 4,162 / generalized theta 2,417.
+`K₃,₃ − e` lands in the middle branch via `θ(1,3,3)`, subdivided `K₄` via `θ(2,4,4)` — both already
+proved non-2-choosable by `Monophilic.not_choosable_two_thetaGen`.
+
+**This is an empirical observation from `n ≤ 9`, not a theorem.** Given the track record above,
+it should be checked to `n = 10–12` (nauty) and hand-verified *before* any Lean effort is spent on
+it. Deciding the correct statement is step 0, and it is not done.
+
+### Why "two cycles meeting in at most one vertex" needs the connecting path
+
+That phrase is *false* as a standalone non-2-choosability criterion: two **disjoint** even cycles
+are 2-choosable, since each is and colourings of a disjoint union are independent
+(`#guard`: `C₄ ⊔ C₄` has 4 colourings from the constant list `{1,2}`). Connectivity supplies the
+path in Rubin's setting, so the proved statement is about the **dumbbell**, with path length `0`
+degenerating to the figure-eight. `Monophilic.not_choosable_two_of_dumbbell`.
+
+A pleasant surprise in that proof: **no parity case split is needed.** The forcing chain kills a
+prescribed colour at a cycle's base point regardless of the cycle's parity, so there is no
+"assume both cycles are even" branch.
+
+### Mathlib has no vertex connectivity at all
+
+Established by whole-tree `grep -w`, not inference. **Zero hits** for `IsKConnected`,
+vertex connectivity, cut vertex / articulation, blocks or block-cut trees, biconnectivity, ear
+decomposition, Menger, subdivision, topological minor, or graph minor. (`IsBlock` is group actions;
+`IsSeparator` is category theory; `IsMinor` is matroids.) Two sections captioned *"results about
+2-connected components of a graph, but without naming them"* contain only edge lemmas.
+
+What *does* exist: **edge** connectivity (`IsEdgeConnected`, `IsEdgeReachable`, `IsBridge`), walks
+with real surgery (`takeUntil`, `dropUntil`, `rotate`, `bypass`, `toSubgraph`), `IsPath`/`IsCycle`,
+girth, `minDegree`/`maxDegree`, `cycleGraph` with `cycleGraph_isContained_iff`, and a rich
+`Acyclic.lean`. `Mathlib/Combinatorics/Graph/` is a real multigraph framework but has **no** walks,
+cycles, degrees or connectivity, so it cannot carry this either.
+
+**Cost estimate for step 4, from scratch:** `IsTwoConnected` and its API including the Menger-flavoured
+"any two vertices lie on a common cycle" (~400–800 lines); Whitney's ear decomposition or the
+H-path/fan lemma under it (~600–1200); the branch-vertex decomposition, which is the painful part
+because the textbook move — suppress degree-2 vertices to get a multigraph of minimum degree `≥ 3` —
+has *no* counterpart here (~600–1500); then the case analysis. **Total ≈ 2,000–4,000 lines of new
+Lean**, on top of first establishing a correct structural statement.
+
+### Cheap next step, worth doing regardless
+
+Two small bridges (~150–250 lines) make what already exists composable in Mathlib's own vocabulary:
+turn a `c : G.Walk v v` with `c.IsCycle` into the index-sequence form
+`not_choosable_two_of_dumbbell` wants (`Walk.getVert`, `Walk.adj_getVert_succ`, `getVert_length`,
+`IsCycle.support_nodup`), and show a shortest path between two vertex sets is internally disjoint
+from both. Then "connected + two cycles meeting in ≤ 1 vertex ⟹ not 2-choosable" is a corollary.
+
 **The coded `ThetaAlternative` never absorbed this correction, and is false.** `Monophilic.ThetaAlternative`
 in `RubinHard.lean` offers only *three-arm* thetas (`thetaGen a b c`), so `K₂,₄` refutes it — the very
 graph the paragraph above was written about. Machine-checked, by brute force over all injective

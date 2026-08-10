@@ -90,7 +90,20 @@ are the parts a reader could not get from the papers.
   Rubin's theorem into a structural half and a colouring half. `K₂,₄` refutes it. It has been
   deleted. This is a defect in our scaffolding and **not** an error in Kirov–Naimi, which cites
   Rubin's theorem rather than proving it. Recorded in `plan.md`.
+* **Two further structural claims of ours, both refuted.** The repair to `ThetaAlternative` —
+  *connected, min degree `≥ 2`, not a cycle ⟹ contains a generalized theta, or two cycles meeting
+  in at most one vertex* — is **also false**, refuted by `K₃,₃ − e` on six vertices; 4,162 of the
+  129,073 bipartite 2-connected non-cycle graphs on `≤ 9` vertices satisfy neither branch. And
+  *two cycles meeting in at most one vertex are not 2-choosable* is false without a connecting
+  path, since two **disjoint** even cycles are 2-choosable. Both are defects in this repository's
+  scaffolding; neither appears in Kirov–Naimi. `plan.md` records the corrected three-branch
+  alternative, which is **empirical and unproved**.
+* **`Monophilic.not_choosable_two_of_dumbbell`** — two cycles joined by a path are not 2-choosable.
+  A standard step of Rubin's argument, proved here. Mildly notable: it needs **no parity case
+  split**, because the forcing chain kills a prescribed colour at a cycle's base point regardless
+  of the cycle's parity.
 * **Zero errors found in Kirov–Naimi.** Stated positively because it is the more useful fact.
+  Every refuted claim in this project has been one of ours.
 
 ## 4. A note on the name
 

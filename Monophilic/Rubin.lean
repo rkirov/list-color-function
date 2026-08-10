@@ -43,20 +43,30 @@ false**, and the mis-statement was this repository's, not the literature's. `K�
 minimum degree `2` and is not a cycle, yet every theta subgraph of it is the *good* `θ_{2,2,2}`; it
 is nonetheless not `2`-choosable. The error was reading "theta" as the three-path graph. The
 structural object is the **generalized** theta `Θ(k₁,…,k_n)` — `n` internally disjoint paths between
-two vertices, `n` arbitrary — and `K₂,₄` is the one with four paths of length `2`. The corrected
-statement is
+two vertices, `n` arbitrary — and `K₂,₄` is the one with four paths of length `2`.
 
-> connected, minimum degree `≥ 2`, not a cycle ⟹ contains a **generalized** theta with `n ≥ 3`
-> paths, **or** two cycles meeting in at most one vertex.
+**That correction was itself insufficient**, and is recorded here so the next reader does not spend
+the effort a third time. The natural repair — *connected, minimum degree `≥ 2`, not a cycle ⟹
+contains a generalized theta, or two cycles meeting in at most one vertex* — is **also false**.
+`K₃,₃` minus an edge refutes it on six vertices: four of its vertices have degree `≥ 3` whereas a
+generalized theta has exactly two, and its girth is `4`, so two cycles meeting in at most one vertex
+would need seven vertices. An exhaustive sweep of the 129,073 bipartite 2-connected non-cycle graphs
+on `≤ 9` vertices finds 4,162 such graphs.
 
-Given that, the rest is: an odd cycle is not `2`-colourable (hence not `2`-choosable), choosability
-passes to subgraphs (`SimpleGraph.Choosable.mono`, `SimpleGraph.Choosable.comap`), two cycles
-meeting in at most one vertex are not `2`-choosable, and `Θ(k₁,…,k_n)` is `2`-choosable exactly when
-`n = 3` and the lengths are `(2,2,\text{even})`. Mathlib has no block or ear decomposition, which is
-what extracting the generalized theta needs.
+The lesson is that *containing* a generalized theta is the wrong predicate: `K₃,₃ − e` contains both
+`θ(1,3,3)` and `θ(2,2,2)`, and `K₂,₄` contains only `θ(2,2,2)`. What matters is containing a **bad**
+one. The alternative that closes all 129,073 cases adds a third branch — *is* a generalized theta,
+**or** contains a dumbbell, **or** contains a `θ(a,b,c)` of shape other than `(2,2,\text{even})` —
+but that is an **empirical observation, not a theorem**, and `plan.md` records what would be needed
+to establish it.
 
-The three-path case of that last classification is **proved**, in `Monophilic.ThetaClass` as
-`Monophilic.choosable_two_thetaGen_iff`.
+Given a correct structural statement, the rest is in place: an odd cycle is not `2`-colourable
+(hence not `2`-choosable), choosability passes to subgraphs (`SimpleGraph.Choosable.mono`,
+`SimpleGraph.Choosable.comap`), a **dumbbell** is not `2`-choosable
+(`Monophilic.not_choosable_two_of_dumbbell` — note the connecting path is load-bearing, since two
+*disjoint* even cycles are `2`-choosable), and `θ(a,b,c)` is `2`-choosable exactly for shape
+`(2,2,\text{even})` (`Monophilic.choosable_two_thetaGen_iff`, **proved**). What is missing is the
+extraction, and Mathlib has no vertex connectivity, blocks or ear decomposition to build it on.
 
 ## Main results
 
