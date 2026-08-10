@@ -192,6 +192,35 @@ private lemma arm_facts {a b c : ℕ} (hsum : 5 ≤ a + b + c) (F : ℕ → ℕ)
   · subst hm
     exact hadj _ _ (by omega) (by omega) (by omega) (harm _ _ (armStepB_direct o _ _))
 
+
+/-! ### Combining the three arms -/
+
+/-- The endgame for a shape with two arms of length `≥ 3`: the first arm decides, by its parity,
+which diagonal of branch colors survives, and the other two arms kill the two survivors. -/
+private lemma bad_finish {a x y : ℕ} (ha : 1 ≤ a) (hx : x = 1 ∨ x = 2) (hy : y = 1 ∨ y = 2)
+    (key1 : x = y ↔ (a - 1) % 2 = 1)
+    (hb2 : x = 1 → y ≠ (if a % 2 = 1 then 2 else 1))
+    (hb3 : x = 2 → y ≠ (if a % 2 = 1 then 1 else 2)) : False := by
+  rcases hx with hA | hA
+  · have hbk := hb2 hA
+    by_cases hpar : a % 2 = 1
+    · rw [if_pos hpar] at hbk; omega
+    · rw [if_neg hpar] at hbk; omega
+  · have hbk := hb3 hA
+    by_cases hpar : a % 2 = 1
+    · rw [if_pos hpar] at hbk; omega
+    · rw [if_neg hpar] at hbk; omega
+
+/-- The endgame for a shape with `b = 2`: the three arms do not all have the same parity, so one
+of them forces the two branch colors equal and another forces them different. -/
+private lemma bad_finish_small {a b c x y : ℕ} (ha : 1 ≤ a) (hab : a ≤ b) (hb : b = 2)
+    (key1 : x = y ↔ (a - 1) % 2 = 1) (key2 : x = y ↔ (b - 1) % 2 = 1)
+    (key3 : x = y ↔ (c - 1) % 2 = 1) (hcodd : a = 2 → c % 2 = 1) : False := by
+  have heq : x = y := key2.mpr (by omega)
+  rcases (show a = 1 ∨ a = 2 from by omega) with h | h
+  · have := key1.mp heq; omega
+  · have := key3.mp heq; have := hcodd h; omega
+
 /-! ### The witness assignment, read on indices -/
 
 /-- `Monophilic.thetaBadLists` read as a function of the *index* of the vertex. -/
@@ -225,7 +254,6 @@ theorem card_thetaBadLists (a b c : ℕ) (v : TGV a b c) : (thetaBadLists a b c 
 
 /-! ### No coloring from the witness -/
 
-set_option maxHeartbeats 1600000 in
 /-- **The witness assignment leaves no coloring at all**, stated entirely on indices: `F` is the
 would-be coloring read through the index of a vertex. -/
 private lemma thetaBad_no_index_coloring {a b c : ℕ} (ha : 1 ≤ a) (hab : a ≤ b) (hbc : b ≤ c)
@@ -307,25 +335,7 @@ private lemma thetaBad_no_index_coloring {a b c : ℕ} (ha : 1 ≤ a) (hab : a �
         (fun j => F (a + b - 2 + j)) hL3 u1 h0
       rw [← hend]
       exact Ne.symm (u3 (by omega))
-    rcases hα with hA | hA
-    · have hbk := hblock2 hA
-      by_cases hpar : a % 2 = 1
-      · rw [if_pos hpar] at hbk
-        have hne : ¬ (F (a + b + c - 3) = F (a + b + c - 2)) := fun h => by
-          have := key1.mp h; omega
-        omega
-      · rw [if_neg hpar] at hbk
-        have := key1.mpr (show (a - 1) % 2 = 1 from by omega)
-        omega
-    · have hbk := hblock3 hA
-      by_cases hpar : a % 2 = 1
-      · rw [if_pos hpar] at hbk
-        have hne : ¬ (F (a + b + c - 3) = F (a + b + c - 2)) := fun h => by
-          have := key1.mp h; omega
-        omega
-      · rw [if_neg hpar] at hbk
-        have := key1.mpr (show (a - 1) % 2 = 1 from by omega)
-        omega
+    exact bad_finish ha hα hβ key1 hblock2 hblock3
   · -- `b = 2`: the shape has an odd cycle, and the constant lists `{1, 2}` already fail
     have hb : b = 2 := by omega
     have hall : ∀ i, i < a + b + c - 1 → F i = 1 ∨ F i = 2 := by
@@ -347,13 +357,7 @@ private lemma thetaBad_no_index_coloring {a b c : ℕ} (ha : 1 ≤ a) (hab : a �
       intro ha2
       by_contra hc
       exact hbad ⟨ha2, hb, Nat.even_iff.mpr (by omega)⟩
-    have heq : F (a + b + c - 3) = F (a + b + c - 2) := key2.mpr (by omega)
-    rcases (show a = 1 ∨ a = 2 from by omega) with h | h
-    · have := key1.mp heq
-      omega
-    · have := key3.mp heq
-      have := hcodd h
-      omega
+    exact bad_finish_small ha hab hb key1 key2 key3 hcodd
 
 /-- **`θ_{a,b,c}` has no coloring from `Monophilic.thetaBadLists`**, for every valid shape other
 than Rubin's `(2, 2, \text{even})`. -/
@@ -378,5 +382,40 @@ theorem col_thetaBadLists_eq_zero {a b c : ℕ} (hv : ValidShape a b c) (hbad : 
     simp only [hEi, hEj]
     exact hproper (show (thetaGen a b c).Adj ⟨i, hi⟩ ⟨j, hj⟩ from
       ⟨fun hc => hij (congrArg Fin.val hc), Or.inl hB⟩)
+
+/-! ### The classification -/
+
+/-- **`θ_{a,b,c}` is not `2`-choosable**, for every valid shape other than Rubin's
+`(2, 2, \text{even})`: the witness `Monophilic.thetaBadLists` is a `2`-list assignment with no
+coloring at all. -/
+theorem not_choosable_two_thetaGen {a b c : ℕ} (hv : ValidShape a b c)
+    (hbad : ¬ GoodShape a b c) : ¬ (thetaGen a b c).Choosable 2 := by
+  intro h
+  have hpos := h (thetaBadLists a b c) (card_thetaBadLists a b c)
+  rw [col_thetaBadLists_eq_zero hv hbad] at hpos
+  exact absurd hpos (lt_irrefl 0)
+
+/-- **The classification of `2`-choosable theta graphs**, discharging
+`Monophilic.ThetaClassification`. -/
+theorem thetaClassification : ThetaClassification :=
+  fun _ _ _ hv hbad => not_choosable_two_thetaGen hv hbad
+
+/-! ### Rubin's hard direction, with one hypothesis fewer -/
+
+/-- **Rubin's hard direction, relative to `Monophilic.ThetaAlternative` alone.** -/
+theorem rubinFamily_of_choosable' {V : Type} [Fintype V] [DecidableEq V] (H : SimpleGraph V)
+    [DecidableRel H.Adj] (halt : ThetaAlternative H) (hch : H.Choosable 2) : RubinFamily H :=
+  rubinFamily_of_choosable thetaClassification H halt hch
+
+/-- **Rubin's theorem as an `↔`, relative to `Monophilic.ThetaAlternative` alone.** -/
+theorem choosable_two_iff_rubinFamily' {V : Type} [Fintype V] [DecidableEq V] (H : SimpleGraph V)
+    [DecidableRel H.Adj] (halt : ThetaAlternative H) : H.Choosable 2 ↔ RubinFamily H :=
+  choosable_two_iff_rubinFamily thetaClassification H halt
+
+/-- **Rubin's theorem over a core, relative to `Monophilic.ThetaAlternative` alone.** -/
+theorem choosable_two_pendantTower_iff' {V : Type} [Fintype V] [DecidableEq V] (H : SimpleGraph V)
+    [DecidableRel H.Adj] (halt : ThetaAlternative H) (k : ℕ) (d : TowerData V k) :
+    (pendantTower H k d).Choosable 2 ↔ RubinFamily H :=
+  choosable_two_pendantTower_iff thetaClassification H halt k d
 
 end Monophilic

@@ -4,7 +4,7 @@ import Mathlib
 
 This file is the *statement surface* of the `graph_coloring` development, a formalization of
 
-> Slobodan Kirov and Ramin Naimi, *List coloring and `n`-monophilic graphs*,
+> Radoslav Kirov and Ramin Naimi, *List coloring and `n`-monophilic graphs*,
 > Ars Combinatoria (arXiv:1004.5183),
 
 together with the chromatic-polynomial / list-color-function reformulation and Donner's theorem.
