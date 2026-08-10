@@ -1,0 +1,62 @@
+name: comparator
+
+# Runs the real leanprover/comparator against this repository: statement match between
+# comparator/Challenge.lean and the library, the permitted-axiom check, and kernel replay
+# via lean4export in a landrun sandbox, plus the independent nanoda kernel that the
+# harness forces on.
+#
+# This REPLACES the hand-rolled axiom audit that used to live in ci.yml. The comparator
+# subsumes it: `permitted_axioms` in comparator/config.json is exactly the old allow-list
+# {propext, Quot.sound, Classical.choice}, and on top of that the comparator checks that
+# the statements really are the ones claimed and replays the proofs through two independent
+# kernels. An axiom audit only ever checked the third of those.
+#
+# CI ONLY, deliberately. It clones and builds comparator, lean4export, nanoda (Rust) and
+# landrun (Go); that is far too heavy for the development machine, which is also short on
+# disk. Local development uses `lake build` and the cheap no-placeholder grep in ci.yml.
+# Workflow pattern and tool pins follow github.com/rkirov/jacobian-fable.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: comparator-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  verify:
+    name: Comparator (statements, axioms, kernel replay)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Build the library and fetch the Mathlib olean cache. The comparator workspace
+      # path-requires the library and shares its packagesDir, so it reuses this build.
+      - uses: leanprover/lean-action@v1
+        with:
+          use-mathlib-cache: "true"
+          test: "false"
+          lint: "false"
+
+      # comparator + lean4export + nanoda are pinned and change rarely; cache their clones
+      # and builds. verify.sh namespaces the cache directory by toolchain tag.
+      - name: Cache comparator tooling
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/graph-coloring-comparator
+          key: comparator-${{ runner.os }}-${{ hashFiles('comparator/lean-toolchain', 'verify.sh') }}
+
+      # nanoda is a Rust build; ubuntu-latest ships cargo, but be explicit so a missing
+      # toolchain fails here with a clear message rather than deep inside verify.sh.
+      - name: Check cargo and go are available
+        run: cargo --version && go version
+
+      # On CI there is room for comparator's own pinned toolchain, so use the upstream
+      # recipe exactly rather than the disk-saving deviation verify.sh allows locally.
+      - name: Run comparator
+        run: ./verify.sh
+        env:
+          COMPARATOR_OWN_TOOLCHAIN: "1"
