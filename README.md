@@ -80,12 +80,17 @@ argument actually uses.
 
 ## Standard of proof
 
-* No `sorry`, `admit`, or `native_decide` anywhere.
+* No `sorry`, `admit`, or `native_decide` anywhere in `Monophilic/`.
 * Every headline result depends on exactly the three standard Lean axioms — `propext`,
-  `Classical.choice`, `Quot.sound` — verified by `#print axioms`.
+  `Classical.choice`, `Quot.sound` — enforced by the comparator's `permitted_axioms`.
 * Statements were checked by brute-force evaluation *before* being proved, which repeatedly caught
   indexing and orientation errors that would not have surfaced as type errors. See the
   "Specs verified numerically" section of `plan.md`.
+* CI runs the real [leanprover/comparator](https://github.com/leanprover/comparator) against
+  `comparator/Challenge.lean`, which lists every public definition and top-level result in one file.
+  That checks three things an axiom audit cannot: that the statements really are the ones claimed,
+  that only the permitted axioms are used, and that every proof replays through two independent
+  kernels (Lean's, via `lean4export`, and `nanoda`). It is CI-only — it builds four external tools.
 * Every displayed statement in the companion book is an `example` discharged against the real
   theorem, so the prose cannot drift from the proofs.
 

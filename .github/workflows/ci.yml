@@ -32,32 +32,18 @@ jobs:
           test: "false"
           lint: "false"
 
+      # Cheap first line of defence, kept local to the library sources. The authoritative
+      # check -- statements, permitted axioms, and replay through two independent kernels --
+      # is the comparator workflow. Note comparator/Challenge.lean contains placeholders by
+      # design, so it is deliberately outside this grep.
       - name: No sorry, admit, or native_decide
         run: |
-          if grep -rnwE 'sorry|admit|native_decide' Monophilic/ Monophilic.lean scripts/; then
+          if grep -rnwE 'sorry|admit|native_decide' Monophilic/ Monophilic.lean; then
             echo "::error::found sorry/admit/native_decide in the formalization"
             exit 1
           fi
           echo "clean"
 
-      - name: Axiom audit
-        run: |
-          set -o pipefail
-          lake env lean scripts/AxiomAudit.lean | tee axioms.txt
-          python3 - <<'PY'
-          import re, sys
-          allowed = {"propext", "Classical.choice", "Quot.sound"}
-          lines = [l for l in open("axioms.txt") if "depends on axioms" in l]
-          if not lines:
-              sys.exit("::error::axiom audit produced no output")
-          used = set()
-          for l in lines:
-              used |= {x.strip() for x in re.search(r"\[(.*)\]", l).group(1).split(",")}
-          extra = used - allowed
-          print(f"audited {len(lines)} declarations; axioms used: {sorted(used)}")
-          if extra:
-              sys.exit(f"::error::non-standard axioms in use: {sorted(extra)}")
-          PY
 
   book:
     name: Build the Verso companion

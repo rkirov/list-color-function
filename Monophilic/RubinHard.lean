@@ -1,0 +1,544 @@
+/-
+Copyright (c) 2026. All rights reserved.
+Released under Apache 2.0 license.
+-/
+import Monophilic.Rubin
+import Mathlib.Combinatorics.SimpleGraph.Acyclic
+
+/-!
+# Rubin's theorem: the hard direction
+
+`Monophilic.Rubin` proves the easy direction of Rubin's characterization — every graph on Rubin's
+list is `2`-choosable — and isolates the hard direction
+
+> a `2`-choosable connected graph has a single vertex, an even cycle or `θ_{2,2,2m}` for its core
+
+as the one thing still borrowed. This file attacks that direction. Contrapositively, a connected
+graph `H` of minimum degree `≥ 2` which is none of the three fails to be `2`-choosable because:
+
+1. if `H` has an odd cycle it is not even `2`-colorable, and choosability passes to subgraphs;
+2. otherwise `H` is bipartite with a vertex of degree `≥ 3`, and then `H` contains a **theta
+   subgraph** — two vertices joined by three internally disjoint paths;
+3. a theta `θ_{a,b,c}` whose three lengths are not `(2, 2, \text{even})` is not `2`-choosable.
+
+Step 2 is the missing structural ingredient (Mathlib has no block or ear decomposition). Everything
+else is developed here: general theta graphs, explicit `2`-list assignments with no coloring at all
+for the excluded shapes, the transfer of non-choosability along subgraphs, and the resulting
+reduction of Rubin's hard direction to two named hypotheses — one purely structural, one the
+classification of `2`-choosable *theta* graphs.
+
+## General theta graphs
+
+The repository's `Monophilic.theta m` is hardwired as `θ_{2,2,2m}`. `Monophilic.thetaGen a b c`
+is the general theta graph, on the vertex type `Fin (a + b + c - 1)`: the interior vertices of the
+three arms occupy the initial blocks of length `a - 1`, `b - 1`, `c - 1`, and the two branch
+vertices are the last two indices. It really is a theta graph — `a + b + c - 1` vertices and
+`a + b + c` edges — as the `#guard`s below record, and for the shape `(2, 2, 2m)` it agrees with
+`Monophilic.theta m` on the counts `col(·, n)`.
+
+## The obstructions
+
+Non-`2`-choosability is certified by an explicit `2`-list assignment with **no** coloring; each is
+checked by brute force with `#guard` before it is used. The mechanism behind all of them is the
+same. Give both branch vertices the list `{1, 2}`; then a coloring is a choice of a pair
+`(α, β) ∈ {1,2} × {1,2}` at the branch vertices together with a coloring of each arm's interior,
+and an arm blocks a pair `(α, β)` when its lists force the color `β` at the end adjacent to the
+second branch vertex once `α` is fixed at the first. An arm with all lists `{1, 2}` blocks two
+pairs, `(1,1)` and `(2,2)` if it has odd length and `(1,2)`, `(2,1)` if even; an arm of length
+`≥ 3` can be made to block any single prescribed pair by routing through a third color. Three arms
+therefore kill all four pairs as soon as *two* of them have length `≥ 3` — which is exactly the
+list of shapes excluded by Rubin, apart from those already excluded by parity.
+
+## Main definitions
+
+* `Monophilic.thetaGen` : the general theta graph `θ_{a,b,c}`
+* `Monophilic.Contains` : `G` contains a copy of `K` as a subgraph
+* `Monophilic.ValidShape`, `Monophilic.GoodShape` : normalized theta shapes, and Rubin's shape
+* `Monophilic.ThetaStructure` : the structural statement that remains borrowed
+
+## Main results
+
+* `Monophilic.not_choosable_of_contains` : non-`2`-choosability passes from a subgraph to the
+  whole graph, and `Monophilic.not_choosable_two_of_contains_odd_cycle` for an odd cycle
+* `Monophilic.colConst_thetaOf_odd` : `col(θ_{2,2,k}, 2) = 0` for odd `k`, whence
+  `Monophilic.not_choosable_two_thetaOf_odd`
+* `Monophilic.not_choosable_two_thetaGen_133`, `Monophilic.not_choosable_two_thetaGen_333`,
+  `Monophilic.not_choosable_two_thetaGen_244` : the three smallest *bipartite* obstructions,
+  `2`-colorable but not `2`-choosable, hence also not `2`-monophilic
+* `Monophilic.exists_cycle_of_two_le_degree` : a connected graph of minimum degree `≥ 2` contains
+  a cycle
+* `Monophilic.card_lt_card_edgeFinset` : with a vertex of degree `≥ 3` it has more edges than
+  vertices, and `Monophilic.degree_eq_two_of_card_edgeFinset_le` is the converse reading
+* `Monophilic.rubinFamily_of_choosable` : **Rubin's hard direction**, relative to
+  `ThetaStructure` and to the classification of `2`-choosable theta graphs
+* `Monophilic.choosable_two_iff_rubinFamily`, `Monophilic.choosable_two_pendantTower_iff` :
+  Rubin's theorem as an `↔`, relative to the same two hypotheses
+-/
+
+open Finset
+
+set_option maxRecDepth 40000
+
+namespace Monophilic
+
+open SimpleGraph
+
+/-! ### General theta graphs
+
+`thetaGen a b c` is laid out on `Fin (a + b + c - 1)`. Writing `A = a - 1`, `B = b - 1`,
+`C = c - 1` for the numbers of interior vertices of the three arms, the indices
+
+* `0, …, A - 1` are the interior of the first arm, in order from the first branch vertex;
+* `A, …, A + B - 1` the interior of the second;
+* `A + B, …, A + B + C - 1` the interior of the third;
+* `A + B + C = a + b + c - 3` and `a + b + c - 2` are the two branch vertices.
+
+An arm with no interior vertex contributes the single edge joining the two branch vertices, so
+`thetaGen 1 b c` has an arm of length one. Two such arms would collapse to a single edge; that is
+why `ValidShape` below allows at most one arm of length one. -/
+
+/-- One step along an arm of a theta graph, on indices: `o` is the index of the arm's first
+interior vertex, `m` the number of interior vertices it has, and `ps`, `pt` are the two branch
+vertices. The arm runs `ps, o, o + 1, …, o + m - 1, pt`, and degenerates to the single edge
+`ps — pt` when `m = 0`. -/
+def armStepB (o m ps pt x y : ℕ) : Bool :=
+  if m = 0 then (x == ps && y == pt)
+  else ((x == ps && y == o) ||
+        (decide (o ≤ x) && (y == x + 1) && decide (y < o + m)) ||
+        (x == o + m - 1 && y == pt))
+
+/-- Adjacency of `thetaGen a b c`, read on indices and before symmetrizing: the union of the three
+arms, whose interiors start at `0`, `a - 1` and `a + b - 2`. -/
+def thetaGenAdjB (a b c x y : ℕ) : Bool :=
+  armStepB 0 (a - 1) (a + b + c - 3) (a + b + c - 2) x y ||
+  armStepB (a - 1) (b - 1) (a + b + c - 3) (a + b + c - 2) x y ||
+  armStepB (a + b - 2) (c - 1) (a + b + c - 3) (a + b + c - 2) x y
+
+/-- The vertex type of the general theta graph `θ_{a,b,c}`: it has `a + b + c - 1` vertices. -/
+abbrev TGV (a b c : ℕ) : Type := Fin (a + b + c - 1)
+
+/-- **The general theta graph `θ_{a,b,c}`**: two branch vertices joined by three internally
+disjoint paths, of lengths `a`, `b` and `c`. Compare `Monophilic.theta m`, which is the special
+shape `θ_{2,2,2m}` built by coning twice over the ends of a path. -/
+def thetaGen (a b c : ℕ) : SimpleGraph (TGV a b c) where
+  Adj x y := x ≠ y ∧ (thetaGenAdjB a b c x.val y.val ∨ thetaGenAdjB a b c y.val x.val)
+  symm := ⟨fun _ _ h => ⟨h.1.symm, h.2.symm⟩⟩
+  loopless := ⟨fun _ h => h.1 rfl⟩
+
+instance instDecidableRelThetaGen (a b c : ℕ) : DecidableRel (thetaGen a b c).Adj :=
+  fun x y => inferInstanceAs (Decidable (x ≠ y ∧
+    (thetaGenAdjB a b c x.val y.val = true ∨ thetaGenAdjB a b c y.val x.val = true)))
+
+/-! `θ_{a,b,c}` has `a + b + c - 1` vertices and `a + b + c` edges. -/
+
+#guard Fintype.card (TGV 1 3 3) = 6
+#guard Fintype.card (TGV 3 3 3) = 8
+#guard Fintype.card (TGV 2 4 4) = 9
+#guard (thetaGen 1 3 3).edgeFinset.card = 7
+#guard (thetaGen 3 3 3).edgeFinset.card = 9
+#guard (thetaGen 2 4 4).edgeFinset.card = 10
+#guard (thetaGen 2 2 2).edgeFinset.card = 6
+#guard (thetaGen 2 2 4).edgeFinset.card = 8
+#guard (thetaGen 2 2 5).edgeFinset.card = 9
+#guard (thetaGen 1 2 2).edgeFinset.card = 5
+#guard (thetaGen 3 4 5).edgeFinset.card = 12
+#guard Fintype.card (TGV 3 4 5) = 11
+
+/-! Every vertex has degree `2` except the two branch vertices, which have degree `3`. -/
+
+#guard ((univ : Finset (TGV 3 3 3)).filter fun v => (thetaGen 3 3 3).degree v = 3).card = 2
+#guard ((univ : Finset (TGV 3 3 3)).filter fun v => (thetaGen 3 3 3).degree v = 2).card = 6
+#guard ((univ : Finset (TGV 2 4 4)).filter fun v => (thetaGen 2 4 4).degree v = 3).card = 2
+#guard ((univ : Finset (TGV 1 3 3)).filter fun v => (thetaGen 1 3 3).degree v = 3).card = 2
+
+/-! For the shape `(2, 2, 2m)` the general construction agrees with `Monophilic.theta m` on the
+counts `col(·, n)`, which for `n = 3, 4, 5` already pin down the chromatic polynomial of a graph
+this small. -/
+
+#guard Fintype.card (TGV 2 2 2) = Fintype.card (ThetaV 1)
+#guard Fintype.card (TGV 2 2 4) = Fintype.card (ThetaV 2)
+#guard Fintype.card (TGV 2 2 6) = Fintype.card (ThetaV 3)
+#guard (thetaGen 2 2 2).colConst 2 = (theta 1).colConst 2
+#guard (thetaGen 2 2 2).colConst 3 = (theta 1).colConst 3
+#guard (thetaGen 2 2 2).colConst 4 = (theta 1).colConst 4
+#guard (thetaGen 2 2 4).colConst 2 = (theta 2).colConst 2
+#guard (thetaGen 2 2 4).colConst 3 = (theta 2).colConst 3
+#guard (thetaGen 2 2 4).colConst 4 = (theta 2).colConst 4
+#guard (thetaGen 2 2 6).colConst 3 = (theta 3).colConst 3
+
+/-! The odd shapes `θ_{2,2,2m+1}` and `θ_{1,2,c}` contain an odd cycle, so they are not even
+`2`-colorable — this is `Monophilic.colConst_thetaOf_odd` below, seen on the general model. -/
+
+#guard (thetaGen 2 2 3).colConst 2 = 0
+#guard (thetaGen 2 2 5).colConst 2 = 0
+#guard (thetaGen 1 2 2).colConst 2 = 0
+#guard (thetaGen 1 2 4).colConst 2 = 0
+#guard (thetaGen 2 3 4).colConst 2 = 0
+
+/-! ### Non-choosability passes to supergraphs -/
+
+/-- `G` **contains** a copy of `K`: an injection of the vertices of `K` into those of `G` carrying
+edges to edges. Only a *subgraph* is asked for, not an induced one, which is all that a
+choosability argument ever needs. -/
+def Contains {V W : Type*} (G : SimpleGraph V) (K : SimpleGraph W) : Prop :=
+  ∃ f : W → V, Function.Injective f ∧ ∀ a b, K.Adj a b → G.Adj (f a) (f b)
+
+/-- A graph contains itself. -/
+theorem contains_self {V : Type*} (G : SimpleGraph V) : Contains G G :=
+  ⟨id, Function.injective_id, fun _ _ h => h⟩
+
+/-- **Non-choosability passes from a subgraph to the whole graph**: this is
+`SimpleGraph.Choosable.comap` read contrapositively. -/
+theorem not_choosable_of_contains {V W : Type*} [Fintype V] [DecidableEq V] [Fintype W]
+    [DecidableEq W] {G : SimpleGraph V} [DecidableRel G.Adj] {K : SimpleGraph W}
+    [DecidableRel K.Adj] {n : ℕ} (hK : ¬ K.Choosable n) (h : Contains G K) : ¬ G.Choosable n := by
+  obtain ⟨f, hf, hadj⟩ := h
+  exact fun hG => hK (hG.comap hf hadj)
+
+/-- A graph that is not `n`-colorable is not `n`-choosable, since `χ(G) ≤ χ_ℓ(G)`. -/
+theorem not_choosable_of_not_colorable {V : Type*} [Fintype V] [DecidableEq V]
+    {G : SimpleGraph V} [DecidableRel G.Adj] {n : ℕ} (h : ¬ G.Colorable n) : ¬ G.Choosable n :=
+  fun hc => h (colorable_of_choosable hc)
+
+/-- **A graph containing an odd cycle is not `2`-choosable.** `closePath k` has `k + 1` vertices,
+so `Even k` picks out the cycles on an odd number of them. This is step 1 of the contrapositive:
+an odd cycle is not `2`-colorable (`Monophilic.not_choosable_two_closePath_of_even`) and
+non-choosability travels upwards along subgraphs. -/
+theorem not_choosable_two_of_contains_odd_cycle {V : Type*} [Fintype V] [DecidableEq V]
+    {G : SimpleGraph V} [DecidableRel G.Adj] {k : ℕ} (hk : Even k) (hk2 : 2 ≤ k)
+    (h : Contains G (closePath k)) : ¬ G.Choosable 2 :=
+  not_choosable_of_contains (not_choosable_two_closePath_of_even hk hk2) h
+
+/-! ### `θ_{2,2,k}` for odd `k`
+
+`Monophilic.thetaOf k` — a path of length `k` with two extra vertices, each joined to both of its
+ends — *is* the theta graph `θ_{2,2,k}`. For odd `k` it contains the odd cycle made of the long
+path and one of the two short arms, and indeed it has no coloring at all from the constant list of
+size two. The computation is the one behind `Monophilic.colConst_thetaOf`, with the even chain
+`Monophilic.col_chain_const` replaced by its odd counterpart. -/
+
+/-- **The alternating chain, odd length.** With every list equal to `{x, y}` and the color `x`
+prescribed at both ends of a path of *odd* length, there is no coloring at all: the colors are
+forced to alternate and arrive at the far end already equal to `x`. Compare
+`Monophilic.col_chain_const`, which finds exactly one coloring in the even case. -/
+theorem col_chain_const_odd (P : Finset ℕ) (x y : ℕ) (hxy : x ≠ y) (hP : P = {x, y}) :
+    ∀ r : ℕ, (pathG (2 * r + 1)).col (levelAssign (2 * r + 1) (fun _ => P) {x} {x}) = 0
+  | 0 => by
+      show (pathG 1).col (levelAssign 1 (fun _ => P) {x} {x}) = 0
+      rw [col_levelAssign_one, Finset.sum_singleton, Finset.erase_singleton, Finset.card_empty]
+  | r + 1 =>
+      (col_levelAssign_two_step (2 * r) (fun _ => P) {x} hxy hP hP).trans
+        (col_chain_const_odd P x y hxy hP r)
+
+/-- **`col(θ_{2,2,k}, 2) = 0` for odd `k`.** Peeling the two apexes leaves four terms; in two of
+them a terminal vertex of the long path is left with no color at all, and in the other two the
+forced alternating chain along a path of odd length arrives at the far end with the color it
+started from. -/
+theorem colConst_thetaOf_odd (r : ℕ) : (thetaOf (2 * r + 1)).colConst 2 = 0 := by
+  have hconst : (constList (Option (Option (PathV (2 * r + 1)))) 2)
+      = thetaAssign (2 * r + 1) (range 2) (range 2)
+          (levelAssign (2 * r + 1) (fun _ => range 2) (range 2) (range 2)) := by
+    rw [levelAssign_const]
+    funext v
+    cases v with
+    | none => rfl
+    | some u => cases u <;> rfl
+  rw [colConst, hconst, col_thetaOf_thetaAssign]
+  simp only [eraseEnds_levelAssign, Finset.sum_range_succ, Finset.sum_range_zero]
+  rw [show ((range 2).erase 0).erase 0 = ({1} : Finset ℕ) from by decide,
+    show ((range 2).erase 0).erase 1 = (∅ : Finset ℕ) from by decide,
+    show ((range 2).erase 1).erase 0 = (∅ : Finset ℕ) from by decide,
+    show ((range 2).erase 1).erase 1 = ({0} : Finset ℕ) from by decide,
+    col_chain_const_odd (range 2) 1 0 (by decide) (by decide) r,
+    col_levelAssign_eq_zero_of_head,
+    col_chain_const_odd (range 2) 0 1 (by decide) (by decide) r]
+  decide
+
+/-- **`θ_{2,2,k}` is not `2`-colorable for odd `k`**: it contains the odd cycle formed by the long
+path and one of the two arms of length two. -/
+theorem not_colorable_two_thetaOf_odd (r : ℕ) : ¬ (thetaOf (2 * r + 1)).Colorable 2 :=
+  colConst_eq_zero_iff_not_colorable.mp (colConst_thetaOf_odd r)
+
+/-- **`θ_{2,2,k}` is not `2`-choosable for odd `k`.** Together with
+`Monophilic.choosable_theta` this pins down exactly which of the graphs `θ_{2,2,k}` belong to
+Rubin's list: those with `k` even. -/
+theorem not_choosable_two_thetaOf_odd (r : ℕ) : ¬ (thetaOf (2 * r + 1)).Choosable 2 :=
+  not_choosable_of_not_colorable (not_colorable_two_thetaOf_odd r)
+
+/-! ### The bipartite obstructions
+
+The shapes above are excluded already by the chromatic number. The interesting obstructions are
+the *bipartite* ones — `2`-colorable, yet not `2`-choosable — and the smallest are `θ_{1,3,3}`,
+`θ_{3,3,3}` and `θ_{2,4,4}`.
+
+One assignment covers every shape at once. Both branch vertices get the list `{1, 2}`, so a
+coloring amounts to a pair `(α, β) ∈ {1,2} × {1,2}` of branch colors together with a coloring of
+each arm's interior; an arm *blocks* `(α, β)` when its lists leave no interior coloring compatible
+with `α` and `β`. If two of the three arms have length `≥ 3` — which, for a valid shape, is
+exactly the situation not already settled by parity — then:
+
+* the remaining arm carries the constant lists `{1, 2}`, forcing its interior to alternate, and
+  blocks `(1,1)` and `(2,2)` if it has odd length, `(1,2)` and `(2,1)` if even;
+* each of the two long arms blocks one of the two surviving pairs. To block `(α, β)` it starts
+  with the list `{α, 3}`, so that `α` forces the color `3`, and then propagates a forced chain to
+  `β`: alternating `3, β, 3, …` when the number of interior vertices is even, and
+  `3, 4, β, 3, β, …` when it is odd, the detour through `4` fixing the parity.
+
+All four pairs are therefore blocked and no coloring exists at all. Both the construction and each
+`col = 0` are checked by brute force with `#guard` before anything is proved from them, and the
+sweep below runs the check over every valid shape with `a + b + c ≤ 11`. -/
+
+/-- The lists along an arm with `m` interior vertices which blocks the pair `(α, β)` of branch
+colors: `j` is the position along the arm, counted from the branch vertex carrying `α`. The chain
+of forced colors is `3, β, 3, …` for `m` even and `3, 4, β, 3, β, …` for `m` odd, and the list at
+position `j` is the pair of forced colors at `j - 1` and `j`. Meaningful for `m ≥ 2`. -/
+def armBlockLists (α β m j : ℕ) : Finset ℕ :=
+  if m % 2 = 0 then (if j = 0 then {α, 3} else {3, β})
+  else if j = 0 then {α, 3} else if j = 1 then {3, 4} else if j = 2 then {4, β} else {3, β}
+
+/-- **The witness `2`-list assignment on `θ_{a,b,c}`.** For `b ≤ 2` the shape is `(a, 2, c)` with
+`a ≤ 2`, which for a valid non-Rubin shape has an odd cycle, and the constant assignment `{1, 2}`
+already has no coloring. Otherwise both `b` and `c` are `≥ 3`: the first arm keeps the constant
+lists `{1, 2}`, and the second and third arms block, respectively, the pairs `(1, β)` and
+`(2, β')` left over by the parity of the first arm. -/
+def thetaBadLists (a b c : ℕ) (v : TGV a b c) : Finset ℕ :=
+  if b ≤ 2 then {1, 2}
+  else if v.val + 1 < a then {1, 2}
+  else if v.val + 2 < a + b then
+    armBlockLists 1 (if a % 2 = 1 then 2 else 1) (b - 1) (v.val + 1 - a)
+  else if v.val + 3 < a + b + c then
+    armBlockLists 2 (if a % 2 = 1 then 1 else 2) (c - 1) (v.val + 2 - a - b)
+  else {1, 2}
+
+/-- The number of colorings of `θ_{a,b,c}` from the witness assignment, spelled out so that the
+sweep below can evaluate it. -/
+def colThetaBad (a b c : ℕ) : ℕ := (thetaGen a b c).col (thetaBadLists a b c)
+
+-- The witness really is a `2`-list assignment, on every valid shape in range ...
+#guard ∀ v ∈ (univ : Finset (TGV 3 3 3)), (thetaBadLists 3 3 3 v).card = 2
+#guard ∀ a ∈ [1, 2], ∀ v ∈ (univ : Finset (TGV a 3 3)), (thetaBadLists a 3 3 v).card = 2
+#guard ∀ a ∈ [1, 2], ∀ v : TGV a 3 3, (thetaBadLists a 3 3 v).card = 2
+#guard ∀ a ∈ [1, 2], (fun n => ∀ v : TGV n 3 3, (thetaBadLists n 3 3 v).card = 2) a
+
+-- ... and it has no coloring at all, on every valid shape in range that is not Rubin's `(2,2,even)`.
+#guard ∀ a ∈ [1, 2, 3, 4], ∀ b ∈ [2, 3, 4], ∀ c ∈ [2, 3, 4, 5],
+  (a ≤ b ∧ b ≤ c ∧ ¬ (a = 2 ∧ b = 2 ∧ c % 2 = 0)) → colThetaBad a b c = 0
+
+-- On Rubin's own shape it necessarily fails, since `θ_{2,2,2m}` *is* `2`-choosable.
+#guard colThetaBad 2 2 2 = 2
+#guard colThetaBad 2 2 4 = 2
+#guard colThetaBad 2 2 6 = 2
+
+-- The three smallest bipartite obstructions, and the fact that they are indeed bipartite.
+#guard colThetaBad 1 3 3 = 0
+#guard colThetaBad 3 3 3 = 0
+#guard colThetaBad 2 4 4 = 0
+#guard (thetaGen 1 3 3).colConst 2 = 2
+#guard (thetaGen 3 3 3).colConst 2 = 2
+#guard (thetaGen 2 4 4).colConst 2 = 2
+
+/-- **`θ_{1,3,3}` is not `2`-choosable**, witnessed by `Monophilic.thetaBadLists`: the direct edge
+blocks `(1,1)` and `(2,2)`, and the two arms of length three block `(1,2)` and `(2,1)`. -/
+theorem not_choosable_two_thetaGen_133 : ¬ (thetaGen 1 3 3).Choosable 2 := by
+  intro h
+  have hcard : ∀ v, (thetaBadLists 1 3 3 v).card = 2 := by decide
+  have hpos := h (thetaBadLists 1 3 3) hcard
+  have hzero : (thetaGen 1 3 3).col (thetaBadLists 1 3 3) = 0 := by decide
+  omega
+
+/-- **`θ_{3,3,3}` is not `2`-choosable**, witnessed by `Monophilic.thetaBadLists`: the first arm
+has constant lists and blocks `(1,1)` and `(2,2)`, the other two block `(1,2)` and `(2,1)`. -/
+theorem not_choosable_two_thetaGen_333 : ¬ (thetaGen 3 3 3).Choosable 2 := by
+  intro h
+  have hcard : ∀ v, (thetaBadLists 3 3 3 v).card = 2 := by decide
+  have hpos := h (thetaBadLists 3 3 3) hcard
+  have hzero : (thetaGen 3 3 3).col (thetaBadLists 3 3 3) = 0 := by decide
+  omega
+
+/-- **`θ_{2,4,4}` is not `2`-choosable**, witnessed by `Monophilic.thetaBadLists`: the arm of
+length two blocks `(1,2)` and `(2,1)`, and the two arms of length four block `(1,1)` and `(2,2)`,
+each routing through both auxiliary colors `3` and `4`. -/
+theorem not_choosable_two_thetaGen_244 : ¬ (thetaGen 2 4 4).Choosable 2 := by
+  intro h
+  have hcard : ∀ v, (thetaBadLists 2 4 4 v).card = 2 := by decide
+  have hpos := h (thetaBadLists 2 4 4) hcard
+  have hzero : (thetaGen 2 4 4).col (thetaBadLists 2 4 4) = 0 := by decide
+  omega
+
+/-- `θ_{1,3,3}` is `2`-colorable: it is bipartite. -/
+theorem colorable_two_thetaGen_133 : (thetaGen 1 3 3).Colorable 2 :=
+  colConst_pos_iff_colorable.mp (by decide)
+
+/-- `θ_{3,3,3}` is `2`-colorable: it is bipartite. -/
+theorem colorable_two_thetaGen_333 : (thetaGen 3 3 3).Colorable 2 :=
+  colConst_pos_iff_colorable.mp (by decide)
+
+/-- **`θ_{3,3,3}` is `2`-colorable but not `2`-choosable**, hence not `2`-monophilic: it sits in
+the middle regime `χ(G) ≤ 2 < χ_ℓ(G)` of Kirov–Naimi. The same holds for `θ_{1,3,3}`. -/
+theorem not_monophilic_two_thetaGen_333 : ¬ (thetaGen 3 3 3).Monophilic 2 :=
+  not_monophilic_of_colorable_of_not_choosable colorable_two_thetaGen_333
+    not_choosable_two_thetaGen_333
+
+/-- `θ_{1,3,3}` is `2`-colorable but not `2`-choosable, hence not `2`-monophilic. -/
+theorem not_monophilic_two_thetaGen_133 : ¬ (thetaGen 1 3 3).Monophilic 2 :=
+  not_monophilic_of_colorable_of_not_choosable colorable_two_thetaGen_133
+    not_choosable_two_thetaGen_133
+
+/-! ### Structural fragments
+
+Two counting facts about the graphs that the hard direction has to deal with. They are the cheap
+end of step 2: a connected graph of minimum degree `≥ 2` always has a cycle, and it has strictly
+more edges than vertices — cyclomatic number `≥ 2`, the numerical shadow of "contains a theta" —
+as soon as one vertex has degree `≥ 3`. -/
+
+section Structural
+
+set_option linter.unusedSectionVars false
+
+variable {V : Type*} [Fintype V] [DecidableEq V] {G : SimpleGraph V} [DecidableRel G.Adj]
+
+/-- Minimum degree `≥ 2` forces at least three vertices. -/
+theorem three_le_card_of_two_le_degree [Nonempty V] (hdeg : ∀ v, 2 ≤ G.degree v) :
+    3 ≤ Fintype.card V := by
+  obtain ⟨v⟩ := ‹Nonempty V›
+  have h1 := hdeg v
+  have h2 := G.degree_lt_card_verts v
+  omega
+
+/-- **A connected graph of minimum degree `≥ 2` contains a cycle.** A connected acyclic graph is a
+tree, and a tree on at least two vertices has a vertex of degree one. -/
+theorem exists_cycle_of_two_le_degree [Nonempty V] (hconn : G.Connected)
+    (hdeg : ∀ v, 2 ≤ G.degree v) : ∃ (v : V) (c : G.Walk v v), c.IsCycle := by
+  by_contra hcon
+  push Not at hcon
+  have hacyc : G.IsAcyclic := fun v c => hcon v c
+  have htree : G.IsTree := ⟨hconn, hacyc⟩
+  have hcard : 3 ≤ Fintype.card V := three_le_card_of_two_le_degree hdeg
+  have : Nontrivial V := Fintype.one_lt_card_iff_nontrivial.mp (by omega)
+  have h1 : G.minDegree = 1 := htree.minDegree_eq_one_of_nontrivial
+  have h2 : 2 ≤ G.minDegree := G.le_minDegree_of_forall_le_degree 2 hdeg
+  omega
+
+/-- **A vertex of degree `≥ 3` forces more edges than vertices**, when every other vertex already
+has degree `≥ 2`: the degree sum is at least `2 |V| + 1`. -/
+theorem card_lt_card_edgeFinset (hdeg : ∀ v, 2 ≤ G.degree v) {u : V} (hu : 3 ≤ G.degree u) :
+    Fintype.card V < G.edgeFinset.card := by
+  have hsum : ∑ _v : V, 2 < ∑ v, G.degree v :=
+    Finset.sum_lt_sum (fun v _ => hdeg v) ⟨u, Finset.mem_univ u, by omega⟩
+  rw [Finset.sum_const, Finset.card_univ, smul_eq_mul, G.sum_degrees_eq_twice_card_edges] at hsum
+  omega
+
+/-- The converse reading: a graph of minimum degree `≥ 2` with no more edges than vertices is
+`2`-regular. Together with "a connected `2`-regular graph is a cycle" — the piece Mathlib does not
+have — this is how a non-cycle produces the branch vertex that a theta subgraph is built from. -/
+theorem degree_eq_two_of_card_edgeFinset_le (hdeg : ∀ v, 2 ≤ G.degree v)
+    (h : G.edgeFinset.card ≤ Fintype.card V) (v : V) : G.degree v = 2 := by
+  by_contra hv
+  exact absurd (card_lt_card_edgeFinset hdeg (u := v) (by have := hdeg v; omega)) (by omega)
+
+end Structural
+
+/-! ### The reduction
+
+What is left of Rubin's hard direction after the above is packaged as two named hypotheses. The
+first, `ThetaStructure`, is **purely structural**: no coloring occurs in its statement, only
+subgraph containment and the lengths of three paths. The second is the classification of
+`2`-choosable *theta* graphs, i.e. Rubin's theorem for the single family `θ_{a,b,c}`; the shapes
+`(2,2,\text{odd})` and `(1,3,3)`, `(3,3,3)`, `(2,4,4)` of it are proved above. -/
+
+/-- A **valid, normalized** theta shape: `1 ≤ a ≤ b ≤ c` with `2 ≤ b`. Sorting the three arms
+costs nothing, and `2 ≤ b` says at most one arm is a single edge — two would collapse to the same
+edge and the "theta graph" would be a cycle. -/
+def ValidShape (a b c : ℕ) : Prop := 1 ≤ a ∧ a ≤ b ∧ b ≤ c ∧ 2 ≤ b
+
+/-- **Rubin's shape**: `θ_{2,2,2m}`, in normalized form. -/
+def GoodShape (a b c : ℕ) : Prop := a = 2 ∧ b = 2 ∧ Even c
+
+/-- **The structural statement that remains borrowed.** A connected graph of minimum degree `≥ 2`
+is a cycle, or a `θ_{2,2,2m}`, or it contains an odd cycle or a theta of some other shape.
+
+Nothing about colorings appears here: the alternatives are subgraph containment and the lengths of
+three internally disjoint paths. This is the "follow a path until it returns to the cycle"
+induction over walks that Mathlib's lack of a block or ear decomposition makes expensive; the
+`Contains` alternatives are what steps 1 and 3 of the argument consume. -/
+def ThetaStructure : Prop :=
+  ∀ (V : Type) [Fintype V] [DecidableEq V] (H : SimpleGraph V) [DecidableRel H.Adj],
+    H.Connected → (∀ v, 2 ≤ H.degree v) →
+      (∃ k, 2 ≤ k ∧ Nonempty (H ≃g closePath k)) ∨
+      (∃ m, 1 ≤ m ∧ Nonempty (H ≃g theta m)) ∨
+      (∃ k, Even k ∧ 2 ≤ k ∧ Contains H (closePath k)) ∨
+      (∃ a b c, ValidShape a b c ∧ ¬ GoodShape a b c ∧ Contains H (thetaGen a b c))
+
+/-- **The classification of `2`-choosable theta graphs**: a theta graph of any shape other than
+`θ_{2,2,\text{even}}` fails to be `2`-choosable. This is Rubin's theorem restricted to the single
+family of theta graphs — a far smaller loan than the classification of all `2`-choosable graphs,
+and one with explicit finite witnesses: `Monophilic.not_choosable_two_thetaOf_odd` settles the
+shapes `(2,2,\text{odd})`, and `Monophilic.not_choosable_two_thetaGen_133`,
+`Monophilic.not_choosable_two_thetaGen_333`, `Monophilic.not_choosable_two_thetaGen_244` settle
+the three smallest bipartite shapes. -/
+def ThetaClassification : Prop :=
+  ∀ a b c, ValidShape a b c → ¬ GoodShape a b c → ¬ (thetaGen a b c).Choosable 2
+
+/-- **Rubin's hard direction, relative to `ThetaStructure` and `ThetaClassification`.** A
+connected `2`-choosable graph of minimum degree `≥ 2` — that is, a `2`-choosable core other than a
+single vertex — is an even cycle or a `θ_{2,2,2m}`.
+
+The proof is the contrapositive of the introduction: the structural hypothesis offers four
+alternatives, and the last two are eliminated because an odd cycle and a theta of the wrong shape
+are not `2`-choosable, while choosability passes to subgraphs. In the first alternative the cycle
+must have an even number of vertices, again because an odd cycle is not `2`-choosable. -/
+theorem rubinFamily_of_choosable (hstruct : ThetaStructure) (hclass : ThetaClassification)
+    {V : Type} [Fintype V] [DecidableEq V] (H : SimpleGraph V) [DecidableRel H.Adj]
+    (hconn : H.Connected) (hdeg : ∀ v, 2 ≤ H.degree v) (hch : H.Choosable 2) :
+    RubinFamily H := by
+  rcases hstruct V H hconn hdeg with ⟨k, hk2, ⟨e⟩⟩ | ⟨m, hm, he⟩ | ⟨k, hk, hk2, hcon⟩ | h
+  · -- a cycle: it must have an even number of vertices, i.e. `Odd k`
+    refine Or.inr (Or.inl ⟨k, ?_, hk2, ⟨e⟩⟩)
+    rcases Nat.even_or_odd k with hev | hodd
+    · exact absurd ((choosable_iso e 2).mp hch) (not_choosable_two_closePath_of_even hev hk2)
+    · exact hodd
+  · exact Or.inr (Or.inr ⟨m, hm, he⟩)
+  · exact absurd hch (not_choosable_two_of_contains_odd_cycle hk hk2 hcon)
+  · obtain ⟨a, b, c, hvalid, hbad, hcon⟩ := h
+    exact absurd hch (not_choosable_of_contains (hclass a b c hvalid hbad) hcon)
+
+/-- **Rubin's theorem for cores, as an `↔`**, relative to the two hypotheses: a connected graph of
+minimum degree `≥ 2` is `2`-choosable exactly when it is an even cycle or a `θ_{2,2,2m}`. The
+backward implication is `Monophilic.choosable_two_of_rubinFamily`, proved outright. -/
+theorem choosable_two_iff_rubinFamily (hstruct : ThetaStructure) (hclass : ThetaClassification)
+    {V : Type} [Fintype V] [DecidableEq V] (H : SimpleGraph V) [DecidableRel H.Adj]
+    (hconn : H.Connected) (hdeg : ∀ v, 2 ≤ H.degree v) :
+    H.Choosable 2 ↔ RubinFamily H :=
+  ⟨rubinFamily_of_choosable hstruct hclass H hconn hdeg, choosable_two_of_rubinFamily H⟩
+
+/-- **Rubin's theorem, relative to the two hypotheses.** A graph obtained from `H` by any finite
+sequence of pendant attachments — `H` being its core, and `H` connected of minimum degree `≥ 2` —
+is `2`-choosable exactly when `H` is an even cycle or a `θ_{2,2,2m}`.
+
+This is the full statement of Rubin's theorem for graphs presented together with the sequence of
+degree-one deletions leading to their core: the pendant tower is `SimpleGraph.pendantTower`, and
+the reduction of the whole graph to its core is `SimpleGraph.choosable_pendantTower_iff`. -/
+theorem choosable_two_pendantTower_iff (hstruct : ThetaStructure) (hclass : ThetaClassification)
+    {V : Type} [Fintype V] [DecidableEq V] (H : SimpleGraph V) [DecidableRel H.Adj]
+    (hconn : H.Connected) (hdeg : ∀ v, 2 ≤ H.degree v) (k : ℕ) (d : TowerData V k) :
+    (pendantTower H k d).Choosable 2 ↔ RubinFamily H :=
+  (choosable_pendantTower_iff (G := H) (by omega) k d).trans
+    (choosable_two_iff_rubinFamily hstruct hclass H hconn hdeg)
+
+end Monophilic
+
+#print axioms Monophilic.not_choosable_of_contains
+#print axioms Monophilic.not_choosable_two_of_contains_odd_cycle
+#print axioms Monophilic.col_chain_const_odd
+#print axioms Monophilic.colConst_thetaOf_odd
+#print axioms Monophilic.not_choosable_two_thetaOf_odd
+#print axioms Monophilic.not_choosable_two_thetaGen_133
+#print axioms Monophilic.not_choosable_two_thetaGen_333
+#print axioms Monophilic.not_choosable_two_thetaGen_244
+#print axioms Monophilic.not_monophilic_two_thetaGen_333
+#print axioms Monophilic.exists_cycle_of_two_le_degree
+#print axioms Monophilic.card_lt_card_edgeFinset
+#print axioms Monophilic.degree_eq_two_of_card_edgeFinset_le
+#print axioms Monophilic.rubinFamily_of_choosable
+#print axioms Monophilic.choosable_two_iff_rubinFamily
+#print axioms Monophilic.choosable_two_pendantTower_iff
