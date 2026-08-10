@@ -18,8 +18,9 @@ connected graph `H` of minimum degree `≥ 2` which is none of the three fails t
 because:
 
 1. if `H` has an odd cycle it is not even `2`-colorable, and choosability passes to subgraphs;
-2. otherwise `H` is bipartite, and some structural alternative applies — **this step is open, and
-   every formulation of it tried here so far has been false**; see the correction section below;
+2. otherwise `H` is bipartite, and some structural alternative applies. Every formulation of this
+   step attempted *in this repository* was false (see the correction section below); the one that
+   works is **Rubin's own**, and it is now proved — `ListColoring.rubin_structure`;
 3. a generalized theta `Θ(k₁,…,k_n)` is `2`-choosable exactly when `n = 3` and the lengths are
    `(2, 2, \text{even})` (`ListColoring.choosable_two_gtheta_iff`, **proved**, arity arbitrary), and
    a **dumbbell** — two cycles joined by a path — is not `2`-choosable

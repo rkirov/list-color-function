@@ -90,8 +90,11 @@ example (n : ℕ) (hn : 2 ≤ n) : ¬ (K n).ECCAt n :=
 ```
 
 The smallest instance, `K 2`, is $`K_{2,4}`, and it earns its keep twice over: besides being the
-building block here it is the counterexample that fixed what the missing structural step of Rubin's
-theorem is allowed to look like, in {ref "twochoosable"}[the `2`-choosability chapter].
+building block here it is the counterexample that killed this development's first attempt at the
+structural half of Rubin's theorem, and so forced the classification of generalized theta graphs at
+arbitrary arity that the real proof runs on. {ref "twochoosable"}[The `2`-choosability chapter]
+tells that story, and reproves this very statement from the arity-four case — a second, independent
+route to the same fact.
 
 This last line is a one-liner from the three-regime observation, but it is worth pausing on: it is a
 complete, if easy, instance of the paper's theme. What Section 5 goes on to do is much harder —

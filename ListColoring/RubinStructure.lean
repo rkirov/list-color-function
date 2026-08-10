@@ -36,7 +36,8 @@ Rubin's five types, and where each is discharged:
 4. `θ_{a,b,c}` with `a ≠ 2` and `b ≠ 2` — `ListColoring.choosable_two_gtheta_iff`;
 5. a generalized theta on four or more arms — `ListColoring.not_choosable_two_gtheta_of_four`.
 
-All five are **proved**. What remains of the hard direction is the *structural extraction*: that a
+All five are **proved**, and so is the structural extraction (`ListColoring.rubin_structure`) and
+hence Rubin's theorem itself (`ListColoring.rubinTheorem`). What that extraction says is: that a
 core not in `{K₁, C_{2m+2}, θ_{2,2,2m}}` contains one of the five. See `plan.md` for the plan, taken
 from Rubin's own argument, which runs on a shortest cycle and two shortest connecting paths and
 needs **no** ear decomposition, Menger, or 2-connectivity.
@@ -598,8 +599,8 @@ theorem exists_connecting_path_of_cycle_of_choosable
 
 /-! ### What E4 still needs, and what the machine check says about it
 
-`ListColoring.RubinTheorem` is **not** discharged; steps 4–6 of Rubin's proof and the assembly are
-still open. Three observations from running his procedure exhaustively over all 316,460 connected
+`ListColoring.RubinTheorem` **is** discharged, by `ListColoring.rubinTheorem`; steps 4–6 of
+Rubin's proof are in `ListColoring.RubinCases` and the assembly in `ListColoring.RubinProof`.
 bipartite non-cycle graphs of minimum degree `≥ 2` on at most `8` vertices — every shortest cycle
 `C₁`, every shortest admissible `P₁`, every shortest admissible `P₂` — are recorded here so they
 are not rediscovered.

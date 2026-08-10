@@ -379,7 +379,7 @@ Steps 4–6 hold their arms sometimes as index sequences and sometimes as `Simpl
 two converters below move a walk into arm form. Mechanization only. -/
 
 omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
-/-- **A path walk is an arm**, indexed by `ListColoring.getVert`. -/
+/-- **A path walk is an arm**, indexed by `SimpleGraph.Walk.getVert`. -/
 theorem isArm_of_walk {s t : V} (p : G.Walk s t) (hp : p.IsPath) (hst : s ≠ t) :
     IsArm G s t p.getVert p.length := by
   have hinj := hp.getVert_injOn

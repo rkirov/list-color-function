@@ -116,7 +116,7 @@ example {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
 Read that as: the swapped count, plus the number of colorings that used `c₁` at `v₀` and `c₂` at
 `w₀`, equals the original count. Those are exactly the colorings the swap destroys.
 
-Mechanizing this turned up something about the hypotheses. The identity does **not** need
+Mechanizing this turned up something about the hypotheses. The identity does *not* need
 `c₂ ∈ M(w₀)`. Only three facts are used: `c₁` is available at `v₀`, `c₁` is not available at `w₀`,
 and `c₂` is not available at `v₀`. If `c₂` happens to be absent from `w₀`'s list too, the correction
 term is zero and the identity degenerates into the true but empty statement that the swap changed

@@ -19,7 +19,7 @@ Source: [Core.lean](https://github.com/rkirov/list-color-function/blob/main/List
 [K23.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/K23.lean).
 
 Theorem 2 of the paper characterizes the graphs that are enumeratively chromatic-choosable at `2`,
-and it does so in terms of a graph's **core** — what is left after repeatedly deleting vertices of
+and it does so in terms of a graph's *core* — what is left after repeatedly deleting vertices of
 degree 1 until every remaining vertex has degree at least 2. Lemma 5 is what makes that reduction
 legitimate: a connected graph is enumeratively chromatic-choosable at `n` exactly when its core is.
 
@@ -53,8 +53,8 @@ example {V : Type} [Fintype V] [DecidableEq V]
 ```
 
 The converse needs a matching identity for *arbitrary* lists, and here there is a choice to make.
-Given a list assignment `L` on `G`, we must extend it to the new vertex. Give the new vertex **the
-same list as its neighbor**. Then every coloring already uses one of those colors at `v`, so exactly
+Given a list assignment `L` on `G`, we must extend it to the new vertex. Give the new vertex *the
+same list as its neighbor*. Then every coloring already uses one of those colors at `v`, so exactly
 `n - 1` remain — the count is again exact rather than merely bounded:
 
 ```lean
@@ -115,6 +115,24 @@ example {V : Type} [Fintype V] [DecidableEq V]
     (pendantTower G k d).ECCAt n ↔ G.ECCAt n :=
   ecc_pendantTower_iff n k d
 ```
+
+The deletion direction is not lost, though; it is simply not needed until Rubin's theorem, whose
+argument really does have to *produce* a core rather than assume one is given. That is
+{name ListColoring.hasCore}`hasCore`, proved by induction on the number of vertices: delete a vertex
+of degree one — connectivity survives, by Mathlib's
+{name SimpleGraph.Connected.induce_compl_singleton_of_degree_eq_one}`induce_compl_singleton_of_degree_eq_one`
+— recurse, and put the deleted vertex back on top of the tower.
+
+```lean
+open SimpleGraph ListColoring in
+example {V : Type} [Fintype V] [DecidableEq V]
+    (G : SimpleGraph V) [DecidableRel G.Adj] (hG : G.Connected) :
+    HasCore G :=
+  hasCore G hG
+```
+
+Like the two ends of Lemma 5, the two readings of "core" are the same statement seen from opposite
+sides: one says how to build the graph from the core, the other that a core exists to build it from.
 
 A pleasant check on the definition: a path is nothing but a tower of pendant attachments, and the
 two constructions — built independently, in different files, for different purposes — turn out to be

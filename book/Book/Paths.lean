@@ -69,7 +69,7 @@ term-mode application.
 An `(n, n-1)`-list assignment on a path gives the interior vertices a common palette `S` of `n`
 colors and each terminal vertex an `(n-1)`-element subset of `S`. Since a terminal list has exactly
 one color missing from `S`, such an assignment is determined, up to renaming, by the pair of missing
-colors. The paper calls it **type A** when the two coincide and **type B** when they differ, and
+colors. The paper calls it *type A* when the two coincide and *type B* when they differ, and
 writes `A_k` and `B_k` for the resulting counts.
 
 Pictured, with $`S` the common interior palette and the two ends each missing one colour:

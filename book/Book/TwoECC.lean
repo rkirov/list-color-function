@@ -19,12 +19,14 @@ Source: [Core.lean](https://github.com/rkirov/list-color-function/blob/main/List
 [K23.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/K23.lean),
 [Theta.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Theta.lean),
 [Rubin.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Rubin.lean),
-[Theorem2.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Theorem2.lean).
+[Theorem2.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Theorem2.lean),
+[RubinProof.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/RubinProof.lean).
 
 This chapter states the second main theorem of Kirov and Naimi {citep kirovNaimi}[]: a complete
-description of the graphs that are enumeratively chromatic-choosable at `2`. It also says exactly
-what the description still rests on, because the answer is *almost* unconditional and the remaining
-gap is worth being precise about.
+description of the graphs that are enumeratively chromatic-choosable at `2`. The description rests
+on nothing. Its one borrowed ingredient, Rubin's theorem, is proved in
+{ref "twochoosable"}[the previous chapter], so what follows is unconditional except for
+connectivity.
 
 # Narrowing the field
 
@@ -183,21 +185,22 @@ example (m : ℕ) (hm : 2 ≤ m) :
 *A connected graph is enumeratively chromatic-choosable at `2` if and only if its core is a single
 vertex, is a cycle, is $`K_{2,3}`, or it contains an odd cycle.*
 
-The Lean statement takes Rubin's theorem as its first explicit argument, and the way it does so is
-the point of this section:
-
 ```lean
 open SimpleGraph ListColoring in
-example (rubin : RubinTheorem) {V : Type} [Fintype V]
-    [DecidableEq V] (G : SimpleGraph V) [DecidableRel G.Adj]
+example {V : Type} [Fintype V] [DecidableEq V]
+    (G : SimpleGraph V) [DecidableRel G.Adj]
     (hconn : G.Connected) :
     G.ECCAt 2 ↔
       CoreIsVertex G ∨ CoreIsCycle G ∨ CoreIsK23 G ∨
         HasOddCycle G :=
-  ecc_two_iff_of_rubin rubin G hconn
+  ecc_two_iff G hconn
 ```
 
-Three things are worth reading off that signature.
+Two things are worth reading off that signature.
+
+*Connectivity is the only hypothesis.* It is there because it is the hypothesis of Rubin's theorem,
+and it is used nowhere else in the argument. In particular the ⟸ direction, displayed below, needs
+not even that.
 
 *The four alternatives are real definitions, not abstract propositions.* Each spells out on top of
 the {name ListColoring.CoreIs}`CoreIs` predicate of {ref "twochoosable"}[the previous chapter] a
@@ -232,17 +235,44 @@ restriction, where Rubin's list says "is an even cycle". That is because *every*
 enumeratively chromatic-choosable at `2`, by Theorem 1, whereas only the even ones are
 `2`-choosable.
 
-*The hypothesis is a single named proposition.* {name ListColoring.RubinTheorem}`RubinTheorem` is
-Rubin's theorem, stated in the development and being proved there; it is not an axiom and it is not
-a re-statement tailored to what Theorem 2 happens to need.
+## How the loan was arranged, and repaid
 
-*It is the first explicit argument.* The day a term `rubinTheorem : RubinTheorem` exists,
-`ecc_two_iff_of_rubin rubinTheorem` is the unconditional theorem, with no other edit
-anywhere in the development and no change to this chapter beyond deleting the hypothesis.
+For most of this development Rubin's theorem was not available, and Theorem 2 was stated relative to
+it — as a *named proposition* taken as the first explicit argument:
 
-# How much of this is unconditional?
+```lean
+open SimpleGraph ListColoring in
+example (rubin : RubinTheorem) {V : Type} [Fintype V]
+    [DecidableEq V] (G : SimpleGraph V) [DecidableRel G.Adj]
+    (hconn : G.Connected) :
+    G.ECCAt 2 ↔
+      CoreIsVertex G ∨ CoreIsCycle G ∨ CoreIsK23 G ∨
+        HasOddCycle G :=
+  ecc_two_iff_of_rubin rubin G hconn
+```
 
-More than the shape of the statement suggests, and the difference matters.
+The arrangement is worth recording, because it is what let the two halves be worked on
+independently and it cost nothing to unwind. {name ListColoring.RubinTheorem}`RubinTheorem` is
+Rubin's theorem itself, not an axiom and not a re-statement tailored to what Theorem 2 happens to
+need — so the size of the loan was legible in the signature. And being the *first explicit
+argument*, discharging it was a one-line change:
+
+```lean
+open SimpleGraph ListColoring in
+example {V : Type} [Fintype V] [DecidableEq V]
+    (G : SimpleGraph V) [DecidableRel G.Adj]
+    (hconn : G.Connected) :
+    G.ECCAt 2 ↔
+      CoreIsVertex G ∨ CoreIsCycle G ∨ CoreIsK23 G ∨
+        HasOddCycle G :=
+  ecc_two_iff_of_rubin rubinTheorem G hconn
+```
+
+That is literally the definition of {name ListColoring.ecc_two_iff}`ecc_two_iff`. The conditional
+form is kept rather than deleted: it is the statement that says exactly how much of Rubin was ever
+used, and it is proved in a file upstream of everything Rubin's proof is built from.
+
+# The pieces, and what each of them needs
 
 *The entire ⟸ direction*, with no hypothesis at all — not Rubin's theorem, and not even
 connectivity:
@@ -305,8 +335,8 @@ The two moving parts there are the collapse of "even cycle" into "cycle", and th
 $`\theta_{2,2,2m}` for `m ≥ 2` — which is the witness family displayed above — leaving `m = 1`,
 which is $`K_{2,3}`.
 
-*The ⟸ direction of Rubin's theorem itself*, so that what is missing from `RubinTheorem` is only
-its forward implication:
+*The ⟸ direction of Rubin's theorem itself*, which is the half that assembles results already in
+hand:
 
 ```lean
 open SimpleGraph ListColoring in
@@ -317,13 +347,8 @@ example {V : Type} [Fintype V] [DecidableEq V]
   choosable_two_of_rubinAlternatives h
 ```
 
-So the honest summary is: *every colouring-theoretic ingredient of Theorem 2 is proved outright, and
-what remains is the forward implication of Rubin's theorem, which reduces to a structural statement
-about subgraphs with no colouring in it.* Connectivity is load-bearing in exactly one place — it is
-the hypothesis of Rubin's theorem — and is used nowhere else.
-
-The graphs that the missing structural step would have to exclude are, individually, excluded
-already:
+Only the last of the four calls on the argument of {ref "twochoosable"}[the previous chapter].
+Individually, the graphs that argument has to exclude are excluded outright:
 
 ```lean
 open ListColoring in
@@ -337,14 +362,21 @@ example : ¬ (thetaGen 1 3 3).ECCAt 2 :=
   not_ecc_two_thetaGen_133
 ```
 
-What that step must *not* be is the subject of the $`K_{2,4}` section of
-{ref "twochoosable"}[the previous chapter]: a three-arm dichotomy is provably too weak, and the
-generalized theta of arbitrary arity is the right object.
-
 # What is left
 
-The classification at `n = 2` is essentially complete; cycles are settled for every `n`; chordal
-graphs are settled for every `n`. What is not settled is anything like a classification for `n ≥ 3`,
-and it is not known what one would look like. What *is* known, and is the subject of
-{ref "threshold"}[the last chapter], is that the question always has a positive answer eventually:
-every graph is enumeratively chromatic-choosable at `n` once `n` is large enough.
+The classification at `n = 2` is complete and unconditional; cycles are settled for every `n`;
+chordal graphs are settled for every `n`. Three things are not settled.
+
+*A classification for `n ≥ 3`.* Nothing like one is known, and it is not known what one would look
+like.
+
+*Whether the pointwise property propagates.* Theorem 2 characterizes agreement at the single value
+`n = 2` — in the modern vocabulary, `ν(G) = 2`, *weak* enumerative chromatic-choosability. Whether
+agreement at one `n` forces agreement at `n + 1`, so that this is also a characterization of
+`τ(G) = 2`, is open; it is the question Kirov and Naimi's paper leaves behind, and it is still asked
+in exactly that form. For $`\chi(G) = 2` the answer is *yes*, by a later and independent route —
+which settles this one case of the question and no other.
+
+*The eventual behaviour*, which is the subject of {ref "threshold"}[the last chapter] and is the one
+piece of good news that holds for every graph: the question always has a positive answer eventually.
+Every graph is enumeratively chromatic-choosable at `n` once `n` is large enough.

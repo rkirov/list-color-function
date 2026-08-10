@@ -9,15 +9,28 @@ hypotheses and the book stops building.
 
 ## Chapters
 
-1. **Counting List Colorings** — why `SimpleGraph.Coloring` is the wrong counting object, the
-   `col` / `colConst` / `ECCAt` definitions, renaming invariance, the deletion identity.
-2. **Cones over Cliques** — Lemma 1 and complete graphs.
-3. **Paths and the Two Recurrences** — paths built by pendant attachment, `A_k` and `B_k`,
-   Lemma 3(a).
-4. **The Swapping Lemma** — bridges, Lemma 2, Lemma 4.
-5. **Minimizing Assignments, and Cycles** — Lemma 3(b), 3(c), and Theorem 1.
-6. **What Mechanization Found** — hypotheses that turned out load-bearing, hypotheses that turned
-   out unnecessary, and what remains.
+**Part I** states the results, for a reader who has never met a chromatic polynomial: *Map of the
+Formalization*, *Colouring a Graph*, *The Chromatic Polynomial*, *Lists Instead of a Palette*,
+*First Answers: Chordal Graphs*, *Theorem 1: Cycles*, *Which Graphs Are 2-Choosable?* (Rubin's
+theorem, proved), *Which Graphs Are Enumeratively Chromatic-Choosable at 2?* (Kirov–Naimi's
+Theorem 2, unconditional), *Every Graph, Eventually*, and *Reading `Challenge.lean`*.
+
+**Part II** is the proofs: *Counting List Colorings*, *Cones over Cliques* (Lemma 1), *Paths and the
+Two Recurrences* (`A_k`, `B_k`, Lemma 3(a)), *The Swapping Lemma* (Lemmas 2 and 4), *Minimizing
+Assignments, and Cycles* (Lemmas 3(b), 3(c), Theorem 1), *Cores* (Lemma 5, `K₂,₃`), *Theta Graphs
+and Theorem 2*, *Colorable but Not Choosable*, *What Mechanization Found*, and *The Declarations*.
+
+The chapter order is `Book.lean`; each chapter is a module under `Book/`.
+
+## Two checks the build enforces
+
+* **Every displayed statement is an `example`** discharged against a library theorem, so a rename or
+  a changed hypothesis breaks the build rather than the prose.
+* **Warnings are errors** (`warningAsError` in `lakefile.lean`), and `Book/Reference.lean` carries a
+  command that walks every declaration docstring in the library and errors on a backticked name that
+  resolves to neither a constant nor a module. Verso does not do this itself: its inline-code
+  elaborator falls back to one that ignores elaboration errors, so an unresolvable name renders
+  silently.
 
 ## Building
 

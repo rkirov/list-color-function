@@ -119,38 +119,54 @@ example {k m : ℕ} (hk : 2 ≤ k) : (closePath k).ECCAt (m + 2) :=
   ecc_closePath_of_two_le hk
 ```
 
-*Eight: Rubin's theorem, the direction that is proved* —
+*Eight: Rubin's theorem* {citep erdosRubinTaylor}[] —
 {ref "twochoosable"}[the `2`-choosability chapter].
+
+```lean
+open ListColoring in
+example : RubinTheorem := rubinTheorem
+```
+
+That display is unusual, and deliberately so. The claimed theorem's type is the bare constant
+{name ListColoring.RubinTheorem}`RubinTheorem`, so *the statement of Rubin's theorem is the body of
+that definition* — unfolding it is the only way to see what claim eight says:
+
+```lean
+open SimpleGraph ListColoring in
+example : RubinTheorem =
+    ∀ {V : Type} [Fintype V] [DecidableEq V]
+      (G : SimpleGraph V) [DecidableRel G.Adj],
+      G.Connected → (G.Choosable 2 ↔
+        CoreIsVertex G ∨ CoreIsEvenCycle G ∨
+          CoreIsTheta G) :=
+  rfl
+```
+
+`Challenge.lean` therefore reproduces that body verbatim rather than leaving it a placeholder; the
+comparator matches `RubinTheorem` by its type, which is only `Prop`, so the library is where the
+statement is really checked.
+
+*Nine: Theorem 2 of Kirov–Naimi* — {ref "twoecc"}[the enumerative chromatic-choosability at `2`
+chapter]. It carries no hypothesis beyond connectivity.
 
 ```lean
 open SimpleGraph ListColoring in
 example {V : Type} [Fintype V] [DecidableEq V]
-    (G : SimpleGraph V) [DecidableRel G.Adj] (h : RubinFamily G) :
-    G.Choosable 2 :=
-  choosable_two_of_rubinFamily G h
-```
-
-*Nine: Theorem 2 of Kirov–Naimi* — {ref "twoecc"}[the enumerative chromatic-choosability at `2`
-chapter]. The one statement in the list that carries a hypothesis: Rubin's theorem, which this
-development is in the course of proving. The hypothesis is visible in the signature, and it is
-stated in the most conservative form available — the three classes it names are quantified variables
-with no definition attached, so nothing about what "core" means can be smuggled in through one.
-
-```lean
-open SimpleGraph in
-example {V : Type} [Fintype V] [DecidableEq V]
-    {G : SimpleGraph V} [DecidableRel G.Adj]
-    {CoreIsVertex CoreIsEvenCycle : Prop} {CoreIsTheta : ℕ → Prop}
-    (rubin : G.Choosable 2 →
-      CoreIsVertex ∨ CoreIsEvenCycle ∨ ∃ m, 1 ≤ m ∧ CoreIsTheta m)
-    (hvertex : CoreIsVertex → G.ECCAt 2)
-    (hcycle : CoreIsEvenCycle → G.ECCAt 2)
-    (hK23 : CoreIsTheta 1 → G.ECCAt 2)
-    (htheta : ∀ m, 2 ≤ m → CoreIsTheta m → ¬ G.ECCAt 2) :
+    (G : SimpleGraph V) [DecidableRel G.Adj]
+    (hconn : G.Connected) :
     G.ECCAt 2 ↔
-      ¬ G.Colorable 2 ∨ CoreIsVertex ∨ CoreIsEvenCycle ∨ CoreIsTheta 1 :=
-  ecc_two_iff_of_rubin_hard rubin hvertex hcycle hK23 htheta
+      CoreIsVertex G ∨ CoreIsCycle G ∨ CoreIsK23 G ∨
+        HasOddCycle G :=
+  ecc_two_iff G hconn
 ```
+
+Claims eight and nine replace two weaker ones the file used to carry, and the reason is worth
+recording. While Rubin's theorem was still a loan, claim eight was its ⟸ half — all that was
+provable — and claim nine was Theorem 2 with Rubin as an explicit hypothesis and the core
+alternatives left as abstract propositions. The second of those *understated* what the library
+proves while certifying something *weaker*: abstract `CoreIsVertex` and `CoreIsTheta` propositions
+say nothing at all about cores. Both are gone, and `RubinFamily`, which existed only to state the
+superseded claim, is delisted rather than kept for decoration.
 
 *Ten: Donner's theorem* {citep donner}[] — {ref "threshold"}[the threshold chapter].
 
@@ -171,7 +187,7 @@ example {V : Type} [Fintype V] [DecidableEq V]
 ### 4. Chordal graphs and Kostochka–Sidorenko
 ### 5. Theorem 1: every cycle is enumeratively chromatic-choosable at `n`
 ### 6. The machinery behind Theorem 1
-### 7. 2-choosability: Rubin's list
+### 7. 2-choosability: Rubin's theorem
 ### 8. Enumerative chromatic-choosability at `2`: Theorem 2
 ### 9. Every graph, eventually
 ```
@@ -206,7 +222,7 @@ example {V : Type} [Fintype V] [DecidableEq V]
   * {ref "paths"}[Paths], {ref "swapping"}[Swapping], {ref "cycles"}[Cycles]
   * none — prose only
 *
-  * §7 Rubin's list
+  * §7 Rubin's theorem
   * {ref "twochoosable"}[Which Graphs Are 2-Choosable?]
   * 8
 *
@@ -276,9 +292,10 @@ first and a narrative second, and that the two coincide less often than one woul
 A great deal. The file claims ten theorems; the library proves several hundred. Everything discussed
 in this book that is not one of the ten — Kirov and Naimi's Lemmas 1 through 6, the three regimes,
 the explicit threshold $`n > 2^{|E|}`, the counts $`A_k` and $`B_k` and their closed forms, Dirac's
-lemma, Rubin's easy direction family by family, the classification of `2`-choosable theta graphs,
-the witness assignments for the theta graphs — is in the library, under the names given in the
-section headers of `Challenge.lean`.
+lemma, Rubin's easy direction family by family, the classification of `2`-choosable generalized
+theta graphs at every arity, the dumbbell, the six cases of Rubin's steps 5 and 6, the witness
+assignments for the theta graphs — is in the library, under the names given in the section headers
+of `Challenge.lean`.
 
 The ten were chosen as the load-bearing ones: the results a reader would quote. Reading the file is
 reading those ten and the vocabulary they need. Reading this book is everything else.

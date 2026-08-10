@@ -76,12 +76,12 @@ let arrows := [
 (arrows ++ boxes).foldl atop emptyDiagram
 ```
 
-The **deletion identity** says that the colorings giving a fixed color to a fixed vertex are exactly
+The *deletion identity* says that the colorings giving a fixed color to a fixed vertex are exactly
 the colorings of the graph with that vertex removed, from the lists that have lost that color at
 each neighbour. Summing over the color turns it into a recursion, and every count in the development
 is ultimately computed by iterating it.
 
-The **cone construction** attaches a new vertex to a chosen set of existing ones. Used with a clique
+The *cone construction* attaches a new vertex to a chosen set of existing ones. Used with a clique
 it gives Lemma 1 and the chordal corollary; used with a singleton it gives pendant vertices and
 hence cores; used twice on a path it gives the theta graphs of Theorem 2.
 
@@ -123,7 +123,7 @@ Each Lean name below is the exact statement proved; each file link goes to the s
   * {name}`ListColoring.col_lt_col_of_ssubset`
   * [PathColorable.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/PathColorable.lean)
 *
-  * **Theorem 1**
+  * *Theorem 1*
   * {name}`ListColoring.ecc_closePath_of_two_le`
   * [CycleRotate.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/CycleRotate.lean)
 *
@@ -135,13 +135,21 @@ Each Lean name below is the exact statement proved; each file link goes to the s
   * {name}`SimpleGraph.ecc_K23`
   * [K23.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/K23.lean)
 *
-  * **Theorem 2**
-  * {name}`ListColoring.ecc_two_iff_of_rubin`
-  * [Theorem2.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Theorem2.lean)
+  * *Theorem 2*
+  * {name}`ListColoring.ecc_two_iff`
+  * [RubinProof.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/RubinProof.lean)
 *
-  * Rubin's theorem
-  * {name}`ListColoring.RubinTheorem`, {name}`ListColoring.choosable_two_of_rubinAlternatives`
-  * [Theorem2.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Theorem2.lean), [Rubin.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Rubin.lean)
+  * *Rubin's theorem*
+  * {name}`ListColoring.rubinTheorem`
+  * [RubinProof.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/RubinProof.lean)
+*
+  * Rubin, steps 1–6
+  * {name}`ListColoring.rubin_structure`
+  * [RubinCases.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/RubinCases.lean)
+*
+  * the core exists
+  * {name}`ListColoring.hasCore`
+  * [CoreExtract.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/CoreExtract.lean)
 *
   * §5 building block
   * {name}`SimpleGraph.ERT.not_choosable`
@@ -184,10 +192,23 @@ has exactly $`n` colors.
 git clone https://github.com/rkirov/list-color-function
 cd list-color-function
 lake exe cache get && lake build
-lake env lean scripts/AxiomAudit.lean
 ```
 
-The last line prints the axiom dependencies of every headline result. All of them should read
+That elaborates every proof and, because each file ends with a block of `#print axioms` lines for
+the results it establishes, prints their axiom dependencies as it goes. All of them should read
 `[propext, Classical.choice, Quot.sound]` — Lean's three standard axioms and nothing else. In
-particular `sorryAx` never appears, which is what rules out an incomplete proof. Continuous
-integration runs exactly this check and fails the build if it does not hold.
+particular `sorryAx` never appears, which is what rules out an incomplete proof.
+
+The authoritative check is stronger than an axiom audit and is a separate script:
+
+```
+./verify.sh
+```
+
+This runs `leanprover/comparator` against the `comparator/` workspace: it checks that the
+statements in `comparator/Challenge.lean` really are the ones the library proves, that the
+permitted axioms are exactly the three above, and it replays the proofs through two independent
+kernels — `lean4export` in a sandbox, and the `nanoda` kernel. Continuous integration runs it on
+every push, alongside a grep that fails if `sorry`, `admit` or `native_decide` ever appears in the
+library sources. {ref "readingchallenge"}[Reading `Challenge.lean`] is a guide to the ten
+statements that check covers.

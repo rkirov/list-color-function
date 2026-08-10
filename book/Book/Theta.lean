@@ -21,9 +21,11 @@ Source:
 Theorem 2 characterizes the graphs that are enumeratively chromatic-choosable at `2`. Its easy
 direction assembles results already in hand — trees, cycles, `K₂,₃`, and the observation that a
 graph with an odd cycle is not `2`-colorable and so is enumeratively chromatic-choosable at `2`
-vacuously. Its converse runs through Rubin's theorem, which this development is in the course of
-proving; this chapter is about how the dependency is arranged so that the two halves can be worked
-on independently.
+vacuously. Its converse runs through Rubin's theorem, which is proved in this development
+({ref "twochoosable"}[the `2`-choosability chapter] tells that story). This chapter is about the
+theta graphs themselves — the one family on Rubin's list that is *not* enumeratively
+chromatic-choosable — and about how the dependency on Rubin was arranged so that the two halves
+could be worked on independently before it landed.
 
 # Where Rubin's theorem enters
 
@@ -140,27 +142,31 @@ $`\theta_{2,2,2m}` — really is `2`-choosable. The even-cycle case is a corolla
 than a separate argument: enumerative chromatic-choosability at `2` says the constant assignment
 minimizes, and for an even cycle that minimum is `col(C,2) = 2 > 0`.
 
-What is outstanding is the other direction — that a `2`-choosable graph *must* have one of those
-cores. Its colouring content is proved: a theta graph is `2`-choosable exactly when its shape is
-$`(2,2,\text{even})`. What is not yet proved is a structural statement with no colouring content in
-it at all, about which subgraphs a connected graph of minimum degree at least two must contain when
-it is not a cycle. Extracting such a subgraph needs block or ear decomposition, which Mathlib does
-not have. {ref "twochoosable"}[The `2`-choosability chapter] says how far that has got — and gives
-the six-vertex counterexample, $`K_{2,4}`, that settled what the structural step is *not* allowed to
-be.
+The other direction — that a `2`-choosable graph *must* have one of those cores — is the long one,
+and it is proved. Its colouring content is that a theta graph is `2`-choosable exactly when its
+shape is $`(2,2,\text{even})`, at every arity; its structural content is Rubin's own case analysis
+on a shortest cycle and two shortest connecting paths. No block or ear decomposition is needed
+anywhere, which is what makes the whole thing formalizable against a Mathlib that has neither.
+{ref "twochoosable"}[The `2`-choosability chapter] tells it in full, together with the two
+six-vertex counterexamples, $`K_{2,4}` and $`K_{3,3}-e`, that killed the structural detour this
+development first tried.
 
-The three alternatives above are *abstract propositions*, not definitions. That is deliberate, and
+The three alternatives above are *abstract propositions*, not definitions. That was deliberate, and
 it is the most conservative form the statement can take: if `CoreIsEvenCycle` were defined here, the
 theorem would quietly depend on whatever that definition happened to say about cores, and a reader
 could not tell by inspection how much had been assumed. Left abstract, the theorem says exactly what
-it should: *given* Rubin's classification, and *given* the four enumerative chromatic-choosability facts about the classes
-it names — each of which is proved in this development — the Kirov–Naimi characterization follows.
+it should: *given* Rubin's classification, and *given* the four enumerative chromatic-choosability
+facts about the classes it names — each of which is proved in this development — the Kirov–Naimi
+characterization follows.
 
 The version in `ListColoring.Theorem2`, displayed in {ref "twoecc"}[the enumerative
 chromatic-choosability at `2` chapter], goes the other way and pays off the definitions: there the
 four alternatives are spelled out on a concrete notion of core, and the hypothesis is a single named
 proposition {name ListColoring.RubinTheorem}`RubinTheorem` taken as the first explicit argument.
-Both forms are proved; the abstract one shows that no more than Rubin's statement is being used, and
-the concrete one is what becomes unconditional the moment Rubin's theorem is available.
+Both forms are proved, and the term {name ListColoring.rubinTheorem}`rubinTheorem` now discharges
+the hypothesis of the second — which is what makes
+{name ListColoring.ecc_two_iff}`ecc_two_iff` unconditional. The abstract form is kept because it is
+the only place a reader can see, from a signature alone, that nothing beyond Rubin's statement was
+ever used.
 
-What is assumed is legible in the signature. Nothing else is.
+What was assumed is legible in the signature. Nothing else was.

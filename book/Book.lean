@@ -39,8 +39,8 @@ the *same* list — sameness is what creates conflicts. For many graphs that int
 For some it is false.
 
 Kostochka and Sidorenko {citep kostochkaSidorenko}[] raised the question in 1990. Kirov and Naimi
-{citep kirovNaimi}[] call a graph **`n`-monophilic** when the intuition holds for it — the name the
-literature settled on is **enumeratively chromatic-choosable at `n`**, and that is the name used
+{citep kirovNaimi}[] call a graph *`n`-monophilic* when the intuition holds for it — the name the
+literature settled on is *enumeratively chromatic-choosable at `n`*, and that is the name used
 throughout this book and the development. They prove that every cycle is enumeratively
 chromatic-choosable at `n` for every `n`, characterize the graphs that are enumeratively
 chromatic-choosable at `2`, and construct, for each `n`, a graph that is `n`-choosable but not
@@ -49,6 +49,15 @@ enumeratively chromatic-choosable at `n`.
 This book accompanies a Lean 4 formalization of that paper. Every displayed statement below is
 elaborated when the book is built, and each is discharged against the corresponding theorem in the
 development — so what you read is what has been checked.
+
+Their characterization at `n = 2` rests on one borrowed result, *Rubin's theorem*
+{citep erdosRubinTaylor}[]: a connected graph is `2`-choosable exactly when its core is a
+single vertex, an even cycle, or $`\theta_{2,2,2m}`. It is a theorem of 1980 that appears not to
+have been machine-checked before. It is *proved* in this development
+({ref "twochoosable"}[Which Graphs Are 2-Choosable?]), so Kirov and Naimi's Theorem 2 carries no
+hypothesis here beyond connectivity. None of that mathematics is new; the proof is Rubin's own, and
+the only novelty is that a machine has now been through it — which did turn up three points in his
+three-page exposition that do not survive as printed.
 
 It is written to be read in one direction, ending at a single file. The development's statement
 surface is `comparator/Challenge.lean`: ten theorems and the vocabulary they need, stated exactly as
@@ -71,9 +80,10 @@ tractable. It covers how to count list colourings at all, the cone construction,
 paths, the swapping lemma that makes minimizing assignments rigid, the assembly into Theorem 1, and
 the material on cores and theta graphs. It then collects what mechanization taught us that reading
 did not — which hypotheses turned out to be load-bearing, which turned out to be unnecessary, which
-pieces of surrounding folklore did not survive checking, and one hypothesis of our own that turned
-out to be false. It closes with {ref "reference"}[The Declarations]: the vocabulary and the headline
-results rendered straight out of the library, with their own documentation.
+pieces of surrounding folklore did not survive checking, which hypotheses of *our own* turned out to
+be false, and the three corrections to Rubin's published argument. It closes with
+{ref "reference"}[The Declarations]: the vocabulary and the headline results rendered straight out
+of the library, with their own documentation.
 
 A word on what "verified" means here and what it does not. The development contains no `sorry`, and
 every result cited in this book depends only on Lean's three standard axioms — propositional
