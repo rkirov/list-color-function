@@ -84,3 +84,9 @@ open SimpleGraph Monophilic
 #print axioms Monophilic.listColorFunction_closePath
 #print axioms Monophilic.colConst_closePath_chromatic
 #print axioms Monophilic.listColorFunction_closePath_chromatic
+
+/-! ### The chromatic polynomial (Whitney subset expansion) -/
+#print axioms SimpleGraph.chromaticPolynomial
+#print axioms SimpleGraph.eval_chromaticPolynomial
+#print axioms SimpleGraph.chromaticPolynomial_bot
+#print axioms SimpleGraph.monophilic_iff_listColorFunction_eq_eval

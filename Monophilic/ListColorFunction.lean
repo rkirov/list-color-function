@@ -4,6 +4,7 @@ Released under Apache 2.0 license.
 -/
 import Monophilic.CycleRotate
 import Monophilic.Core
+import Monophilic.ChromaticPolynomial
 
 /-!
 # The list color function
@@ -82,6 +83,17 @@ theorem monophilic_iff_listColorFunction_eq (n : ℕ) :
     exact hcol ▸ hmono L hL
   · intro heq L hL
     exact heq ▸ listColorFunction_le_col hL
+
+/-- **`P_ℓ(G, n) = P(G, n)` with a genuine polynomial on the right.**
+
+`Monophilic.ChromaticPolynomial` builds `chromaticPolynomial G : Polynomial ℤ` by the Whitney
+subset expansion, and `eval_chromaticPolynomial` says its value at `n` is the coloring count. So
+`n`-monophilicity is literally the assertion that the list color function agrees with the chromatic
+polynomial at `n` — for an arbitrary graph. -/
+theorem monophilic_iff_listColorFunction_eq_eval (n : ℕ) :
+    G.Monophilic n ↔ (G.listColorFunction n : ℤ) = (G.chromaticPolynomial).eval (n : ℤ) := by
+  rw [monophilic_iff_listColorFunction_eq, eval_chromaticPolynomial]
+  exact ⟨fun h => by exact_mod_cast h, fun h => by exact_mod_cast h⟩
 
 end SimpleGraph
 

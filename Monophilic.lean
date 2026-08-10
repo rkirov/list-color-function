@@ -25,3 +25,4 @@ import Monophilic.Choosable
 import Monophilic.ThetaChoosable
 import Monophilic.Rubin
 import Monophilic.ListColorFunction
+import Monophilic.ChromaticPolynomial
