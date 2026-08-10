@@ -1,6 +1,9 @@
 import VersoManual
 import Book.Papers
 import Book.Map
+import Book.Colouring
+import Book.Polynomial
+import Book.Lists
 import Book.Counting
 import Book.Cliques
 import Book.Paths
@@ -55,6 +58,12 @@ not a guarantee that the *statements* say what you think they say; that is what 
 cross-checks scattered through the development, and the discussion in this book, are for.
 
 {include 1 Book.Map}
+
+{include 1 Book.Colouring}
+
+{include 1 Book.Polynomial}
+
+{include 1 Book.Lists}
 
 {include 1 Book.Counting}
 

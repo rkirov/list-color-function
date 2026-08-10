@@ -5,7 +5,74 @@ Released under Apache 2.0 license.
 import Monophilic.RubinHard
 
 /-!
-# Draft: chains along an arm
+# The classification of `2`-choosable theta graphs
+
+`Monophilic.RubinHard` reduces Rubin's hard direction to two named hypotheses, one purely
+structural (`Monophilic.ThetaAlternative`) and one the classification of `2`-choosable *theta*
+graphs (`Monophilic.ThetaClassification`). This file **discharges the second**:
+
+> `θ_{a,b,c}` of a valid shape is `2`-choosable if and only if the shape is `(2, 2, \text{even})`.
+
+Only the forward implication is a loan; it is proved here in the form
+`Monophilic.not_choosable_two_thetaGen`, and `Monophilic.thetaClassification` is the resulting
+term of type `Monophilic.ThetaClassification`. Consequently
+`Monophilic.rubinFamily_of_choosable'`, `Monophilic.choosable_two_iff_rubinFamily'` and
+`Monophilic.choosable_two_pendantTower_iff'` need only `ThetaAlternative`.
+
+## The argument
+
+`Monophilic.thetaBadLists` gives both branch vertices the list `{1, 2}`, so a coloring of
+`θ_{a,b,c}` from it consists of a pair `(α, β) ∈ {1,2} × {1,2}` of branch colors together with a
+coloring of the interior of each arm; an arm **blocks** `(α, β)` when its lists leave no interior
+coloring compatible with `α` and `β`. `RubinHard` checks by brute force that the four pairs are
+all blocked for every valid non-Rubin shape with `a ≤ 4`, `b ≤ 4`, `c ≤ 5`. What was missing, and
+is supplied here, is the induction along an arm of **unbounded** length. It comes in two shapes,
+both consequences of one alternating-chain lemma:
+
+* `Monophilic.const_block` — an arm whose interior lists are all `{1, 2}` forces its two ends to
+  alternate, so a coloring exists exactly when `α = β` agrees with the parity of the number `m` of
+  interior vertices: `α = β ↔ m` odd. Such an arm therefore blocks **two** pairs, one diagonal or
+  the other according to that parity.
+* `Monophilic.armBlockLists_forced` — an arm with `m ≥ 2` interior vertices carrying the lists
+  `Monophilic.armBlockLists α₀ β₀ m` propagates a forced chain: if its first interior vertex avoids
+  `α₀` — which it must when `α = α₀` — then its last interior vertex is forced to the color `β₀`.
+  Such an arm blocks the single pair `(α₀, β₀)`.
+
+For a valid shape other than `(2, 2, \text{even})` one of two things happens. If `b = 2` then
+`a ≤ 2`, the three arm lengths do not all have the same parity, and two applications of
+`const_block` already contradict each other — this is the odd-cycle case, and no coloring of the
+constant lists `{1, 2}` exists at all. Otherwise `3 ≤ b ≤ c`: the first arm splits the four pairs
+into two by parity through `const_block`, and the two long arms block the two survivors through
+`armBlockLists_forced`.
+
+The whole analysis is carried out on **indices** rather than on `Fin (a+b+c-1)`: a coloring `f` of
+`θ_{a,b,c}` is read as a function `F : ℕ → ℕ`, the lists as `Monophilic.badListAt`, and the arms
+as the three ranges of indices that `Monophilic.armStepB` links up.
+
+## Main definitions
+
+* `Monophilic.badListAt` : `Monophilic.thetaBadLists` as a function of the index of a vertex
+* `Monophilic.thetaGenToTheta` : the embedding of `thetaGen 2 2 (2m)` into `Monophilic.theta m`
+
+## Main results
+
+* `Monophilic.alt_chain` : **the alternating chain** — a stretch of a path whose lists are all
+  `{p, q}` alternates, and is determined by the color at either end
+* `Monophilic.const_block` : **which pairs an arm with constant lists blocks**
+* `Monophilic.armBlockLists_forced` : **the forced chain along a blocking arm**
+* `Monophilic.card_thetaBadLists` : the witness is a `2`-list assignment, for every shape
+* `Monophilic.col_thetaBadLists_eq_zero` : **the witness has no coloring at all**, for every valid
+  non-Rubin shape
+* `Monophilic.not_choosable_two_thetaGen` : **`θ_{a,b,c}` is not `2`-choosable** unless its shape
+  is `(2, 2, \text{even})`
+* `Monophilic.thetaClassification` : **`Monophilic.ThetaClassification`, discharged**
+* `Monophilic.thetaGenToTheta` : the embedding of `thetaGen 2 2 (2m)` into `Monophilic.theta m`,
+  and `Monophilic.choosable_two_thetaGen_of_goodShape` : **Rubin's own shape is `2`-choosable** on
+  the general model
+* `Monophilic.choosable_two_thetaGen_iff` : **the classification as an `↔`**
+* `Monophilic.rubinFamily_of_choosable'`, `Monophilic.choosable_two_iff_rubinFamily'`,
+  `Monophilic.choosable_two_pendantTower_iff'` : Rubin's theorem relative to
+  `Monophilic.ThetaAlternative` alone
 -/
 
 open Finset
@@ -14,9 +81,46 @@ namespace Monophilic
 
 open SimpleGraph
 
+set_option maxRecDepth 100000
+
+/-! ### Numerical checks
+
+Every claim below is checked by brute force on concrete shapes before it is proved. The first
+sweep is the content of `Monophilic.const_block`: with the constant lists `{1, 2}` the theta graph
+has a coloring exactly when its three arm lengths all have the same parity — otherwise it has an
+odd cycle. The second extends the sweep of `Monophilic.thetaBadCheck` past the range recorded in
+`Monophilic.RubinHard`. -/
+
+section Guards
+
+-- `col(θ_{a,b,c}, {1,2}) = 0` exactly when the three lengths are not all of the same parity.
+#guard [1, 2, 3, 4].all fun a => [2, 3, 4].all fun b => [2, 3, 4, 5].all fun c =>
+  if decide (1 ≤ a ∧ a ≤ b ∧ b ≤ c) then
+    (((thetaGen a b c).col (fun _ => ({1, 2} : Finset ℕ)) == 0) ==
+      !(decide (a % 2 = b % 2 ∧ b % 2 = c % 2)))
+  else true
+
+-- The uniform witness still works past the range swept in `Monophilic.RubinHard`.
+#guard thetaBadCheck 4 5 6
+#guard thetaBadCheck 5 5 5
+#guard thetaBadCheck 3 3 7
+#guard thetaBadCheck 1 5 5
+
+-- and it still fails, as it must, on Rubin's own shape.
+#guard colThetaBad 2 2 8 = 2
+
+end Guards
+
 /-! ### Alternating chains -/
 
-/-- **The alternating chain.** -/
+/-- **The alternating chain.** Along a stretch `k, k+1, …, m-1` of a path all of whose lists are
+contained in the two-element set `{p, q}`, the colors alternate: knowing the color at the first
+position `k` determines the color everywhere, as `q` at even distance and `p` at odd distance.
+
+This is the one induction behind both `Monophilic.const_block` and
+`Monophilic.armBlockLists_forced`, and hence behind the whole classification. The stretch is
+indexed by natural numbers rather than by vertices of a path, so that it applies verbatim to an
+arm of a theta graph, whose interior is a block of consecutive indices. -/
 theorem alt_chain {p q : ℕ} (g : ℕ → ℕ) (k m : ℕ)
     (hmem : ∀ j, k ≤ j → j < m → g j = p ∨ g j = q)
     (hne : ∀ j, j + 1 < m → g j ≠ g (j + 1)) (h0 : g k = q) :
@@ -42,7 +146,9 @@ theorem alt_chain {p q : ℕ} (g : ℕ → ℕ) (k m : ℕ)
         · exact absurd (hgi.trans h.symm) hstep
         · exact h
 
-/-- **Constant lists alternate.** -/
+/-- **Constant lists alternate.** The special case of `Monophilic.alt_chain` in which every list
+is `{1, 2}`: a coloring of such a stretch is determined by the color it gives to the first
+position, and the other color is `3 - g 0`. -/
 theorem const_chain (g : ℕ → ℕ) {m : ℕ}
     (hg : ∀ j, j < m → g j = 1 ∨ g j = 2)
     (hne : ∀ j, j + 1 < m → g j ≠ g (j + 1)) :
@@ -52,7 +158,15 @@ theorem const_chain (g : ℕ → ℕ) {m : ℕ}
     (fun j _ hj => by have := hg j hj; have := hg 0 (by omega); omega) hne rfl i (by omega)
   simpa using h
 
-/-- **The forced chain along a blocking arm.** -/
+/-- **The forced chain along a blocking arm.** This is the induction along an arm of unbounded
+length that turns `Monophilic.armBlockLists` from a witness into a proof.
+
+An arm with `m ≥ 2` interior vertices carrying the lists `armBlockLists α β m` starts with the
+list `{α, 3}`; if its first interior vertex avoids `α` it must therefore take the color `3`, and
+from there the coloring is forced all the way along — alternating `3, β, 3, …` when `m` is even,
+and `3, 4, β, 3, β, …` when `m` is odd, the detour through the auxiliary color `4` correcting the
+parity. Either way the last interior vertex is forced to `β`, so it cannot avoid it: the arm
+blocks the pair `(α, β)` of branch colors, and only that pair. -/
 theorem armBlockLists_forced (α β : ℕ) {m : ℕ} (hm : 2 ≤ m) (g : ℕ → ℕ)
     (hg : ∀ j, j < m → g j ∈ armBlockLists α β m j)
     (hne : ∀ j, j + 1 < m → g j ≠ g (j + 1)) (h0 : g 0 ≠ α) :
@@ -110,7 +224,15 @@ theorem armBlockLists_forced (α β : ℕ) {m : ℕ} (hm : 2 ≤ m) (g : ℕ →
 
 /-! ### What an arm blocks -/
 
-/-- **An arm with constant lists `{1, 2}` blocks exactly one of the two diagonals.** -/
+/-- **An arm with constant lists `{1, 2}` blocks exactly one of the two diagonals.** Its `m`
+interior vertices alternate, so the two colors it leaves at its two ends are equal when `m` is
+odd — and then the two branch colors must agree — and different when `m` is even. The degenerate
+case `m = 0`, an arm which is a single edge joining the two branch vertices, is covered by `hd`
+and falls on the even side.
+
+In terms of the length `ℓ = m + 1` of the arm: a coloring exists exactly when `α = β` agrees with
+"`ℓ` is even". So an arm of *even* length blocks the two pairs `(1,2)` and `(2,1)`, and an arm of
+*odd* length blocks `(1,1)` and `(2,2)`. -/
 theorem const_block {m α β : ℕ} (g : ℕ → ℕ)
     (hg : ∀ j, j < m → g j = 1 ∨ g j = 2)
     (hne : ∀ j, j + 1 < m → g j ≠ g (j + 1))
@@ -223,7 +345,9 @@ private lemma bad_finish_small {a b c x y : ℕ} (ha : 1 ≤ a) (hab : a ≤ b) 
 
 /-! ### The witness assignment, read on indices -/
 
-/-- `Monophilic.thetaBadLists` read as a function of the *index* of the vertex. -/
+/-- `Monophilic.thetaBadLists` read as a function of the *index* of the vertex. The whole
+analysis below runs on indices, `Monophilic.thetaBadLists_apply` being the (definitional) bridge
+back to the vertices of `Monophilic.TGV`. -/
 def badListAt (a b c i : ℕ) : Finset ℕ :=
   if b ≤ 2 then {1, 2}
   else if i + 1 < a then {1, 2}
@@ -251,6 +375,11 @@ theorem card_thetaBadLists (a b c : ℕ) (v : TGV a b c) : (thetaBadLists a b c 
     first
       | exact Finset.card_pair (by omega)
       | exact card_armBlockLists (by omega) (by omega) _ _
+
+-- `badListAt` really is `thetaBadLists` read on indices, and the witness has lists of size two.
+#guard ∀ v ∈ (univ : Finset (TGV 3 4 5)), thetaBadLists 3 4 5 v = badListAt 3 4 5 v.val
+#guard ∀ v ∈ (univ : Finset (TGV 3 4 5)), (thetaBadLists 3 4 5 v).card = 2
+#guard ∀ v ∈ (univ : Finset (TGV 1 3 3)), (thetaBadLists 1 3 3 v).card = 2
 
 /-! ### No coloring from the witness -/
 
@@ -400,6 +529,188 @@ theorem not_choosable_two_thetaGen {a b c : ℕ} (hv : ValidShape a b c)
 theorem thetaClassification : ThetaClassification :=
   fun _ _ _ hv hbad => not_choosable_two_thetaGen hv hbad
 
+
+/-! ### The good shape: `θ_{2,2,2m}` on the general model
+
+The remaining direction is Rubin's own family. `Monophilic.choosable_theta` proves that
+`Monophilic.theta m` — a path of length `2m` with two extra vertices, each joined to both of its
+ends — is `2`-choosable, and `Monophilic.thetaGen 2 2 (2 * m)` is the same graph on
+`Fin (2m + 3)`. Rather than build an isomorphism, it is enough to **embed** the second in the
+first, since `SimpleGraph.Choosable.comap` transports choosability backwards along an injection
+carrying edges to edges. The embedding sends the index `0` to the outer apex, the index `1` to the
+inner one, the two branch vertices `2m+1` and `2m+2` to the two terminal vertices of the long
+path, and an index `2 ≤ i ≤ 2m` to the vertex `pathVtx (2m) (i - 1)` of its interior. -/
+
+/-- The position along the long path of `Monophilic.theta m` taken by the vertex of `θ_{2,2,2m}`
+of index `i`, for `2 ≤ i`: the two branch vertices `2m+1` and `2m+2` go to the two ends `0` and
+`2m`, and an interior index `i` goes to `i - 1`. -/
+private def tgIdx (m i : ℕ) : ℕ :=
+  if i = 2 * m + 1 then 0 else if i = 2 * m + 2 then 2 * m else i - 1
+
+/-- **The embedding of `thetaGen 2 2 (2m)` into `Monophilic.theta m`.** It is in fact a bijection —
+the two graphs are the same theta graph on differently named vertices — but only injectivity and
+edge preservation are needed, since `SimpleGraph.Choosable.comap` transports choosability
+backwards along such a map. -/
+def thetaGenToTheta (m : ℕ) (v : TGV 2 2 (2 * m)) : ThetaV m :=
+  if v.val = 0 then none
+  else if v.val = 1 then some none
+  else if v.val = 2 * m + 1 then some (some (pathEnd (2 * m)))
+  else if v.val = 2 * m + 2 then some (some (pathStart (2 * m)))
+  else some (some (pathVtx (2 * m) (v.val - 1)))
+
+-- The embedding is injective and carries edges to edges, on the two smallest members.
+#guard ((univ : Finset (TGV 2 2 (2 * 1))).image (thetaGenToTheta 1)).card
+  = Fintype.card (TGV 2 2 (2 * 1))
+#guard ((univ : Finset (TGV 2 2 (2 * 2))).image (thetaGenToTheta 2)).card
+  = Fintype.card (TGV 2 2 (2 * 2))
+#guard ∀ v ∈ (univ : Finset (TGV 2 2 (2 * 2))), ∀ w ∈ (univ : Finset (TGV 2 2 (2 * 2))),
+  (thetaGen 2 2 (2 * 2)).Adj v w → (theta 2).Adj (thetaGenToTheta 2 v) (thetaGenToTheta 2 w)
+
+private lemma tgtt_zero (m : ℕ) (u : TGV 2 2 (2 * m)) (hu : u.val = 0) :
+    thetaGenToTheta m u = none := by
+  simp only [thetaGenToTheta, if_pos hu]
+
+private lemma tgtt_one (m : ℕ) (u : TGV 2 2 (2 * m)) (hu : u.val = 1) :
+    thetaGenToTheta m u = some none := by
+  simp only [thetaGenToTheta, if_neg (show ¬ (u.val = 0) from by omega), if_pos hu]
+
+private lemma tgtt_S (m : ℕ) (hm : 1 ≤ m) (u : TGV 2 2 (2 * m)) (hu : u.val = 2 * m + 1) :
+    thetaGenToTheta m u = some (some (pathEnd (2 * m))) := by
+  simp only [thetaGenToTheta, if_neg (show ¬ (u.val = 0) from by omega),
+    if_neg (show ¬ (u.val = 1) from by omega), if_pos hu]
+
+private lemma tgtt_T (m : ℕ) (u : TGV 2 2 (2 * m)) (hu : u.val = 2 * m + 2) :
+    thetaGenToTheta m u = some (some (pathStart (2 * m))) := by
+  simp only [thetaGenToTheta, if_neg (show ¬ (u.val = 0) from by omega),
+    if_neg (show ¬ (u.val = 1) from by omega), if_neg (show ¬ (u.val = 2 * m + 1) from by omega),
+    if_pos hu]
+
+private lemma tgtt_mid (m : ℕ) (u : TGV 2 2 (2 * m)) (h2 : 2 ≤ u.val) (h3 : u.val ≤ 2 * m) :
+    thetaGenToTheta m u = some (some (pathVtx (2 * m) (u.val - 1))) := by
+  simp only [thetaGenToTheta, if_neg (show ¬ (u.val = 0) from by omega),
+    if_neg (show ¬ (u.val = 1) from by omega), if_neg (show ¬ (u.val = 2 * m + 1) from by omega),
+    if_neg (show ¬ (u.val = 2 * m + 2) from by omega)]
+
+private lemma tgtt_idx (m : ℕ) (hm : 1 ≤ m) (u : TGV 2 2 (2 * m)) (h2 : 2 ≤ u.val) :
+    thetaGenToTheta m u = some (some (pathVtx (2 * m) (tgIdx m u.val))) := by
+  have hu := u.isLt
+  rcases (show u.val = 2 * m + 1 ∨ u.val = 2 * m + 2 ∨ u.val ≤ 2 * m from by omega) with h | h | h
+  · rw [tgtt_S m hm u h, tgIdx, if_pos h, pathVtx_zero]
+  · rw [tgtt_T m u h, tgIdx, if_neg (show ¬ (u.val = 2 * m + 1) from by omega), if_pos h,
+      pathVtx_last]
+  · rw [tgtt_mid m u h2 h, tgIdx, if_neg (show ¬ (u.val = 2 * m + 1) from by omega),
+      if_neg (show ¬ (u.val = 2 * m + 2) from by omega)]
+
+/-- The embedding is injective: distinct indices land on distinct positions along the long path. -/
+theorem thetaGenToTheta_injective (m : ℕ) (hm : 1 ≤ m) :
+    Function.Injective (thetaGenToTheta m) := by
+  have hidx : ∀ i : ℕ, 2 ≤ i → i < 2 * m + 3 → tgIdx m i ≤ 2 * m := by
+    intro i h2 h3
+    simp only [tgIdx]
+    split_ifs <;> omega
+  intro v w h
+  refine Fin.val_injective ?_
+  have hv := v.isLt
+  have hw := w.isLt
+  rcases (show v.val = 0 ∨ v.val = 1 ∨ 2 ≤ v.val from by omega) with hv' | hv' | hv' <;>
+    rcases (show w.val = 0 ∨ w.val = 1 ∨ 2 ≤ w.val from by omega) with hw' | hw' | hw'
+  · omega
+  · rw [tgtt_zero m v hv', tgtt_one m w hw'] at h; simp at h
+  · rw [tgtt_zero m v hv', tgtt_idx m hm w hw'] at h; simp at h
+  · rw [tgtt_one m v hv', tgtt_zero m w hw'] at h; simp at h
+  · omega
+  · rw [tgtt_one m v hv', tgtt_idx m hm w hw'] at h; simp at h
+  · rw [tgtt_idx m hm v hv', tgtt_zero m w hw'] at h; simp at h
+  · rw [tgtt_idx m hm v hv', tgtt_one m w hw'] at h; simp at h
+  · rw [tgtt_idx m hm v hv', tgtt_idx m hm w hw'] at h
+    have h2 : pathVtx (2 * m) (tgIdx m v.val) = pathVtx (2 * m) (tgIdx m w.val) := by simpa using h
+    have h3 := pathVtx_inj (2 * m) _ _ (hidx v.val hv' (by omega)) (hidx w.val hw' (by omega)) h2
+    simp only [tgIdx] at h3
+    split_ifs at h3 <;> omega
+
+private lemma theta_adj_path (m : ℕ) {u u' : PathV (2 * m)} (h : (pathG (2 * m)).Adj u u') :
+    (theta m).Adj (some (some u)) (some (some u')) := h
+
+private lemma theta_adj_inner (m : ℕ) {u : PathV (2 * m)}
+    (hu : u ∈ ({pathStart (2 * m), pathEnd (2 * m)} : Finset (PathV (2 * m)))) :
+    (theta m).Adj (some none) (some (some u)) := hu
+
+private lemma theta_adj_outer (m : ℕ) {x : Option (PathV (2 * m))}
+    (hx : x ∈ ({some (pathStart (2 * m)), some (pathEnd (2 * m))} :
+      Finset (Option (PathV (2 * m))))) :
+    (theta m).Adj none (some x) := hx
+
+/-- The edges of `θ_{2,2,2m}` in the general model, spelled out. -/
+private lemma thetaGenAdjB_decode (m : ℕ) (hm : 1 ≤ m) {x y : ℕ}
+    (h : thetaGenAdjB 2 2 (2 * m) x y = true) :
+    (x = 2 * m + 1 ∧ y = 0) ∨ (x = 0 ∧ y = 2 * m + 2) ∨ (x = 2 * m + 1 ∧ y = 1) ∨
+      (x = 1 ∧ y = 2 * m + 2) ∨ (2 ≤ x ∧ x ≤ 2 * m - 1 ∧ y = x + 1) ∨
+      (x = 2 * m + 1 ∧ y = 2) ∨ (x = 2 * m ∧ y = 2 * m + 2) := by
+  simp only [thetaGenAdjB, armStepB, if_neg (show ¬ ((2 : ℕ) - 1 = 0) from by omega),
+    if_neg (show ¬ (2 * m - 1 = 0) from by omega), Bool.or_eq_true, Bool.and_eq_true, beq_iff_eq,
+    decide_eq_true_eq] at h
+  rcases h with (((h | h) | h) | ((h | h) | h)) | ((h | h) | h) <;> omega
+
+private lemma thetaGenToTheta_adjB (m : ℕ) (hm : 1 ≤ m) (v w : TGV 2 2 (2 * m))
+    (h : thetaGenAdjB 2 2 (2 * m) v.val w.val = true) :
+    (theta m).Adj (thetaGenToTheta m v) (thetaGenToTheta m w) := by
+  have hv := v.isLt
+  have hw := w.isLt
+  rcases thetaGenAdjB_decode m hm h with ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ |
+    ⟨h1, h2, h3⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩
+  · rw [tgtt_S m hm v h1, tgtt_zero m w h2]
+    exact (theta_adj_outer m (Finset.mem_insert_of_mem (Finset.mem_singleton_self _))).symm
+  · rw [tgtt_zero m v h1, tgtt_T m w h2]
+    exact theta_adj_outer m (Finset.mem_insert_self _ _)
+  · rw [tgtt_S m hm v h1, tgtt_one m w h2]
+    exact (theta_adj_inner m (Finset.mem_insert_of_mem (Finset.mem_singleton_self _))).symm
+  · rw [tgtt_one m v h1, tgtt_T m w h2]
+    exact theta_adj_inner m (Finset.mem_insert_self _ _)
+  · rw [tgtt_mid m v h1 (by omega), tgtt_mid m w (by omega) (by omega)]
+    exact theta_adj_path m
+      ((pathG_adj_pathVtx (2 * m) (v.val - 1) (w.val - 1) (by omega) (by omega)).mpr
+        (Or.inl (by omega)))
+  · rw [tgtt_S m hm v h1, tgtt_mid m w (by omega) (by omega), ← pathVtx_zero (2 * m)]
+    exact theta_adj_path m
+      ((pathG_adj_pathVtx (2 * m) 0 (w.val - 1) (by omega) (by omega)).mpr (Or.inl (by omega)))
+  · rw [tgtt_mid m v (by omega) (by omega), tgtt_T m w h2, ← pathVtx_last (2 * m)]
+    exact theta_adj_path m
+      ((pathG_adj_pathVtx (2 * m) (v.val - 1) (2 * m) (by omega) (by omega)).mpr
+        (Or.inl (by omega)))
+
+/-- The embedding carries edges to edges. -/
+theorem thetaGenToTheta_adj (m : ℕ) (hm : 1 ≤ m) (v w : TGV 2 2 (2 * m))
+    (h : (thetaGen 2 2 (2 * m)).Adj v w) :
+    (theta m).Adj (thetaGenToTheta m v) (thetaGenToTheta m w) := by
+  rcases h.2 with hb | hb
+  · exact thetaGenToTheta_adjB m hm v w hb
+  · exact (thetaGenToTheta_adjB m hm w v hb).symm
+
+/-- **`θ_{2,2,2m}` is `2`-choosable in the general model**, for every `m ≥ 1`: it embeds into
+`Monophilic.theta m`, and `Monophilic.choosable_theta` applies. -/
+theorem choosable_two_thetaGen_two_two (m : ℕ) (hm : 1 ≤ m) :
+    (thetaGen 2 2 (2 * m)).Choosable 2 :=
+  Choosable.comap (choosable_theta m hm) (thetaGenToTheta_injective m hm)
+    (fun x y hxy => thetaGenToTheta_adj m hm x y hxy)
+
+/-- **A theta graph of Rubin's shape is `2`-choosable.** -/
+theorem choosable_two_thetaGen_of_goodShape {a b c : ℕ} (hv : ValidShape a b c)
+    (hg : GoodShape a b c) : (thetaGen a b c).Choosable 2 := by
+  obtain ⟨ha, hab, hbc, hb2⟩ := hv
+  obtain ⟨rfl, rfl, hc⟩ := hg
+  obtain ⟨r, hr⟩ := hc
+  obtain ⟨m, rfl⟩ : ∃ m, c = 2 * m := ⟨r, by omega⟩
+  exact choosable_two_thetaGen_two_two m (by omega)
+
+/-- **The classification of `2`-choosable theta graphs, as an `↔`**: a theta graph of a valid shape
+is `2`-choosable exactly when its shape is `(2, 2, \text{even})`. -/
+theorem choosable_two_thetaGen_iff {a b c : ℕ} (hv : ValidShape a b c) :
+    (thetaGen a b c).Choosable 2 ↔ GoodShape a b c :=
+  ⟨fun h => by
+      by_contra hg
+      exact not_choosable_two_thetaGen hv hg h,
+    choosable_two_thetaGen_of_goodShape hv⟩
+
 /-! ### Rubin's hard direction, with one hypothesis fewer -/
 
 /-- **Rubin's hard direction, relative to `Monophilic.ThetaAlternative` alone.** -/
@@ -418,4 +729,53 @@ theorem choosable_two_pendantTower_iff' {V : Type} [Fintype V] [DecidableEq V] (
     (pendantTower H k d).Choosable 2 ↔ RubinFamily H :=
   choosable_two_pendantTower_iff thetaClassification H halt k d
 
+/-! ### Cross-checks
+
+The general theorems specialize to the explicit cases proved by hand in `Monophilic.RubinHard`,
+and to the two families settled there by other means. -/
+
+section Examples
+
+example : ¬ (thetaGen 1 3 3).Choosable 2 :=
+  not_choosable_two_thetaGen ⟨by omega, by omega, by omega, by omega⟩ (by rintro ⟨h, -, -⟩; omega)
+
+example : ¬ (thetaGen 3 3 3).Choosable 2 :=
+  not_choosable_two_thetaGen ⟨by omega, by omega, by omega, by omega⟩ (by rintro ⟨h, -, -⟩; omega)
+
+example : ¬ (thetaGen 2 4 4).Choosable 2 :=
+  not_choosable_two_thetaGen ⟨by omega, by omega, by omega, by omega⟩ (by rintro ⟨-, h, -⟩; omega)
+
+/-- The family `θ_{2,2,\text{odd}}`, which `Monophilic.not_choosable_two_thetaOf_odd` settles on
+the model `Monophilic.thetaOf`, is now available on `Monophilic.thetaGen` as well. -/
+example (r : ℕ) : ¬ (thetaGen 2 2 (2 * r + 3)).Choosable 2 :=
+  not_choosable_two_thetaGen ⟨by omega, by omega, by omega, by omega⟩
+    (by rintro ⟨-, -, h⟩; rw [Nat.even_iff] at h; omega)
+
+/-- Rubin's own family, on the general model. -/
+example (r : ℕ) : (thetaGen 2 2 (2 * r + 2)).Choosable 2 :=
+  choosable_two_thetaGen_of_goodShape ⟨by omega, by omega, by omega, by omega⟩
+    ⟨rfl, rfl, by rw [Nat.even_iff]; omega⟩
+
+end Examples
+
 end Monophilic
+
+
+#print axioms Monophilic.alt_chain
+#print axioms Monophilic.const_chain
+#print axioms Monophilic.armBlockLists_forced
+#print axioms Monophilic.const_block
+#print axioms Monophilic.card_armBlockLists
+#print axioms Monophilic.thetaBadLists_apply
+#print axioms Monophilic.card_thetaBadLists
+#print axioms Monophilic.col_thetaBadLists_eq_zero
+#print axioms Monophilic.not_choosable_two_thetaGen
+#print axioms Monophilic.thetaGenToTheta_injective
+#print axioms Monophilic.thetaGenToTheta_adj
+#print axioms Monophilic.choosable_two_thetaGen_two_two
+#print axioms Monophilic.choosable_two_thetaGen_of_goodShape
+#print axioms Monophilic.choosable_two_thetaGen_iff
+#print axioms Monophilic.thetaClassification
+#print axioms Monophilic.rubinFamily_of_choosable'
+#print axioms Monophilic.choosable_two_iff_rubinFamily'
+#print axioms Monophilic.choosable_two_pendantTower_iff'
