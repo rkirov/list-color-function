@@ -68,7 +68,11 @@
     "SimpleGraph.chromaticPolynomial",
     "SimpleGraph.edgeGraph",
     "SimpleGraph.compInter",
-    "SimpleGraph.listCount"
+    "SimpleGraph.listCount",
+    "SimpleGraph.IsChordal",
+    "SimpleGraph.IsSimplicialVertex",
+    "SimpleGraph.deleteVertex",
+    "SimpleGraph.HasSimplicialVertex"
   ],
   "theorem_names": [
     "SimpleGraph.col_image_of_injOn",
@@ -129,7 +133,26 @@
     "SimpleGraph.exists_monophilic_forall_ge",
     "SimpleGraph.listColorFunction_eq_of_two_pow_lt",
     "SimpleGraph.listColorFunction_eq_eval_of_two_pow_lt",
-    "SimpleGraph.exists_listColorFunction_eq_forall_ge"
+    "SimpleGraph.exists_listColorFunction_eq_forall_ge",
+    "SimpleGraph.exists_isSimplicialVertex",
+    "SimpleGraph.monophilic_of_isChordal",
+    "SimpleGraph.isChordal_iff_exists_cliqueTower",
+    "SimpleGraph.exists_cliqueTower_of_isChordal",
+    "SimpleGraph.monophilic_cliqueTower_of_isChordal",
+    "SimpleGraph.isChordal_top",
+    "SimpleGraph.not_isChordal_cycleGraph_four",
+    "SimpleGraph.not_isChordal_cycleGraph_five",
+    "SimpleGraph.IsChordal.induce",
+    "SimpleGraph.IsChordal.coneOn",
+    "SimpleGraph.isChordal_cliqueTower_of_isEmpty",
+    "SimpleGraph.isChordal_of_isEmpty",
+    "SimpleGraph.isChordal_bot",
+    "SimpleGraph.IsChordal.of_embedding",
+    "SimpleGraph.IsChordal.of_iso",
+    "SimpleGraph.isChordal_cliqueTower",
+    "SimpleGraph.IsChordal.deleteVertex",
+    "SimpleGraph.monophilic_of_isChordal_of_dirac",
+    "SimpleGraph.hasSimplicialVertex"
   ],
   "permitted_axioms": [
     "propext",

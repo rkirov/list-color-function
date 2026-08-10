@@ -272,6 +272,145 @@ theorem monophilic_cliqueTower_of_isEmpty {V : Type u} [Fintype V] [DecidableEq 
 
 end Tower
 
+/-! ### Dirac's theorem and chordal graphs
+
+Kirov–Naimi state the Kostochka–Sidorenko corollary for chordal graphs, but the bridge from
+"chordal" to "has a simplicial elimination ordering" is Dirac's theorem, which the paper takes for
+granted.  It is proved here, so `SimpleGraph.monophilic_of_isChordal` — *every chordal graph is
+`n`-monophilic, for every `n`* — is **unconditional**: the Kostochka–Sidorenko theorem under its
+own name, with no tower data and no borrowed hypothesis in the signature.  The tower form
+`SimpleGraph.monophilic_cliqueTower_of_isEmpty` above is now one of two agreeing routes to it.
+
+`SimpleGraph.HasSimplicialVertex` carries its real body rather than a placeholder, for the same
+reason as `ListAssignment` and friends: it is a universe-polymorphic `Prop` *constant*, and only
+its body mentions `Type u`, so a placeholder would silently drop the universe parameter and give
+`HasSimplicialVertex.{}` instead of `HasSimplicialVertex.{u}`.
+-/
+
+/-- **A chordal graph.** Every cycle of length at least `4` has a chord: an edge of the graph
+joining two vertices of the cycle which is not itself an edge of the cycle.  Phrased through
+Mathlib's `SimpleGraph.Walk.IsChordless`. -/
+def IsChordal {V : Type*} (G : SimpleGraph V) : Prop := sorry
+
+/-- **A simplicial vertex** is one whose neighbourhood is a clique.  Deleting a simplicial vertex
+is the inverse of the cone construction `SimpleGraph.coneOn`. -/
+def IsSimplicialVertex {V : Type*} (G : SimpleGraph V) (v : V) : Prop := sorry
+
+/-- `G` with the vertex `v` deleted: the subgraph induced on the vertices other than `v`. -/
+abbrev deleteVertex {V : Type*} (G : SimpleGraph V) (v : V) : SimpleGraph {x : V // x ≠ v} :=
+  sorry
+
+/-- **Complete graphs are chordal.** -/
+theorem isChordal_top {V : Type*} : (⊤ : SimpleGraph V).IsChordal := sorry
+
+/-- The empty graph is chordal: it has no cycles. -/
+theorem isChordal_bot {V : Type*} : (⊥ : SimpleGraph V).IsChordal := sorry
+
+/-- A graph with no vertices at all is chordal. -/
+theorem isChordal_of_isEmpty {V : Type*} [IsEmpty V] (G : SimpleGraph V) : G.IsChordal := sorry
+
+/-- **Chordality passes to subgraphs presented by an embedding.** -/
+theorem IsChordal.of_embedding {V : Type*} {G : SimpleGraph V} {W : Type*} {G' : SimpleGraph W}
+    (f : G' ↪g G) (h : G.IsChordal) : G'.IsChordal := sorry
+
+/-- **Chordality is an isomorphism invariant.** -/
+theorem IsChordal.of_iso {V : Type*} {G : SimpleGraph V} {W : Type*} {G' : SimpleGraph W}
+    (e : G' ≃g G) (h : G.IsChordal) : G'.IsChordal := sorry
+
+/-- **Chordality passes to induced subgraphs.** -/
+theorem IsChordal.induce {V : Type*} {G : SimpleGraph V} (s : Set V) (h : G.IsChordal) :
+    (G.induce s).IsChordal := sorry
+
+/-- **Coning off a clique preserves chordality.** This is the chordal-graph counterpart of
+Kirov–Naimi's Lemma 1 (`SimpleGraph.Monophilic.coneOn`). -/
+theorem IsChordal.coneOn {V : Type*} {G : SimpleGraph V} {K : Finset V} (hG : G.IsChordal)
+    (hK : G.IsClique (K : Set V)) : (coneOn G K).IsChordal := sorry
+
+/-- Deleting a vertex from a chordal graph leaves a chordal graph. -/
+theorem IsChordal.deleteVertex {V : Type*} {G : SimpleGraph V} (h : G.IsChordal) (v : V) :
+    (G.deleteVertex v).IsChordal := sorry
+
+/-- **A simplicial clique tower builds a chordal graph.** -/
+theorem isChordal_cliqueTower {V : Type*} (G : SimpleGraph V) (hG : G.IsChordal) :
+    ∀ (k : ℕ) (d : CliqueTowerData V k), CliqueTowerData.IsSimplicial G k d →
+      (cliqueTower G k d).IsChordal := sorry
+
+/-- **Dirac's lemma.** A chordal graph on a nonempty finite vertex type has a simplicial vertex.
+This is the graph-theoretic input that Kirov–Naimi leave implicit. -/
+theorem exists_isSimplicialVertex {V : Type*} [DecidableEq V] [Fintype V] (G : SimpleGraph V)
+    [Nonempty V] (hG : G.IsChordal) : ∃ v, G.IsSimplicialVertex v := sorry
+
+/-- **The four-cycle is not chordal.** -/
+theorem not_isChordal_cycleGraph_four : ¬ (cycleGraph 4).IsChordal := sorry
+
+/-- **The five-cycle is not chordal.** -/
+theorem not_isChordal_cycleGraph_five : ¬ (cycleGraph 5).IsChordal := sorry
+
+section Dirac
+
+universe u
+
+/-- **Dirac's lemma**, as a named statement: every chordal graph on a nonempty finite vertex type
+has a simplicial vertex.  Stated separately so that the one graph-theoretic input of the induction
+below is visible in the signature of `SimpleGraph.monophilic_of_isChordal_of_dirac`; it is then
+discharged by `SimpleGraph.hasSimplicialVertex`. -/
+def HasSimplicialVertex : Prop :=
+  ∀ {V : Type u} [Finite V] (G : SimpleGraph V), Nonempty V → G.IsChordal →
+    ∃ v : V, G.IsSimplicialVertex v
+
+/-- **Dirac's lemma**, discharging the hypothesis `SimpleGraph.HasSimplicialVertex`. -/
+theorem hasSimplicialVertex : HasSimplicialVertex.{u} := sorry
+
+/-- The Kostochka–Sidorenko theorem *relative to* Dirac's lemma: a chordal graph is
+`n`-monophilic for every `n`, given `hD`.  The induction is on the number of vertices, peeling off
+a simplicial vertex and putting it back with Kirov–Naimi's Lemma 1. -/
+theorem monophilic_of_isChordal_of_dirac (hD : HasSimplicialVertex.{u}) {V : Type u} [Fintype V]
+    [DecidableEq V] (G : SimpleGraph V) [DecidableRel G.Adj] (hG : G.IsChordal) (n : ℕ) :
+    G.Monophilic n := sorry
+
+/-- **The Kostochka–Sidorenko theorem, under its own name and unconditionally.** *Every chordal
+graph is `n`-monophilic, for every `n`.*
+
+This is the statement the tower form `SimpleGraph.monophilic_cliqueTower_of_isEmpty` could only
+approximate, because "chordal" was undefined there.  The missing link is Dirac's lemma
+(`SimpleGraph.exists_isSimplicialVertex`), now proved, so there is no hypothesis left to borrow. -/
+theorem monophilic_of_isChordal {V : Type u} [Fintype V] [DecidableEq V] (G : SimpleGraph V)
+    [DecidableRel G.Adj] (hG : G.IsChordal) (n : ℕ) : G.Monophilic n := sorry
+
+/-- **The easy direction of Dirac's theorem.** A graph presented by a simplicial elimination
+ordering — built from nothing by successively attaching a vertex to a clique of the graph built so
+far — is chordal. -/
+theorem isChordal_cliqueTower_of_isEmpty {V : Type u} [IsEmpty V] (G : SimpleGraph V) (k : ℕ)
+    (d : CliqueTowerData V k) (hd : CliqueTowerData.IsSimplicial G k d) :
+    (cliqueTower G k d).IsChordal := sorry
+
+/-- **Dirac's theorem, easy direction, restated for `n`-monophilicity**: the two routes to the
+Kostochka–Sidorenko theorem agree. -/
+theorem monophilic_cliqueTower_of_isChordal {V : Type u} [Fintype V] [DecidableEq V] [IsEmpty V]
+    (G : SimpleGraph V) [DecidableRel G.Adj] (n k : ℕ) (d : CliqueTowerData V k)
+    (hd : CliqueTowerData.IsSimplicial G k d) : (cliqueTower G k d).Monophilic n := sorry
+
+/-- **Dirac's theorem, hard direction.** A chordal graph on `m` vertices is isomorphic to the graph
+built from nothing by `m` cone attachments, each over a clique of the graph built so far: peeling
+off a simplicial vertex at each step reads off a simplicial elimination ordering. -/
+theorem exists_cliqueTower_of_isChordal :
+    ∀ (m : ℕ) {V : Type u} [Fintype V] [DecidableEq V] (G : SimpleGraph V) [DecidableRel G.Adj],
+      Fintype.card V = m → G.IsChordal →
+        ∃ d : CliqueTowerData (Fin 0) m,
+          CliqueTowerData.IsSimplicial (⊥ : SimpleGraph (Fin 0)) m d ∧
+            Nonempty (G ≃g cliqueTower (⊥ : SimpleGraph (Fin 0)) m d) := sorry
+
+/-- **Dirac's theorem.** *A finite graph is chordal if and only if it has a simplicial elimination
+ordering*, presented backwards and constructively as a `SimpleGraph.cliqueTower` over the empty
+graph. -/
+theorem isChordal_iff_exists_cliqueTower {V : Type u} [Fintype V] [DecidableEq V]
+    (G : SimpleGraph V) [DecidableRel G.Adj] :
+    G.IsChordal ↔ ∃ (k : ℕ) (d : CliqueTowerData (Fin 0) k),
+      CliqueTowerData.IsSimplicial (⊥ : SimpleGraph (Fin 0)) k d ∧
+        Nonempty (G ≃g cliqueTower (⊥ : SimpleGraph (Fin 0)) k d) := sorry
+
+end Dirac
+
 /-! ### Lemma 2 and Lemma 4
 
 Lemma 2 is the nesting lemma for a graph cut along a bridge; Lemma 4 says that on a path,

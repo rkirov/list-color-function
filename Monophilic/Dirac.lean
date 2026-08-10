@@ -12,13 +12,41 @@ import Mathlib.Combinatorics.SimpleGraph.CycleGraph
 
 `Monophilic.Chordal` proves the Kostochka–Sidorenko theorem in its *ordering* form: a graph built
 from nothing by repeatedly attaching a vertex to a clique is `n`-monophilic for every `n`. Nothing
-there mentions chordality, because Mathlib has no notion of a chordal graph. This file supplies it.
+there mentions chordality, because Mathlib has no notion of a chordal graph at all. This file
+supplies one, proves **Dirac's theorem (1961)** — a finite graph is chordal if and only if it has a
+simplicial elimination ordering — and uses it to state and prove the Kostochka–Sidorenko theorem
+under its own name: *every chordal graph is `n`-monophilic*.
+
+## The two directions
+
+The **easy direction** is that coning off a clique preserves chordality
+(`SimpleGraph.IsChordal.coneOn`): a cycle of the cone either avoids the apex, and then already
+lives in the base, or passes through it, and then its two neighbours along the cycle lie in the
+clique, hence are adjacent — a chord, once the cycle has length at least `4`.
+
+The **hard direction** is *Dirac's lemma*: a chordal graph on a nonempty finite vertex type has a
+simplicial vertex (`SimpleGraph.exists_isSimplicialVertex`). It is proved by the classical
+separator argument, arranged so that no auxiliary graph is ever constructed: the induced subgraphs
+of the argument are represented by *finsets of vertices of `G`*, and simpliciality is relativized
+to such a finset (`SimpleGraph.IsSimplicialIn`). This costs nothing, since a chord of a walk joins
+two vertices *of that walk*, so chordality is inherited by every vertex subset for free. Given a
+non-adjacent pair `a`, `b` of a vertex set `W`, the component `C` of `b` in `W` minus the closed
+neighbourhood of `a` has a neighbourhood `S ⊆ N(a)` which is a clique
+(`SimpleGraph.isClique_of_component_neighbors`), because two non-adjacent vertices of `S` would be
+joined both by the path `s — a — t` and by a chordless path through `C`, and the two would close up
+into a chordless cycle of length at least `4`. Recursing into `C ∪ S` and into the rest produces
+two non-adjacent simplicial vertices, which is the form of the statement that makes the induction
+go through.
 
 ## Main definitions
 
 * `SimpleGraph.IsChordal` : every cycle of length at least `4` has a chord, phrased on top of
   Mathlib's `SimpleGraph.Walk.IsChordless`
 * `SimpleGraph.IsSimplicialVertex` : the neighbourhood of the vertex is a clique
+* `SimpleGraph.IsSimplicialIn` : the same, relative to a finset of vertices
+* `SimpleGraph.ReachIn` : joined by a walk confined to a finset of vertices
+* `SimpleGraph.deleteVertex`, `SimpleGraph.neighborsAway`, `SimpleGraph.coneOnDeleteIso` : every
+  graph is the cone over the deletion of any one of its vertices
 
 ## Main results
 
@@ -27,8 +55,19 @@ there mentions chordality, because Mathlib has no notion of a chordal graph. Thi
   four- and five-cycles are not
 * `SimpleGraph.IsChordal.of_embedding`, `SimpleGraph.IsChordal.induce` : chordality is inherited by
   subgraphs induced on a set of vertices
-* `SimpleGraph.IsChordal.coneOn` : coning off a clique of a chordal graph gives a chordal graph
-* `SimpleGraph.isChordal_cliqueTower` : a simplicial clique tower builds a chordal graph
+* `SimpleGraph.IsChordal.coneOn`, `SimpleGraph.isChordal_cliqueTower` : the easy direction of
+  Dirac's theorem — a simplicial clique tower builds a chordal graph
+* `SimpleGraph.exists_isChordless_path` : a shortest walk confined to a set of vertices is a
+  chordless path
+* `SimpleGraph.not_isChordal_of_chordless_paths` : two internally disjoint chordless paths with the
+  same endpoints, each of length at least `2` and with no edges between their interiors, close up
+  into a chordless cycle
+* `SimpleGraph.isClique_of_component_neighbors` : **the clique-separator lemma**
+* `SimpleGraph.exists_isSimplicialVertex` : **Dirac's lemma**
+* `SimpleGraph.exists_cliqueTower_of_isChordal`, `SimpleGraph.isChordal_iff_exists_cliqueTower` :
+  **Dirac's theorem**
+* `SimpleGraph.monophilic_of_isChordal` : **the Kostochka–Sidorenko theorem** — every chordal graph
+  is `n`-monophilic, for every `n`
 -/
 
 open Finset
@@ -308,6 +347,7 @@ variable [Fintype V] [DecidableEq V]
 abbrev deleteVertex (G : SimpleGraph V) (v : V) : SimpleGraph {x : V // x ≠ v} :=
   G.comap (Function.Embedding.subtype fun x => x ≠ v)
 
+/-- Adjacency in `G.deleteVertex v` is decidable whenever adjacency in `G` is. -/
 instance instDecidableRelDeleteVertex (G : SimpleGraph V) [DecidableRel G.Adj] (v : V) :
     DecidableRel (G.deleteVertex v).Adj :=
   fun a b => inferInstanceAs (Decidable (G.Adj a.1 b.1))
@@ -431,15 +471,15 @@ theorem exists_isChordless_path {W : Set V} {x y : V} (p : G.Walk x y)
   obtain ⟨q₀, hq₀W, hq₀l⟩ := Nat.find_spec hex
   -- bypassing repeated vertices keeps the walk inside `W` and cannot lengthen it
   set q := q₀.bypass with hqdef
-  have hqW : ∀ z ∈ q.support, z ∈ W := fun z hz => hq₀W z (q₀.support_bypass_subset hz)
-  have hqle : q.length ≤ Nat.find hex := hq₀l ▸ q₀.length_bypass_le
+  have hqW : ∀ z ∈ q.support, z ∈ W := fun z hz => hq₀W z (q₀.support_bypass_subset_support hz)
+  have hqle : q.length ≤ Nat.find hex := hq₀l ▸ q₀.length_bypass_le_length
   have hmin : Nat.find hex ≤ q.length := Nat.find_le ⟨q, hqW, rfl⟩
   have hqlen : q.length = Nat.find hex := le_antisymm hqle hmin
   refine ⟨q, hqW, q₀.bypass_isPath, ?_, ?_⟩
   · -- a chord could be short-circuited, contradicting minimality
     rw [Walk.isChordless_iff_forall_mem_edges]
     by_contra hcon
-    push_neg at hcon
+    push Not at hcon
     obtain ⟨a, b, ha, hb, hadj, hnot⟩ := hcon
     obtain ⟨i, hi, hile⟩ := Walk.mem_support_iff_exists_getVert.mp ha
     obtain ⟨j, hj, hjle⟩ := Walk.mem_support_iff_exists_getVert.mp hb
@@ -474,7 +514,7 @@ theorem Walk.IsChordless.not_adj_of_two_le_length {x y : V} {p : G.Walk x y} (hp
 theorem Walk.IsPath.start_notMem_support_tail {x y : V} {p : G.Walk x y} (hp : p.IsPath) :
     x ∉ p.support.tail := by
   have hnd := hp.support_nodup
-  rw [p.support_eq_cons] at hnd
+  rw [← p.cons_tail_support] at hnd
   exact (List.nodup_cons.mp hnd).1
 
 /-- **Two chordless paths close up into a chordless cycle.** If two internally disjoint chordless
@@ -530,6 +570,332 @@ theorem not_isChordal_of_chordless_paths {s t : V} {P Q : G.Walk s t}
 
 end ChordlessPath
 
+/-! ### Dirac's lemma
+
+**Every chordal graph on a nonempty finite vertex type has a simplicial vertex.**
+
+The proof is the classical one, arranged so that no graph other than `G` is ever constructed: all
+the induced subgraphs of the argument are represented by *finsets of vertices of `G`*, and
+"simplicial" is relativized to such a finset (`SimpleGraph.IsSimplicialIn`). This costs nothing,
+because a chord of a walk joins two vertices *of the walk*: chordality of `G` is automatically
+inherited by every vertex subset, with no transport needed.
+
+Given a non-adjacent pair `a`, `b` of `W`, let `C` be the connected component of `b` inside `W`
+with the closed neighbourhood of `a` removed, let `S` be the set of vertices of `W` outside `C`
+with a neighbour in `C`, and let `D` be the rest of `W`. Then:
+
+* every vertex of `S` is a neighbour of `a`, so any two of them are joined by the path
+  `s — a — t` of length `2`;
+* `S` is a clique, by `SimpleGraph.not_isChordal_of_chordless_paths` applied to that path and to a
+  chordless path through `C`;
+* `S` separates `C` from `D`, and both `C ∪ S` and `D ∪ S` are strictly smaller than `W`.
+
+Recursing into `C ∪ S` and `D ∪ S` produces a simplicial vertex in each of `C` and `D`; they are
+non-adjacent, which is what makes the induction go through. -/
+
+section Dirac
+
+/-- `x` and `y` are joined by a walk all of whose vertices lie in `W`. This is connectivity of the
+subgraph induced on `W`, expressed without leaving `G`. -/
+def ReachIn (G : SimpleGraph V) (W : Finset V) (x y : V) : Prop :=
+  ∃ p : G.Walk x y, ∀ z ∈ p.support, z ∈ W
+
+/-- A vertex of `W` is joined to itself inside `W` by the empty walk. -/
+theorem ReachIn.rfl' {W : Finset V} {x : V} (hx : x ∈ W) : G.ReachIn W x x :=
+  ⟨Walk.nil, by simpa using hx⟩
+
+/-- Confined reachability is symmetric: reverse the walk. -/
+theorem ReachIn.symm {W : Finset V} {x y : V} (h : G.ReachIn W x y) : G.ReachIn W y x := by
+  obtain ⟨p, hp⟩ := h
+  exact ⟨p.reverse, fun z hz => hp z (by rwa [Walk.support_reverse, List.mem_reverse] at hz)⟩
+
+/-- Confined reachability is transitive: concatenate the walks. -/
+theorem ReachIn.trans {W : Finset V} {x y z : V} (h₁ : G.ReachIn W x y) (h₂ : G.ReachIn W y z) :
+    G.ReachIn W x z := by
+  obtain ⟨p, hp⟩ := h₁
+  obtain ⟨q, hq⟩ := h₂
+  refine ⟨p.append q, fun w hw => ?_⟩
+  rcases (Walk.mem_support_append_iff p q).mp hw with h | h
+  · exact hp w h
+  · exact hq w h
+
+/-- A single edge inside `W` is a confined walk. -/
+theorem ReachIn.step {W : Finset V} {x y : V} (hx : x ∈ W) (hadj : G.Adj x y) (hy : y ∈ W) :
+    G.ReachIn W x y := by
+  refine ⟨Walk.cons hadj Walk.nil, fun z hz => ?_⟩
+  simp only [Walk.support_cons, Walk.support_nil, List.mem_cons, List.not_mem_nil, or_false] at hz
+  rcases hz with rfl | rfl
+  · exact hx
+  · exact hy
+
+/-- **Simpliciality relative to a set of vertices.** `v` is simplicial in `W` when its neighbours
+inside `W` form a clique. For `W = univ` this is `SimpleGraph.IsSimplicialVertex`. -/
+def IsSimplicialIn (G : SimpleGraph V) (W : Finset V) (v : V) : Prop :=
+  ∀ ⦃x⦄, x ∈ W → ∀ ⦃y⦄, y ∈ W → G.Adj v x → G.Adj v y → x ≠ y → G.Adj x y
+
+/-- **The clique-separator lemma.** Let `a` be a vertex, `R` a set of vertices avoiding the closed
+neighbourhood of `a`, `C` a connected piece of `R`, and `S` a set of neighbours of `a` each having
+a neighbour in `C`. If `G` is chordal then `S` is a clique.
+
+Two non-adjacent vertices `s`, `t` of `S` would be joined both by the path `s — a — t` and by a
+chordless path through `C`; the two paths meet only at `s` and `t`, and no edge runs between `a`
+and `C`, so they would close up into a chordless cycle of length at least `4`. -/
+theorem isClique_of_component_neighbors (hG : G.IsChordal) {a : V} {R C S : Finset V}
+    (hR : ∀ x ∈ R, x ≠ a ∧ ¬ G.Adj a x) (hC : C ⊆ R)
+    (hCconn : ∀ x ∈ C, ∀ y ∈ C, G.ReachIn C x y)
+    (hS : ∀ s ∈ S, G.Adj a s ∧ ∃ c ∈ C, G.Adj s c) :
+    G.IsClique (S : Set V) := by
+  intro s hs t ht hst
+  rw [Finset.mem_coe] at hs ht
+  by_contra hnadj
+  obtain ⟨hsa, c, hcC, hsc⟩ := hS s hs
+  obtain ⟨hta, c', hc'C, htc'⟩ := hS t ht
+  obtain ⟨p, hp⟩ := hCconn c hcC c' hc'C
+  -- a walk from `s` to `t` whose interior lies in `C`
+  set Wst : Set V := insert s (insert t (C : Set V)) with hWstdef
+  have hwalk : ∀ z ∈ (Walk.cons hsc (p.append (Walk.cons htc'.symm Walk.nil))).support,
+      z ∈ Wst := by
+    intro z hz
+    simp only [Walk.support_cons, List.mem_cons] at hz
+    rcases hz with rfl | hz
+    · exact Set.mem_insert _ _
+    rcases (Walk.mem_support_append_iff _ _).mp hz with hz | hz
+    · exact Set.mem_insert_of_mem _ (Set.mem_insert_of_mem _ (hp z hz))
+    · simp only [Walk.support_cons, Walk.support_nil, List.mem_cons, List.not_mem_nil,
+        or_false] at hz
+      rcases hz with rfl | rfl
+      · exact Set.mem_insert_of_mem _ (Set.mem_insert_of_mem _ (hp z (Walk.end_mem_support p)))
+      · exact Set.mem_insert_of_mem _ (Set.mem_insert _ _)
+  obtain ⟨P, hPW, hPpath, hPch, -⟩ := exists_isChordless_path (W := Wst) _ hwalk
+  -- the path through `C` has length at least two
+  have hPlen : 2 ≤ P.length := by
+    rcases Nat.lt_or_ge P.length 2 with h | h
+    · exfalso
+      have hl : P.length = 0 ∨ P.length = 1 := by omega
+      rcases hl with hl | hl
+      · refine hst ?_
+        have h0 : P.getVert P.length = t := P.getVert_length
+        rw [hl] at h0
+        rw [← P.getVert_zero]
+        exact h0
+      · refine hnadj ?_
+        have hadj0 := P.toSubgraph_adj_getVert (i := 0) (by omega)
+        have h1 : P.getVert (0 + 1) = t := by
+          rw [show (0 : ℕ) + 1 = 1 from rfl, ← hl]
+          exact P.getVert_length
+        rw [P.getVert_zero, h1] at hadj0
+        exact hadj0.adj_sub
+    · exact h
+  -- the path `s — a — t`
+  set Q : G.Walk s t := Walk.cons hsa.symm (Walk.cons hta Walk.nil) with hQdef
+  have hQsupp : ∀ z, z ∈ Q.support ↔ z = s ∨ z = a ∨ z = t := by
+    intro z
+    simp [hQdef]
+  have hsna : s ≠ a := fun h => hsa.ne h.symm
+  have hant : a ≠ t := fun h => hta.ne h
+  have hQpath : Q.IsPath := by
+    rw [Walk.isPath_def]
+    simp [hQdef, hsna, hant, hst]
+  have hQch : Q.IsChordless := by
+    rw [Walk.isChordless_iff_forall_mem_edges]
+    intro u' v' hu' hv' hadj
+    have hadjs := hadj.symm
+    rw [hQsupp] at hu' hv'
+    simp only [hQdef, Walk.edges_cons, Walk.edges_nil, List.mem_cons, List.not_mem_nil, or_false]
+    rcases hu' with rfl | rfl | rfl <;> rcases hv' with rfl | rfl | rfl <;>
+      simp_all [Sym2.eq_swap]
+  -- the two paths meet only at their endpoints
+  have haP : a ∉ P.support := by
+    intro hcon
+    have h := hPW a hcon
+    simp only [hWstdef, Set.mem_insert_iff, Finset.mem_coe] at h
+    rcases h with h | h | h
+    · exact hsa.ne h
+    · exact hta.ne h
+    · exact (hR a (hC h)).1 rfl
+  have hmeet : ∀ z ∈ P.support, z ∈ Q.support → z = s ∨ z = t := by
+    intro z hz hzQ
+    rcases (hQsupp z).mp hzQ with h | h | h
+    · exact Or.inl h
+    · exact absurd (h ▸ hz) haP
+    · exact Or.inr h
+  have hcross : ∀ x ∈ P.support, ∀ y ∈ Q.support, x ∉ Q.support → y ∉ P.support →
+      ¬ G.Adj x y := by
+    intro x hx y hy hxQ hyP
+    have hya : y = a := by
+      rcases (hQsupp y).mp hy with h | h | h
+      · exact absurd (h ▸ P.start_mem_support) hyP
+      · exact h
+      · exact absurd (h ▸ P.end_mem_support) hyP
+    subst hya
+    have hxC : x ∈ C := by
+      have h := hPW x hx
+      simp only [hWstdef, Set.mem_insert_iff, Finset.mem_coe] at h
+      rcases h with h | h | h
+      · exact absurd ((hQsupp x).mpr (Or.inl h)) hxQ
+      · exact absurd ((hQsupp x).mpr (Or.inr (Or.inr h))) hxQ
+      · exact h
+    intro hcon
+    exact (hR x (hC hxC)).2 hcon.symm
+  exact not_isChordal_of_chordless_paths hPpath hQpath hPch hQch hPlen
+    (by simp [hQdef]) hmeet hcross hG
+
+variable [DecidableEq V]
+
+/-- **Dirac's lemma, in its strengthened inductive form.** A set of vertices of a chordal graph
+which is not a clique contains two distinct non-adjacent vertices, each of them simplicial inside
+that set.
+
+The strengthening from "there is a simplicial vertex" to "there are two non-adjacent simplicial
+vertices" is what makes the induction work: it guarantees a simplicial vertex *outside* the
+separator `S`, since `S` is a clique. -/
+theorem exists_two_simplicialIn_of_not_isClique (hG : G.IsChordal) :
+    ∀ (m : ℕ) (W : Finset V), W.card ≤ m → ¬ G.IsClique (W : Set V) →
+      ∃ v ∈ W, ∃ w ∈ W, v ≠ w ∧ ¬ G.Adj v w ∧ G.IsSimplicialIn W v ∧ G.IsSimplicialIn W w := by
+  classical
+  intro m
+  induction m with
+  | zero =>
+      intro W hcard hnc
+      rw [Finset.card_eq_zero.mp (Nat.le_zero.mp hcard)] at hnc
+      exact absurd (by simp) hnc
+  | succ m ih =>
+      intro W hcard hnc
+      -- a non-adjacent pair of `W`
+      obtain ⟨a, haW, b, hbW, hab, hnadj⟩ : ∃ a ∈ W, ∃ b ∈ W, a ≠ b ∧ ¬ G.Adj a b := by
+        by_contra hcon
+        push Not at hcon
+        exact hnc fun x hx y hy hxy => hcon x (by simpa using hx) y (by simpa using hy) hxy
+      -- `R`: the part of `W` outside the closed neighbourhood of `a`
+      set R : Finset V := W.filter (fun x => x ≠ a ∧ ¬ G.Adj a x) with hRdef
+      have hRmem : ∀ x, x ∈ R ↔ x ∈ W ∧ x ≠ a ∧ ¬ G.Adj a x := by
+        intro x; rw [hRdef, Finset.mem_filter]
+      have hRa : ∀ x ∈ R, x ≠ a ∧ ¬ G.Adj a x := fun x hx => ((hRmem x).mp hx).2
+      have hRW : R ⊆ W := fun x hx => ((hRmem x).mp hx).1
+      have hbR : b ∈ R := (hRmem b).mpr ⟨hbW, fun h => hab h.symm, hnadj⟩
+      -- `C`: the connected component of `b` inside `R`
+      set C : Finset V := R.filter (fun x => G.ReachIn R b x) with hCdef
+      have hCmem : ∀ x, x ∈ C ↔ x ∈ R ∧ G.ReachIn R b x := by
+        intro x; rw [hCdef, Finset.mem_filter]
+      have hCR : C ⊆ R := fun x hx => ((hCmem x).mp hx).1
+      have hbC : b ∈ C := (hCmem b).mpr ⟨hbR, ReachIn.rfl' hbR⟩
+      have hCb : ∀ x ∈ C, G.ReachIn C b x := by
+        intro x hx
+        obtain ⟨hxR, q, hq⟩ := (hCmem x).mp hx
+        refine ⟨q, fun z hz => (hCmem z).mpr ⟨hq z hz, ?_⟩⟩
+        exact ⟨q.takeUntil z hz, fun w hw => hq w (q.support_takeUntil_subset_support hz hw)⟩
+      have hCconn : ∀ x ∈ C, ∀ y ∈ C, G.ReachIn C x y :=
+        fun x hx y hy => (hCb x hx).symm.trans (hCb y hy)
+      -- `S`: the neighbours of `C` in `W`, and `D`: everything else
+      set S : Finset V := W.filter (fun x => x ∉ C ∧ ∃ c ∈ C, G.Adj x c) with hSdef
+      have hSmem : ∀ x, x ∈ S ↔ x ∈ W ∧ x ∉ C ∧ ∃ c ∈ C, G.Adj x c := by
+        intro x; rw [hSdef, Finset.mem_filter]
+      have hSW : S ⊆ W := fun x hx => ((hSmem x).mp hx).1
+      have hSa : ∀ x ∈ S, G.Adj a x := by
+        intro x hx
+        obtain ⟨hxW, hxC, c, hcC, hxc⟩ := (hSmem x).mp hx
+        by_contra hno
+        have hxa : x ≠ a := by
+          rintro rfl
+          exact (hRa c (hCR hcC)).2 hxc
+        have hxR : x ∈ R := (hRmem x).mpr ⟨hxW, hxa, hno⟩
+        exact hxC ((hCmem x).mpr ⟨hxR,
+          (((hCmem c).mp hcC).2).trans (ReachIn.step (hCR hcC) hxc.symm hxR)⟩)
+      have hSclique : G.IsClique (S : Set V) :=
+        isClique_of_component_neighbors hG hRa hCR hCconn
+          fun s hs => ⟨hSa s hs, ((hSmem s).mp hs).2.2⟩
+      set D : Finset V := W \ (C ∪ S) with hDdef
+      have hDmem : ∀ x, x ∈ D ↔ x ∈ W ∧ x ∉ C ∧ x ∉ S := by
+        intro x; rw [hDdef, Finset.mem_sdiff, Finset.mem_union, not_or]
+      have hDW : D ⊆ W := fun x hx => ((hDmem x).mp hx).1
+      have haC : a ∉ C := fun h => (hRa a (hCR h)).1 rfl
+      have haS : a ∉ S := fun h => (hSa a h).ne rfl
+      have haD : a ∈ D := (hDmem a).mpr ⟨haW, haC, haS⟩
+      -- `S` separates `C` from `D`
+      have hnoCD : ∀ x ∈ C, ∀ y ∈ D, ¬ G.Adj x y := by
+        intro x hx y hy hcon
+        obtain ⟨hyW, hyC, hyS⟩ := (hDmem y).mp hy
+        exact hyS ((hSmem y).mpr ⟨hyW, hyC, x, hx, hcon.symm⟩)
+      have hCnbr : ∀ x ∈ C, ∀ y ∈ W, G.Adj x y → y ∈ C ∪ S := by
+        intro x hx y hy hxy
+        by_cases hyC : y ∈ C
+        · exact Finset.mem_union_left _ hyC
+        · exact Finset.mem_union_right _ ((hSmem y).mpr ⟨hy, hyC, x, hx, hxy.symm⟩)
+      have hDnbr : ∀ x ∈ D, ∀ y ∈ W, G.Adj x y → y ∈ D ∪ S := by
+        intro x hx y hy hxy
+        by_cases hyC : y ∈ C
+        · exact absurd hxy.symm (hnoCD y hyC x hx)
+        · by_cases hyS : y ∈ S
+          · exact Finset.mem_union_right _ hyS
+          · exact Finset.mem_union_left _ ((hDmem y).mpr ⟨hy, hyC, hyS⟩)
+      -- extracting a simplicial vertex of `W` from either side of the separator
+      have key : ∀ T : Finset V, T ∪ S ⊆ W → (T ∪ S).card < W.card → T.Nonempty →
+          (∀ x ∈ T, ∀ y ∈ W, G.Adj x y → y ∈ T ∪ S) → ∃ v ∈ T, G.IsSimplicialIn W v := by
+        intro T hTW hTcard hTne hTnbr
+        have hUcard : (T ∪ S).card ≤ m := by omega
+        by_cases hUclique : G.IsClique ((T ∪ S : Finset V) : Set V)
+        · obtain ⟨v, hv⟩ := hTne
+          refine ⟨v, hv, fun x hx y hy hvx hvy hxy => ?_⟩
+          exact hUclique (by simpa using hTnbr v hv x hx hvx)
+            (by simpa using hTnbr v hv y hy hvy) hxy
+        · obtain ⟨v, hv, w, hw, hvw, hnvw, hsv, hsw⟩ := ih (T ∪ S) hUcard hUclique
+          have hone : v ∈ T ∨ w ∈ T := by
+            by_contra hcon
+            push Not at hcon
+            exact hnvw (hSclique (by simpa using (Finset.mem_union.mp hv).resolve_left hcon.1)
+              (by simpa using (Finset.mem_union.mp hw).resolve_left hcon.2) hvw)
+          rcases hone with h | h
+          · exact ⟨v, h, fun x hx y hy hvx hvy hxy =>
+              hsv (hTnbr v h x hx hvx) (hTnbr v h y hy hvy) hvx hvy hxy⟩
+          · exact ⟨w, h, fun x hx y hy hwx hwy hxy =>
+              hsw (hTnbr w h x hx hwx) (hTnbr w h y hy hwy) hwx hwy hxy⟩
+      -- both sides are strictly smaller than `W`
+      have hCSW : C ∪ S ⊆ W := by
+        intro x hx
+        rcases Finset.mem_union.mp hx with h | h
+        · exact hRW (hCR h)
+        · exact hSW h
+      have hDSW : D ∪ S ⊆ W := by
+        intro x hx
+        rcases Finset.mem_union.mp hx with h | h
+        · exact hDW h
+        · exact hSW h
+      have hCScard : (C ∪ S).card < W.card := by
+        refine Finset.card_lt_card ((Finset.ssubset_iff_of_subset hCSW).mpr ⟨a, haW, ?_⟩)
+        simp only [Finset.mem_union, not_or]
+        exact ⟨haC, haS⟩
+      have hDScard : (D ∪ S).card < W.card := by
+        refine Finset.card_lt_card ((Finset.ssubset_iff_of_subset hDSW).mpr ⟨b, hbW, ?_⟩)
+        simp only [Finset.mem_union, not_or]
+        exact ⟨fun h => ((hDmem b).mp h).2.1 hbC, fun h => ((hSmem b).mp h).2.1 hbC⟩
+      obtain ⟨v, hvC, hsv⟩ := key C hCSW hCScard ⟨b, hbC⟩ hCnbr
+      obtain ⟨w, hwD, hsw⟩ := key D hDSW hDScard ⟨a, haD⟩ hDnbr
+      refine ⟨v, hRW (hCR hvC), w, hDW hwD, ?_, hnoCD v hvC w hwD, hsv, hsw⟩
+      intro hvw
+      exact ((hDmem w).mp hwD).2.1 (hvw ▸ hvC)
+
+/-- **Dirac's lemma, relative form.** Every nonempty set of vertices of a chordal graph contains a
+vertex that is simplicial inside it. -/
+theorem exists_isSimplicialIn (hG : G.IsChordal) (W : Finset V) (hW : W.Nonempty) :
+    ∃ v ∈ W, G.IsSimplicialIn W v := by
+  classical
+  by_cases hc : G.IsClique (W : Set V)
+  · obtain ⟨v, hv⟩ := hW
+    exact ⟨v, hv, fun x hx y hy _ _ hxy => hc (by simpa using hx) (by simpa using hy) hxy⟩
+  · obtain ⟨v, hv, -, -, -, -, hsv, -⟩ :=
+      exists_two_simplicialIn_of_not_isClique hG W.card W le_rfl hc
+    exact ⟨v, hv, hsv⟩
+
+/-- **Dirac's lemma.** A chordal graph on a nonempty finite vertex type has a simplicial vertex. -/
+theorem exists_isSimplicialVertex [Fintype V] (G : SimpleGraph V) [Nonempty V]
+    (hG : G.IsChordal) :
+    ∃ v, G.IsSimplicialVertex v := by
+  obtain ⟨v, -, hv⟩ :=
+    exists_isSimplicialIn hG Finset.univ ⟨Classical.arbitrary V, Finset.mem_univ _⟩
+  exact ⟨v, fun x hx y hy hxy => hv (Finset.mem_univ x) (Finset.mem_univ y) hx hy hxy⟩
+
+end Dirac
+
 /-! ### The payoff: chordal graphs are `n`-monophilic
 
 Kostochka and Sidorenko's theorem under its own name. What is needed to reach it from
@@ -537,17 +903,19 @@ Kostochka and Sidorenko's theorem under its own name. What is needed to reach it
 finite vertex type has a simplicial vertex. Iterating that lemma peels the graph apart into a
 simplicial elimination ordering, and each peeling step is Lemma 1.
 
-Dirac's lemma is quarantined below as the explicit hypothesis
-`SimpleGraph.HasSimplicialVertex`, in the same style as `monophilic_two_iff_of_rubin_hard` in
-`Monophilic.Rubin`: the theorem that depends on it says so in its statement. -/
+Dirac's lemma is packaged below as the named statement `SimpleGraph.HasSimplicialVertex`, so that
+the induction can be read off from `SimpleGraph.monophilic_of_isChordal_of_dirac` without
+re-entering its proof; it is discharged by `SimpleGraph.hasSimplicialVertex`, which is the theorem
+`SimpleGraph.exists_isSimplicialVertex` proved in the previous section. Nothing here is
+conjectural: `SimpleGraph.monophilic_of_isChordal` is unconditional. -/
 
 section Payoff
 
-/-- **Dirac's lemma**, as a named hypothesis: every chordal graph on a nonempty finite vertex type
+/-- **Dirac's lemma**, as a named statement: every chordal graph on a nonempty finite vertex type
 has a simplicial vertex.
 
-This is the one graph-theoretic input that `SimpleGraph.monophilic_of_isChordal` below borrows. It
-is a statement about graph structure alone and involves no colorings. -/
+This is the one graph-theoretic input of the induction below. It is a statement about graph
+structure alone and involves no colorings; it is proved in `SimpleGraph.hasSimplicialVertex`. -/
 def HasSimplicialVertex : Prop :=
   ∀ {V : Type u} [Finite V] (G : SimpleGraph V), Nonempty V → G.IsChordal →
     ∃ v : V, G.IsSimplicialVertex v
@@ -575,8 +943,8 @@ theorem monophilic_of_isChordal_aux (hD : HasSimplicialVertex.{u}) (n : ℕ) :
       exact (monophilic_iso (coneOnDeleteIso G v) n).mpr
         (Monophilic.coneOn (isClique_neighborsAway G hv) hbase)
 
-/-- **The Kostochka–Sidorenko theorem, under its own name** — *modulo Dirac's lemma*. A chordal
-graph is `n`-monophilic for every `n`.
+/-- The Kostochka–Sidorenko theorem *relative to* Dirac's lemma. A chordal graph is `n`-monophilic
+for every `n`, given `hD`.
 
 The proof is a direct induction on the number of vertices through
 `SimpleGraph.Monophilic.coneOn` (Kirov–Naimi's Lemma 1), rather than a detour through the
@@ -584,13 +952,131 @@ The proof is a direct induction on the number of vertices through
 graph is the cone of `G.deleteVertex v` over the clique `G.neighborsAway v`, and `G.deleteVertex v`
 is again chordal with one vertex fewer.
 
-The hypothesis `hD` is Dirac's lemma; discharging it turns this into an unconditional theorem. -/
-theorem monophilic_of_isChordal (hD : HasSimplicialVertex.{u}) {V : Type u} [Fintype V]
+The hypothesis is discharged by `SimpleGraph.hasSimplicialVertex`, giving the unconditional
+`SimpleGraph.monophilic_of_isChordal`. -/
+theorem monophilic_of_isChordal_of_dirac (hD : HasSimplicialVertex.{u}) {V : Type u} [Fintype V]
     [DecidableEq V] (G : SimpleGraph V) [DecidableRel G.Adj] (hG : G.IsChordal) (n : ℕ) :
     G.Monophilic n :=
   monophilic_of_isChordal_aux hD n (Fintype.card V) G rfl hG
 
+/-- **Dirac's lemma**, discharging the hypothesis `SimpleGraph.HasSimplicialVertex`. -/
+theorem hasSimplicialVertex : HasSimplicialVertex.{u} := by
+  intro V _ G hne hG
+  classical
+  letI := Fintype.ofFinite V
+  haveI := hne
+  exact exists_isSimplicialVertex G hG
+
+/-- **The Kostochka–Sidorenko theorem, under its own name.** *Every chordal graph is
+`n`-monophilic, for every `n`.*
+
+This is the statement that `Monophilic.Chordal` could only record in its
+simplicial-elimination-ordering form (`SimpleGraph.monophilic_cliqueTower_of_isEmpty`), because
+"chordal" was undefined there. The missing link was Dirac's lemma
+(`SimpleGraph.exists_isSimplicialVertex`): a chordal graph on a nonempty finite vertex type has a
+simplicial vertex. Peeling one off and coning it back on with Kirov–Naimi's Lemma 1
+(`SimpleGraph.Monophilic.coneOn`) is the whole induction. -/
+theorem monophilic_of_isChordal {V : Type u} [Fintype V] [DecidableEq V] (G : SimpleGraph V)
+    [DecidableRel G.Adj] (hG : G.IsChordal) (n : ℕ) : G.Monophilic n :=
+  monophilic_of_isChordal_of_dirac hasSimplicialVertex G hG n
+
+/-- **Dirac's theorem, easy direction, restated for `n`-monophilicity.** Chordality of a graph
+built by a simplicial clique tower over the empty graph (`SimpleGraph.isChordal_cliqueTower`)
+recovers `SimpleGraph.monophilic_cliqueTower_of_isEmpty` from
+`SimpleGraph.monophilic_of_isChordal`; the two routes to the Kostochka–Sidorenko theorem agree. -/
+theorem monophilic_cliqueTower_of_isChordal {V : Type u} [Fintype V] [DecidableEq V] [IsEmpty V]
+    (G : SimpleGraph V) [DecidableRel G.Adj] (n k : ℕ) (d : CliqueTowerData V k)
+    (hd : CliqueTowerData.IsSimplicial G k d) : (cliqueTower G k d).Monophilic n := by
+  letI := instDecidableEqTowerV (V := V) k
+  letI := instFintypeTowerV (V := V) k
+  letI := instDecidableRelCliqueTower (G := G) k d
+  exact monophilic_of_isChordal _ (isChordal_cliqueTower_of_isEmpty G k d hd) n
+
 end Payoff
+
+/-! ### Dirac's theorem
+
+Putting the two directions together: a finite graph is chordal **if and only if** it admits a
+simplicial elimination ordering, presented as in `Monophilic.Chordal` by a simplicial clique tower
+over the empty graph. -/
+
+section Ordering
+
+/-- Cliques transport along an isomorphism of graphs. -/
+theorem IsClique.mapIso {W : Type*} {G' : SimpleGraph W} (e : G ≃g G') {K : Finset V}
+    (h : G.IsClique (K : Set V)) :
+    G'.IsClique ((K.map e.toEquiv.toEmbedding : Finset W) : Set W) := by
+  intro x hx y hy hxy
+  simp only [Finset.coe_map, Set.mem_image, Finset.mem_coe] at hx hy
+  obtain ⟨x', hx', rfl⟩ := hx
+  obtain ⟨y', hy', rfl⟩ := hy
+  exact e.map_rel_iff.mpr (h hx' hy' fun hcon => hxy (by rw [hcon]))
+
+/-- **Cones transport along an isomorphism of the bases.** -/
+def coneOnCongr {W : Type*} {G' : SimpleGraph W} (e : G ≃g G') (K : Finset V) :
+    coneOn G K ≃g coneOn G' (K.map e.toEquiv.toEmbedding) where
+  toEquiv := Equiv.optionCongr e.toEquiv
+  map_rel_iff' := by
+    rintro (_ | a) (_ | b)
+    · simp [coneOn]
+    · exact Finset.mem_map' _
+    · exact Finset.mem_map' _
+    · exact e.map_rel_iff
+
+/-- **Dirac's theorem, hard direction.** A chordal graph on `m` vertices is isomorphic to the graph
+built from nothing by `m` cone attachments, each over a clique of the graph built so far: peeling
+off a simplicial vertex (`SimpleGraph.exists_isSimplicialVertex`) at each step reads off a
+simplicial elimination ordering. -/
+theorem exists_cliqueTower_of_isChordal :
+    ∀ (m : ℕ) {V : Type u} [Fintype V] [DecidableEq V] (G : SimpleGraph V) [DecidableRel G.Adj],
+      Fintype.card V = m → G.IsChordal →
+        ∃ d : CliqueTowerData (Fin 0) m,
+          CliqueTowerData.IsSimplicial (⊥ : SimpleGraph (Fin 0)) m d ∧
+            Nonempty (G ≃g cliqueTower (⊥ : SimpleGraph (Fin 0)) m d) := by
+  intro m
+  induction m with
+  | zero =>
+      intro V _ _ G _ hcard _
+      haveI : IsEmpty V := Fintype.card_eq_zero_iff.mp hcard
+      exact ⟨PUnit.unit, trivial,
+        ⟨{ toEquiv := Fintype.equivFinOfCardEq hcard
+           map_rel_iff' := by intro a _; exact isEmptyElim a }⟩⟩
+  | succ m ih =>
+      intro V _ _ G _ hcard hch
+      haveI : Nonempty V := Fintype.card_pos_iff.mp (by omega)
+      obtain ⟨v, hv⟩ := exists_isSimplicialVertex G hch
+      have hcard' : Fintype.card {x : V // x ≠ v} = m := by
+        have := card_deleteVertex (V := V) v
+        omega
+      obtain ⟨d', hd', ⟨e'⟩⟩ := ih (G.deleteVertex v) hcard' (hch.deleteVertex v)
+      refine ⟨(d', (G.neighborsAway v).map e'.toEquiv.toEmbedding),
+        ⟨IsClique.mapIso e' (isClique_neighborsAway G hv), hd'⟩,
+        ⟨(coneOnDeleteIso G v).trans (coneOnCongr e' (G.neighborsAway v))⟩⟩
+
+/-- **Dirac's theorem.** *A finite graph is chordal if and only if it has a simplicial elimination
+ordering.*
+
+The ordering is presented backwards and constructively, exactly as in `Monophilic.Chordal`: the
+graph is isomorphic to `SimpleGraph.cliqueTower` over the empty graph for some simplicial tower
+data, i.e. it is built from nothing by successively attaching a vertex to a clique of the graph
+built so far.
+
+The easy direction is `SimpleGraph.isChordal_cliqueTower_of_isEmpty`; the hard direction is
+`SimpleGraph.exists_cliqueTower_of_isChordal`, which rests on Dirac's lemma
+(`SimpleGraph.exists_isSimplicialVertex`). -/
+theorem isChordal_iff_exists_cliqueTower {V : Type u} [Fintype V] [DecidableEq V]
+    (G : SimpleGraph V) [DecidableRel G.Adj] :
+    G.IsChordal ↔ ∃ (k : ℕ) (d : CliqueTowerData (Fin 0) k),
+      CliqueTowerData.IsSimplicial (⊥ : SimpleGraph (Fin 0)) k d ∧
+        Nonempty (G ≃g cliqueTower (⊥ : SimpleGraph (Fin 0)) k d) := by
+  constructor
+  · intro hG
+    obtain ⟨d, hd, he⟩ := exists_cliqueTower_of_isChordal (Fintype.card V) G rfl hG
+    exact ⟨Fintype.card V, d, hd, he⟩
+  · rintro ⟨k, d, hd, ⟨e⟩⟩
+    exact IsChordal.of_iso e (isChordal_cliqueTower_of_isEmpty _ k d hd)
+
+end Ordering
 
 /-! ### Sanity checks on the definition
 
@@ -635,6 +1121,16 @@ theorem not_isChordal_cycleGraph_five : ¬ (cycleGraph 5).IsChordal := by
   refine h c5 ?_ (by decide) (Walk.isChordless_iff_forall_mem_edges.mpr (by decide))
   rw [Walk.isCycle_def]
   exact ⟨(Walk.isTrail_def _).mpr (by decide), by simp [c5], by decide⟩
+
+-- the two walks above really are a four-cycle and a five-cycle
+#guard c4.length = 4
+#guard c4.support.dedup.length = 4
+#guard c5.length = 5
+#guard c5.support.dedup.length = 5
+
+-- and Dirac's theorem is not vacuous at the small end: `K₄` is a clique tower, `C₄` is not chordal
+#guard (cliqueTower (⊥ : SimpleGraph (Fin 1)) 3
+  (((PUnit.unit, ({0} : Finset (Fin 1))), Finset.univ), Finset.univ)).colConst 4 = 24
 
 end Guards
 

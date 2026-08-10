@@ -27,3 +27,5 @@ import Monophilic.Rubin
 import Monophilic.ListColorFunction
 import Monophilic.ChromaticPolynomial
 import Monophilic.Threshold
+import Monophilic.Dirac
+import Monophilic.RubinHard

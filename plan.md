@@ -340,10 +340,28 @@ survives as a corollary. What is still borrowed reduces to a purely *structural*
 colouring content: a connected graph with minimum degree `≥ 2` that is not a cycle contains a theta
 subgraph.
 
-**Not attempted, and why.** That structural fact needs block or ear decomposition, which Mathlib
-does not have, plus a walk induction for "follow a path until it returns to the cycle". There is a
-second obstacle: `theta m` here is hardwired as two *length-2* paths, so ruling out general
-`θ_{a,b,c}` would additionally need a general theta construction.
+**CORRECTION — the reduction stated above was wrong.** It was claimed here (and reported twice) that
+the hard direction reduces to the structural fact *"connected, minimum degree `≥ 2`, not a cycle ⟹
+contains a theta subgraph"*. That statement is true, but **it is not sufficient**, because the theta
+it produces may be a *good* one.
+
+**Counterexample: `K₂,₄`** — which this repository already contains, as `SimpleGraph.ERT.K 2`. It is
+connected; bipartite, so it has no odd cycle; minimum degree `2`; not a cycle (`6` vertices, `8`
+edges); and not any `θ_{2,2,2m}` (it has two vertices of degree `4`). Every theta subgraph of it is
+`θ_{2,2,2} = K₂,₃` — three internally disjoint paths between two of its vertices can only be three
+of the four length-`2` paths, and between two large-side vertices only two such paths exist — and
+`K₂,₃` **is** `2`-choosable. Yet `K₂,₄` is not `2`-choosable (`ERT.not_choosable 2`). All of this is
+machine-checked.
+
+So a structural loan strong enough to finish Rubin must also supply *generalized* thetas (four or
+more internally disjoint paths) and pairs of cycles meeting in at most one vertex. `Monophilic/
+RubinHard.lean` therefore states the structural input as `ThetaAlternative H` — a property *of the
+graph at hand* rather than a universal lemma — and documents the gap.
+
+**Not attempted, and why.** The remaining pieces need block or ear decomposition, which Mathlib does
+not have, plus a walk induction for "follow a path until it returns to the cycle". The second
+obstacle noted earlier is now gone: `thetaGen a b c` gives general theta graphs, and bad shapes are
+proved non-`2`-choosable for the whole family `θ_{2,2,odd}` plus `(1,3,3)`, `(3,3,3)`, `(2,4,4)`.
 
 ### The one real blocker: M8 needs Rubin's theorem
 
