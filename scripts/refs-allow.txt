@@ -1,9 +1,0 @@
-# Deliberate references to declarations that no longer exist.
-#
-# Format: <repo-relative path>:<backticked name>   # reason
-#
-# Every entry must carry a reason. This file is an audit trail, not a silencer: if you
-# are tempted to add something here to make the check pass, the reference is probably a
-# stale claim and the surrounding prose needs rewriting instead.
-
-plan.md:Monophilic.ThetaAlternative   # historical: records the definition K_2,4 refuted, and why it was deleted

@@ -44,12 +44,8 @@ jobs:
           fi
           echo "clean"
 
-      # The kernel checks theorem *statements*. It checks nothing inside a docstring, a
-      # markdown table, or a README claim -- so deleting a declaration leaves every
-      # reference to it in prose silently dangling, and the claim built around that
-      # reference silently false. That is not hypothetical: a false structural claim
-      # survived the deletion of `ThetaAlternative` in exactly this way, in a module
-      # docstring, and was found by accident rather than by any check.
+      # Deleting a declaration leaves references to it in docstrings dangling. Catches
+      # the broken name only -- a false sentence made of live names is a job for review.
       - name: No stale references in prose
         run: |
           lake env lean --run scripts/DumpNames.lean > /tmp/names.txt
