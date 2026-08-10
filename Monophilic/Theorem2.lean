@@ -21,11 +21,13 @@ The same statement appears as Theorem 2(iv) of Chi, Lee, Morrissette, Mudrock, N
 (arXiv:2605.10861, 2026), there attributed to [1, 6, 13, 16, 17] with Kirov–Naimi as [16].
 
 This file states it with the four alternatives as **real definitions** rather than abstract
-propositions, and proves it from one hypothesis: **Rubin's theorem** (`Monophilic.RubinTheorem`),
-which is not yet available in this development — it is being proved in `Monophilic/RubinHard.lean`.
+propositions, and proves it from one hypothesis: **Rubin's theorem** (`Monophilic.RubinTheorem`).
 The hypothesis is the *first explicit argument* of `Monophilic.monophilic_two_iff_of_rubin`, so that
-the day a term `rubinTheorem : RubinTheorem` exists, `monophilic_two_iff_of_rubin rubinTheorem` is
-the unconditional theorem with no other edit anywhere.
+a term `rubinTheorem : RubinTheorem` turns it into the unconditional theorem with no other edit
+anywhere. Such a term now exists — `Monophilic.rubinTheorem`, in `Monophilic/RubinProof.lean` — and
+the unconditional statement is `Monophilic.monophilic_two_iff` there. It has to be stated in that
+file rather than this one purely for import reasons: `Monophilic.HasCore` is phrased in terms of
+`Monophilic.CoreIs`, so everything Rubin's theorem is proved from imports *this* file.
 
 ## What "core" means here
 
@@ -46,9 +48,10 @@ readings interchangeable, and it is the paper's, not ours.
 **even** number of vertices, and `Even k` the **odd** cycles. Every statement below is checked
 numerically on small cases before it is used; see the `#guard`s in the "Sanity checks" section.
 
-## What is proved unconditionally
+## What is proved in this file without Rubin's theorem
 
-Rubin's theorem is used in exactly one place. Everything else is earned here:
+Rubin's theorem is used in exactly one place *in this file*. Everything else here is earned
+locally:
 
 * the whole **⟸ direction** of Theorem 2 (`Monophilic.monophilic_two_of_alternatives`);
 * in the **⟹ direction**, the case where `G` is *not* `2`-colorable
@@ -59,8 +62,9 @@ Rubin's theorem is used in exactly one place. Everything else is earned here:
   (`Monophilic.alternatives_of_rubinAlternatives`), which consumes the three-way disjunction and
   produces the four-way one without assuming Rubin;
 * the **⟸ direction of Rubin's theorem** itself
-  (`Monophilic.choosable_two_of_rubinAlternatives`), so the content still missing from
-  `RubinTheorem` is only its forward implication.
+  (`Monophilic.choosable_two_of_rubinAlternatives`), which is what
+  `Monophilic.rubinTheorem` consumes for that half, leaving it to supply only the forward
+  implication.
 
 ## Main definitions
 
@@ -355,11 +359,12 @@ def CoreIsTheta : Prop := ∃ m, 1 ≤ m ∧ CoreIs G (theta m)
 Due to **A. L. Rubin**, and published in P. Erdős, A. L. Rubin and H. Taylor, *Choosability in
 graphs*, Congr. Numer. **26** (1979), 125–157. Kirov–Naimi's proof of Theorem 2 uses it.
 
-It is **not yet proved in this development**; the proof is being built in
-`Monophilic/RubinHard.lean`. Until it lands, `Monophilic.monophilic_two_iff_of_rubin` takes a term
-of this type as its first explicit argument. The `↔` form is the form the argument is stated in;
-its ⟸ half is already proved here, as `Monophilic.choosable_two_of_rubinAlternatives`, so what is
-outstanding is only the forward implication. -/
+It is **proved in this development**, as `Monophilic.rubinTheorem` in
+`Monophilic/RubinProof.lean`. This file cannot name that term — every file the proof is built from
+imports this one — so `Monophilic.monophilic_two_iff_of_rubin` takes a term of this type as its
+first explicit argument, and `Monophilic.monophilic_two_iff` supplies it. The `↔` form is the form
+the argument is stated in; its ⟸ half is proved here, as
+`Monophilic.choosable_two_of_rubinAlternatives`. -/
 def RubinTheorem : Prop :=
   ∀ {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V) [DecidableRel G.Adj],
     G.Connected → (G.Choosable 2 ↔ (CoreIsVertex G ∨ CoreIsEvenCycle G ∨ CoreIsTheta G))
@@ -439,8 +444,8 @@ an even cycle or a `θ_{2,2,2m}` is `2`-choosable.
 
 Due to **A. L. Rubin** (Erdős–Rubin–Taylor 1979); the Lean proof rests on
 `Monophilic.choosable_two_of_rubinFamily`, itself a corollary of Kirov–Naimi's Theorem 1 in the
-even-cycle case. Recording it here pins down that the content still missing from
-`Monophilic.RubinTheorem` is only its **forward** implication. -/
+even-cycle case. It is the ⟸ half of `Monophilic.rubinTheorem`, which is discharged by citing this
+lemma, so the work that theorem does is entirely in its **forward** implication. -/
 theorem choosable_two_of_rubinAlternatives
     (h : CoreIsVertex G ∨ CoreIsEvenCycle G ∨ CoreIsTheta G) : G.Choosable 2 := by
   rcases h with h | ⟨k, hk, hk2, hc⟩ | ⟨m, hm, hc⟩
@@ -488,10 +493,12 @@ Mudrock, Nguyen and Whatley (arXiv:2605.10861, 2026), there attributed to [1, 6,
 Kirov–Naimi as [16].
 
 The single hypothesis `rubin` is **Rubin's theorem** (A. L. Rubin, in Erdős–Rubin–Taylor,
-*Choosability in graphs*, Congr. Numer. **26** (1979), 125–157), which this development is in the
-course of proving in `Monophilic/RubinHard.lean`. It is the *first explicit argument*, so that
-`monophilic_two_iff_of_rubin rubinTheorem` becomes the unconditional theorem the moment such a term
-exists, with no other change. Nothing else is assumed.
+*Choosability in graphs*, Congr. Numer. **26** (1979), 125–157), which is proved in this
+development, as `Monophilic.rubinTheorem` in `Monophilic/RubinProof.lean`. It is the *first
+explicit argument*, and `monophilic_two_iff_of_rubin Monophilic.rubinTheorem` is therefore the
+unconditional theorem — that is exactly what `Monophilic.monophilic_two_iff` is. It cannot be
+written down here, because every file Rubin's theorem is proved from imports this one. Nothing else
+is assumed.
 
 The proof follows the paper. The ⟸ direction is `Monophilic.monophilic_two_of_alternatives`. For
 ⟹: if `G` is not `2`-colorable it contains an odd cycle

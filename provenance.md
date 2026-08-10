@@ -33,20 +33,27 @@ These are known results. The Lean proof is ours; the mathematics is not.
 | `SimpleGraph.monophilic_of_two_pow_lt` | explicit threshold `2^{\|E(G)\|} < m` | weaker form of **Wang–Qian–Yan 2017**; superseded by **Dong–Zhang 2023** (`m ≥ \|E(G)\| − 1`) |
 | Lemmas 1–6 | the supporting lemmas | **Kirov–Naimi 2016**, numbered as in the paper |
 
-### In progress — Rubin's theorem
+### Rubin's theorem
 
-The target is **Rubin's theorem** (A. L. Rubin, in **Erdős–Rubin–Taylor**, *Choosability in graphs*,
+**Rubin's theorem** (A. L. Rubin, in **Erdős–Rubin–Taylor**, *Choosability in graphs*,
 Congr. Numer. **26** (1980), 125–157): *a connected graph is 2-choosable iff its core is a single
-vertex, an even cycle, or `θ_{2,2,2m}` for some `m ≥ 1`.* Kirov–Naimi cite it; this development aims
-to prove it, so that Theorem 2 carries no hypothesis.
+vertex, an even cycle, or `θ_{2,2,2m}` for some `m ≥ 1`.* Kirov–Naimi cite it; it is **proved here**
+(`Monophilic.rubinTheorem`), so Theorem 2 carries no hypothesis
+(`Monophilic.monophilic_two_iff`).
 
 | piece | Result | Credit |
 |---|---|---|
 | ⟸ | the three families are 2-choosable (`choosable_two_of_rubinFamily`) | **Rubin** — **proved** |
 | 5 | `Θ(k₁,…,k_n)` is 2-choosable ⟺ `n = 3` and shape `(2,2,even)`, **arity arbitrary** (`choosable_two_gtheta_iff`) | a component of **Rubin's theorem**; as a statement it is a corollary of it. Proved here directly from list assignments, so it can feed the proof of Rubin without circularity — **proved** |
 | 1 | core reduction, `G` 2-choosable ⟺ its core is (`choosable_iff_of_coreIs`) | standard, part of **Rubin's** argument — **proved** |
+| 2 | every connected finite graph has a core (`hasCore`) | standard, assumed without proof wherever "the core" is used — **proved** |
 | 3 | a **dumbbell** — two cycles joined by a path — is not 2-choosable (`not_choosable_two_of_dumbbell`) | standard, part of **Rubin's** argument — **proved** |
-| 4 | the structural theorem for 2-connected non-cycles | classical structural graph theory — **OPEN**, and no correct formulation of it has been established here yet |
+| 4–6 | shortest cycle `C₁` plus a shortest edge-disjoint path `P₁` between two of its vertices: `C₁` is a 4-cycle, `P₁` is even, and no edge lies outside `C₁ ∪ P₁` (`rubin_structure`) | **Rubin**, pp. 131–134 (his steps 4, 5, 6) — **proved** |
+| ⟹ | assembly: core, structure, and the two isomorphism constructions (`rubinTheorem`) | **Rubin** — **proved** |
+
+The structural theorem for 2-connected non-cycles that an earlier plan routed through is **not**
+established here, and is not needed: Rubin's own steps 4–6 replace it. The refutations that killed
+that route are recorded in §3 below and in the module docstring of `Monophilic.Rubin`.
 
 **None of this is novel.** It is a theorem from 1980 that appears not to have been machine-checked before.
 

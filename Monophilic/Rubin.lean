@@ -16,14 +16,16 @@ import Monophilic.Theta
 > a connected graph is `2`-choosable **iff** its core is a single vertex, an even cycle, or
 > `θ_{2,2,2m}` for some `m ≥ 1`.
 
-Kirov–Naimi's Theorem 2 cites this. **It is not proved in this development.** The goal is to prove
-it, so that Theorem 2 carries no hypothesis; until then `Monophilic.RubinTheorem` in
+Kirov–Naimi's Theorem 2 cites this. **It is now proved in this development**, as
+`Monophilic.rubinTheorem` in `Monophilic.RubinProof`; `Monophilic.RubinTheorem` in
 `Monophilic.Theorem2` names the statement and is the first explicit argument of
-`Monophilic.monophilic_two_iff_of_rubin`, so that supplying a term of that type — and nothing else —
-discharges Theorem 2.
+`Monophilic.monophilic_two_iff_of_rubin`, so supplying that term — and nothing else — discharges
+Theorem 2, which it does in `Monophilic.monophilic_two_iff`.
 
-What **is** proved, here, is the **⟸ direction**: every graph on Rubin's list really is
-`2`-choosable. The outstanding half is ⟹.
+What is proved **here** is only the **⟸ direction**: every graph on Rubin's list really is
+`2`-choosable. The ⟹ direction is the long one, and lives downstream, in
+`Monophilic.RubinStructure`, `Monophilic.RubinCases` and `Monophilic.CoreExtract`, assembled in
+`Monophilic.RubinProof`.
 
 ## What is proved here
 
@@ -37,9 +39,11 @@ The three families, each already established in the files this one imports:
 Passing from the core back to the whole graph is `SimpleGraph.choosable_pendantTower_iff`. Together
 these give `choosable_two_of_rubinFamily` below.
 
-## What remains, and a correction
+## The other direction, and a correction on the way to it
 
-Only the **⟹ direction** — that a `2`-choosable graph *must* have one of those three cores.
+The **⟹ direction** — that a `2`-choosable graph *must* have one of those three cores — is proved,
+but not by the route this section describes. The record below is kept because the refutations in it
+are the only durable content of the detour.
 
 An earlier version of this file claimed the remaining work reduced to the structural fact that *a
 connected graph of minimum degree `≥ 2` that is not a cycle contains a theta subgraph*. **That is
@@ -67,13 +71,21 @@ would need seven. An exhaustive sweep of the 129,073 bipartite 2-connected non-c
 but that is an **empirical observation, not a theorem**, and `plan.md` records what would be needed
 to establish it.
 
-Given a correct structural statement, the rest is in place: an odd cycle is not `2`-colourable
-(hence not `2`-choosable), choosability passes to subgraphs (`SimpleGraph.Choosable.mono`,
+**No such structural statement is used in the end.** The ⟹ direction is proved instead by Rubin's
+own argument, which never needs one: take a *shortest* cycle `C₁` and, if any edge lies off it, a
+shortest path `P₁` edge-disjoint from `C₁` joining two of its vertices; minimality forces `C₁` to be
+a four-cycle and `P₁` to have even length, and a further case analysis shows no edge can lie outside
+`C₁ ∪ P₁`. That is `Monophilic.RubinStructure` and `Monophilic.RubinCases`, ending in
+`Monophilic.rubin_structure`, with the passage to and from the core in `Monophilic.CoreExtract` and
+the assembly in `Monophilic.RubinProof`.
+
+The pieces listed above are what that argument runs on: an odd cycle is not `2`-colourable (hence
+not `2`-choosable), choosability passes to subgraphs (`SimpleGraph.Choosable.mono`,
 `SimpleGraph.Choosable.comap`), a **dumbbell** is not `2`-choosable
 (`Monophilic.not_choosable_two_of_dumbbell` — note the connecting path is load-bearing, since two
 *disjoint* even cycles are `2`-choosable), and `θ(a,b,c)` is `2`-choosable exactly for shape
-`(2,2,\text{even})` (`Monophilic.choosable_two_thetaGen_iff`, **proved**). What is missing is the
-extraction, and Mathlib has no vertex connectivity, blocks or ear decomposition to build it on.
+`(2,2,\text{even})` (`Monophilic.choosable_two_thetaGen_iff`, **proved**). Mathlib has no vertex
+connectivity, blocks or ear decomposition, and none is needed.
 
 ## Main results
 
@@ -81,9 +93,10 @@ extraction, and Mathlib has no vertex connectivity, blocks or ear decomposition 
 
 `SimpleGraph.monophilic_two_iff_of_rubin_hard` and `monophilic_two_iff_of_rubin'` below state
 Theorem 2 with its three core alternatives left as abstract propositions. They are **superseded** by
-`Monophilic.monophilic_two_iff_of_rubin` in `Monophilic.Theorem2`, which uses concrete `CoreIs`
-notions and takes Rubin's theorem as a single named hypothesis to be discharged. They are kept only
-until that discharge lands.
+`Monophilic.monophilic_two_iff` in `Monophilic.RubinProof`, which uses concrete `CoreIs` notions and
+assumes nothing beyond connectivity, Rubin's theorem having been discharged by
+`Monophilic.rubinTheorem`. They are kept as a record of the shape of the loan that was outstanding
+while the proof was being built.
 -/
 
 namespace Monophilic

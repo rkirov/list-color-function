@@ -68,20 +68,23 @@ Two notes carried over from development, both recorded in `plan.md`:
 | **Theorem 1 — every cycle is `n`-monophilic, every `n ≥ 2`** | ✅ |
 | Lemma 5 (cores, as pendant towers) | ✅ |
 | Lemma 6 (`K₂,₃` is 2-monophilic) | ✅ |
-| **Theorem 2** — the 2-monophilic characterization, *relative to Rubin* | ✅ |
+| **Theorem 2** — the 2-monophilic characterization, unconditionally | ✅ |
 | §5 building block — `K_{n,nⁿ}` is `n`-colourable but not `n`-choosable | ✅ |
 | §5 full `H_{n+1}` construction (Lemmas 7–10) | not attempted |
 
-One dependency is worth stating plainly. **Rubin's characterization of 2-choosable graphs** has not,
-as far as we can determine, been formalized anywhere. Its ⟸ direction *is* proved here
-(`choosable_two_of_rubinFamily`), as is the generalized-theta classification it needs
-(`choosable_two_gtheta_iff`, arbitrary arity) and the dumbbell case
-(`not_choosable_two_of_dumbbell`). The ⟹ direction is **open**: the missing piece is a structural
-theorem about 2-connected graphs, and Mathlib at this revision has no vertex connectivity of any
-kind — see `plan.md`. Theorem 2 therefore takes `RubinTheorem` as its first explicit argument, with
-the core alternatives as **real definitions** rather than abstract propositions, so that supplying
-one term discharges it. Everything else in Theorem 2, including its whole ⟸ direction, is
-unconditional.
+One dependency is worth stating plainly. **Rubin's characterization of 2-choosable graphs** (A. L.
+Rubin, in Erdős–Rubin–Taylor 1980, pp. 131–134) had not, as far as we can determine, been formalized
+anywhere. It is proved here, in both directions — `Monophilic.rubinTheorem` — out of
+`choosable_two_of_rubinFamily` (⟸), the generalized-theta classification
+`choosable_two_gtheta_iff` (arbitrary arity), the dumbbell case `not_choosable_two_of_dumbbell`,
+Rubin's steps 4–6 (`rubin_structure`) and the core extraction (`hasCore`). It is a theorem from
+1980; none of the mathematics is ours.
+
+Kirov–Naimi's Theorem 2 is stated in `Monophilic/Theorem2.lean` with `RubinTheorem` as its first
+explicit argument and the core alternatives as **real definitions** rather than abstract
+propositions; `Monophilic.monophilic_two_iff` supplies that argument, so Theorem 2 now assumes
+nothing beyond connectivity. (The two live in different files only because everything Rubin's
+theorem is proved from imports `Monophilic/Theorem2.lean`.)
 
 ## Standard of proof
 
