@@ -16,53 +16,66 @@ that the comparator can check a submission's statements against these.  Compilin
 
 ## What is in here
 
-**Vocabulary (`definition_names` in `config.json`).** Every definition that occurs in one of the
-statements below, plus the paper's named constructions:
+**Vocabulary (`definition_names` in `config.json`, 65 entries).** The paper's own notions and
+constructions:
 
 * counting: `ListAssignment`, `IsNListAssignment`, `constList`, `IsProperColoring`, `colorings`,
   `col`, `colConst`, `colFix`, `colAvoid`, `Monophilic`, `Choosable`, `Minimizing`, `colCounts`,
-  `listColorFunction`, `compCount`, `chromaticPolynomial`, `listCount`, `compInter`, `edgeGraph`;
+  `listColorFunction`, `chromaticPolynomial`, `listCount`;
 * constructions: `coneOn`, `addPendant`, `addPendantPair`, `delNone`, `inducedList`, `bridge`,
   `swapRight`, `TowerV`, `TowerData`, `pendantTower`, `CliqueTowerData`, `cliqueTower`,
   `CliqueTowerData.IsSimplicial`, `ERT.K`, `ERT.L₀`;
 * paths, cycles and thetas: `PathV`, `pathG`, `pathStart`, `pathEnd`, `pathVtx`, `pathA`, `pathB`,
-  `pathAssign`, `pathSplitIso`, `IsNNAssign`, `IsPathShape`, `closePath`, `rotIso`, `reach`,
-  `ThetaV`, `theta`, `RubinFamily`;
+  `pathAssign`, `pathSplitIso`, `IsNNAssign`, `IsPathShape`, `closePath`, `rotIso`, `ThetaV`,
+  `theta`, `RubinFamily`;
 * chordality (`Monophilic.Dirac`): `IsChordal`, `IsSimplicialVertex`, `deleteVertex`,
   `HasSimplicialVertex`;
-* the `DecidableRel` / `Fintype` / `DecidableEq` instances that the statements above elaborate
-  through (`instDecidableRelPathG`, `coneOn.instDecidableRel`, …).  These are part of the
-  statements whether or not one likes it: `G.col L` does not typecheck without them.
+* and — **not by editorial choice** — the `DecidableRel` / `Fintype` / `DecidableEq` instances that
+  the statements elaborate through (`instDecidableRelPathG`, `coneOn.instDecidableRel`,
+  `instDecidableRelSumAdjBridge`, …).  `G.col L` does not typecheck without them, so they occur in
+  the *types* of the listed theorems, and the comparator's traversal (`Comparator/Compare.lean`)
+  demands that every constant reachable from a listed type be either a `definition_names` entry or
+  **bit-identical** between challenge and solution.  A placeholder body is not bit-identical, so
+  these entries are forced: with the present `theorem_names`, exactly 57 library definitions are
+  reachable and every one of them must be listed.  Removing the 22 scaffolding entries would put
+  83 library constants — 73 of them definitions — under a bit-equality requirement that a challenge
+  file cannot meet.  The reader-facing separation of content from scaffolding is therefore made
+  here, in the prose and the section structure, rather than in `config.json`.
 
-Five definitions carry their real bodies rather than a placeholder: `ListAssignment` (its values
-are applied as functions in other statements), `ThetaV`, `ERT.K` and `edgeGraph` (their `Fintype` /
-`DecidableRel` instances are found by unfolding the abbreviation), and `HasSimplicialVertex` (a
-universe-polymorphic `Prop` constant whose universe parameter lives only in its body).  The
-comparator never inspects the body of a `definition_names` entry, so this gives nothing away.
+Most definitions carry their **real bodies** rather than a placeholder, so that the file reads as a
+specification.  The comparator never inspects the body of a `definition_names` entry, so this gives
+nothing away, and in five cases it is forced anyway: `ListAssignment` (its values are applied as
+functions in other statements), `ThetaV`, `ERT.K` and `edgeGraph` (their `Fintype` / `DecidableRel`
+instances are found by unfolding the abbreviation), and `HasSimplicialVertex` (a
+universe-polymorphic `Prop` constant whose universe parameter lives only in its body).  Placeholders
+remain only where the body is genuinely substantial or is not a statement at all: the graph
+constructions built as `SimpleGraph` structure instances with tactic-proved `symm`/`loopless`
+fields (`coneOn`, `addPendant`, `addPendantPair`, `bridge`), the two isomorphisms `pathSplitIso`
+and `rotIso`, and the decidability instances.
 
-The library also contains a substantial number of *internal* helper definitions — `pathSplitIsoAux`,
-`coneAdj`, `addPendantAdj`, `addPendantPairAdj`, `pathInterior`, `pathIdx`, `pathVtxEquiv`,
-`rotEquiv`, `pathSplitEquiv`, `pathGCongr`, `optionSumEquiv`, `thetaBaseOf`, `thetaOf`, `lvl`,
-`levelAssign`, `thetaAssign`, `eraseEnds`, `thetaWitness`, `optAssign`, `endPair`, `testM'`,
-`extendList`, `whitneySum`, `ConstOnEdge`, `edgeDef`, `listInter`, `compFinset`, `compEdges`,
-`rhsL`, `univTowerData`, `topIsoTopOfEquiv`, `towerVEquivFin`, and from `Monophilic.Dirac`
-`someEquivNeNone`, `coneOnInduceIso`, `coneOnDeleteIso`, `coneOnCongr`, `neighborsAway`, `ReachIn`,
-`IsSimplicialIn`, the `#guard` fixtures `L1`, `L4`, `c4`, `c5`, … — which are **deliberately
-omitted**: they are implementation details of the proofs, not part of the mathematical statement of
-any result.  Of the library's 113 non-private top-level `def`/`abbrev`/`structure` declarations and
-28 `instance`s, this file declares the 73 that the statements below actually mention or that the
-paper names: 71 of them are listed in `definition_names`, and the remaining two are the
-`structure`s `IsNNAssign` and `IsPathShape`, which the comparator compares structurally (as
-inductive types) rather than as definition holes, and which are therefore reproduced here field for
-field.
+A handful of declarations appear below **without** being listed in `config.json`: results that are
+degenerate special cases (`isChordal_bot`, `isChordal_of_isEmpty`) or counting identities phrased
+in terms of scaffolding (`listCount_eq_prod`, `listCount_constList`), and the definitions they and
+the real bodies need (`edgeGraph`, `compInter`, `compCount`, `decidableRelFromEdgeSetCoe`,
+`reach`, `instDecidableRelAddPendantPair`, `pathInterior`, `instDecidableIsProperColoring`).  They
+are declared because the file has to compile; they are not listed because they are not claims.
 
-**Results (`theorem_names` in `config.json`, 78 entries).** The 55 results audited by
+The library's own internal helpers — `pathSplitIsoAux`, `coneAdj`, `addPendantAdj`,
+`addPendantPairAdj`, `pathIdx`, `pathVtxEquiv`, `rotEquiv`, `pathSplitEquiv`, `pathGCongr`,
+`optionSumEquiv`, `thetaBaseOf`, `thetaOf`, `lvl`, `levelAssign`, `thetaAssign`, `eraseEnds`,
+`thetaWitness`, `optAssign`, `endPair`, `testM'`, `extendList`, `whitneySum`, `ConstOnEdge`,
+`edgeDef`, `listInter`, `compFinset`, `compEdges`, `rhsL`, `univTowerData`, `topIsoTopOfEquiv`,
+`towerVEquivFin`, and from `Monophilic.Dirac` `someEquivNeNone`, `coneOnInduceIso`,
+`coneOnDeleteIso`, `coneOnCongr`, `neighborsAway`, `ReachIn`, `IsSimplicialIn`, the `#guard`
+fixtures `L1`, `L4`, `c4`, `c5`, … — are **deliberately omitted** entirely: they are implementation
+details of the proofs, not part of the statement of any result.
+
+**Results (`theorem_names` in `config.json`, 74 entries).** The 55 results audited by
 `scripts/AxiomAudit.lean` — of which 51 are theorems and four (`pathSplitIso`, `rotIso`,
-`listColorFunction`, `chromaticPolynomial`) are data and so belong to `definition_names` — plus the
-eight theorems of `Monophilic.Threshold` (the explicit threshold and Donner's theorem; its ninth
-new declaration, `listCount`, is again data) and the nineteen theorems of `Monophilic.Dirac`
-(Dirac's lemma, Dirac's theorem in both directions, and the unconditional Kostochka–Sidorenko
-theorem `monophilic_of_isChordal`).
+`listColorFunction`, `chromaticPolynomial`) are data and so belong to `definition_names` — plus six
+of the eight theorems of `Monophilic.Threshold` (the explicit threshold and Donner's theorem) and
+seventeen of the nineteen theorems of `Monophilic.Dirac` (Dirac's lemma, Dirac's theorem in both
+directions, and the unconditional Kostochka–Sidorenko theorem `monophilic_of_isChordal`).
 
 ## Layout
 
@@ -102,45 +115,57 @@ universe u_2
 abbrev ListAssignment (V : Type u_2) : Type u_2 := V → Finset ℕ
 
 /-- The constant list assignment sending every vertex to `{0, 1, …, n-1}`; the paper's `[n]`. -/
-def constList (V : Type u_2) (n : ℕ) : ListAssignment V := sorry
+def constList (V : Type u_2) (n : ℕ) : ListAssignment V := fun _ => range n
 
 end ListAssignmentDefs
 
 /-- An **`n`-list assignment** gives every vertex a list of exactly `n` colors. -/
-def IsNListAssignment {V : Type*} (L : ListAssignment V) (n : ℕ) : Prop := sorry
+def IsNListAssignment {V : Type*} (L : ListAssignment V) (n : ℕ) : Prop := ∀ v, (L v).card = n
 
 /-- `f` is a proper coloring of `G`: adjacent vertices get distinct colors. -/
-def IsProperColoring {V : Type*} (G : SimpleGraph V) (f : V → ℕ) : Prop := sorry
+def IsProperColoring {V : Type*} (G : SimpleGraph V) (f : V → ℕ) : Prop :=
+  ∀ ⦃v w⦄, G.Adj v w → f v ≠ f w
+
+/-- Not part of the specification: the decidability of `IsProperColoring`, needed only so that
+`colorings` can be written as a `Finset.filter`.  Not listed in `config.json`. -/
+instance instDecidableIsProperColoring {V : Type*} [DecidableEq V] (G : SimpleGraph V)
+    [DecidableRel G.Adj] [Fintype V] (f : V → ℕ) : Decidable (G.IsProperColoring f) := by
+  unfold IsProperColoring; infer_instance
 
 /-- The finset of proper colorings of `G` drawn from the lists `L`. -/
 def colorings {V : Type*} [Fintype V] [DecidableEq V] (G : SimpleGraph V) [DecidableRel G.Adj]
-    (L : ListAssignment V) : Finset (V → ℕ) := sorry
+    (L : ListAssignment V) : Finset (V → ℕ) :=
+  (Fintype.piFinset L).filter G.IsProperColoring
 
 /-- `col(G, L)`: the number of proper colorings of `G` from the list assignment `L`. -/
 def col {V : Type*} [Fintype V] [DecidableEq V] (G : SimpleGraph V) [DecidableRel G.Adj]
-    (L : ListAssignment V) : ℕ := sorry
+    (L : ListAssignment V) : ℕ := (G.colorings L).card
 
 /-- `col(G, n)`: the number of proper colorings of `G` from the constant list `{0, …, n-1}`. -/
 def colConst {V : Type*} [Fintype V] [DecidableEq V] (G : SimpleGraph V) [DecidableRel G.Adj]
-    (n : ℕ) : ℕ := sorry
+    (n : ℕ) : ℕ := G.col (constList V n)
 
 /-- `col(G, L, v, c)`: the number of colorings of `G` from `L` assigning color `c` to vertex `v`. -/
 def colFix {V : Type*} [Fintype V] [DecidableEq V] (G : SimpleGraph V) [DecidableRel G.Adj]
-    (L : ListAssignment V) (v : V) (c : ℕ) : ℕ := sorry
+    (L : ListAssignment V) (v : V) (c : ℕ) : ℕ :=
+  ((G.colorings L).filter (fun f => f v = c)).card
 
 /-- `G` is **`n`-monophilic** when the number of list colorings is minimized by the constant list
 assignment, among all assignments of lists of size `n`. -/
 def Monophilic {V : Type*} [Fintype V] [DecidableEq V] (G : SimpleGraph V) [DecidableRel G.Adj]
-    (n : ℕ) : Prop := sorry
+    (n : ℕ) : Prop :=
+  ∀ L : ListAssignment V, IsNListAssignment L n → G.colConst n ≤ G.col L
 
 /-- `G` is **`n`-choosable** if it admits a coloring from every `n`-list assignment. -/
 def Choosable {V : Type*} [Fintype V] [DecidableEq V] (G : SimpleGraph V) [DecidableRel G.Adj]
-    (n : ℕ) : Prop := sorry
+    (n : ℕ) : Prop :=
+  ∀ L : ListAssignment V, IsNListAssignment L n → 0 < G.col L
 
 /-- `L` is **minimizing** for `G` when no list assignment with the same list sizes admits fewer
 colorings. -/
 def Minimizing {V : Type*} [Fintype V] [DecidableEq V] (G : SimpleGraph V) [DecidableRel G.Adj]
-    (L : ListAssignment V) : Prop := sorry
+    (L : ListAssignment V) : Prop :=
+  ∀ L' : ListAssignment V, (∀ v, (L' v).card = (L v).card) → G.col L ≤ G.col L'
 
 /-- Renaming the colors by a function injective on the colors actually available does not change
 the number of list colorings. -/
@@ -172,14 +197,15 @@ theorem not_monophilic_of_colorable_of_not_choosable {V : Type*} [Fintype V] [De
 /-! #### Deleting a vertex -/
 
 /-- The graph obtained from `H` by deleting the vertex `none`. -/
-abbrev delNone {V : Type*} (H : SimpleGraph (Option V)) : SimpleGraph V := sorry
+abbrev delNone {V : Type*} (H : SimpleGraph (Option V)) : SimpleGraph V := H.comap some
 
 instance instDecidableRelAdjDelNone {V : Type*} (H : SimpleGraph (Option V))
     [DecidableRel H.Adj] : DecidableRel H.delNone.Adj := sorry
 
 /-- The list assignment induced on `H − none` by assigning the color `c` to `none`. -/
 def inducedList {V : Type*} (H : SimpleGraph (Option V)) [DecidableRel H.Adj]
-    (M : ListAssignment (Option V)) (c : ℕ) : ListAssignment V := sorry
+    (M : ListAssignment (Option V)) (c : ℕ) : ListAssignment V :=
+  fun v => if H.Adj none (some v) then (M (some v)).erase c else M (some v)
 
 /-- **The deletion identity.** Colorings of `H` from `M` that give the color `c` to `none`
 correspond exactly to colorings of `H − none` from the induced list assignment. -/
@@ -239,7 +265,9 @@ section Tower
 universe u
 
 /-- The vertex type of `G` after `k` successive pendant attachments: `V` with `k` extra points. -/
-def TowerV (V : Type u) : ℕ → Type u := sorry
+def TowerV (V : Type u) : ℕ → Type u
+  | 0 => V
+  | k + 1 => Option (TowerV V k)
 
 instance instDecidableEqTowerV {V : Type u} [DecidableEq V] : (k : ℕ) → DecidableEq (TowerV V k) :=
   sorry
@@ -248,12 +276,16 @@ instance instFintypeTowerV {V : Type u} [Fintype V] : (k : ℕ) → Fintype (Tow
 
 /-- The data specifying a tower of `k` cone attachments over `V`: at each stage, the finset of
 already-existing vertices that the new vertex is joined to. -/
-def CliqueTowerData (V : Type u) : ℕ → Type u := sorry
+def CliqueTowerData (V : Type u) : ℕ → Type u
+  | 0 => PUnit
+  | k + 1 => CliqueTowerData V k × Finset (TowerV V k)
 
 /-- **A tower of cone attachments.** `cliqueTower G k d` is the graph obtained from `G` by adding
 `k` new vertices one after another, the `i`-th of them joined to the set recorded in `d`. -/
 def cliqueTower {V : Type u} (G : SimpleGraph V) :
-    (k : ℕ) → CliqueTowerData V k → SimpleGraph (TowerV V k) := sorry
+    (k : ℕ) → CliqueTowerData V k → SimpleGraph (TowerV V k)
+  | 0, _ => G
+  | k + 1, d => coneOn (cliqueTower G k d.1) d.2
 
 /-- Adjacency in a clique tower is decidable, by recursion on the height of the tower. -/
 instance instDecidableRelCliqueTower {V : Type u} [DecidableEq V] {G : SimpleGraph V}
@@ -264,7 +296,11 @@ instance instDecidableRelCliqueTower {V : Type u} [DecidableEq V] {G : SimpleGra
 old vertices to which the new vertex is attached is a clique *of the graph existing at that
 stage*. -/
 def CliqueTowerData.IsSimplicial {V : Type u} (G : SimpleGraph V) :
-    (k : ℕ) → CliqueTowerData V k → Prop := sorry
+    (k : ℕ) → CliqueTowerData V k → Prop
+  | 0, _ => True
+  | k + 1, d =>
+      (cliqueTower G k d.1).IsClique ((d.2 : Finset (TowerV V k)) : Set (TowerV V k)) ∧
+        CliqueTowerData.IsSimplicial G k d.1
 
 /-- **Kostochka–Sidorenko, inductive form.** If `G` is `n`-monophilic and `d` is a simplicial tower
 of cone attachments over `G`, then `cliqueTower G k d` is `n`-monophilic. -/
@@ -300,15 +336,17 @@ its body mentions `Type u`, so a placeholder would silently drop the universe pa
 /-- **A chordal graph.** Every cycle of length at least `4` has a chord: an edge of the graph
 joining two vertices of the cycle which is not itself an edge of the cycle.  Phrased through
 Mathlib's `SimpleGraph.Walk.IsChordless`. -/
-def IsChordal {V : Type*} (G : SimpleGraph V) : Prop := sorry
+def IsChordal {V : Type*} (G : SimpleGraph V) : Prop :=
+  ∀ {u : V} (c : G.Walk u u), c.IsCycle → 4 ≤ c.length → ¬ c.IsChordless
 
 /-- **A simplicial vertex** is one whose neighbourhood is a clique.  Deleting a simplicial vertex
 is the inverse of the cone construction `SimpleGraph.coneOn`. -/
-def IsSimplicialVertex {V : Type*} (G : SimpleGraph V) (v : V) : Prop := sorry
+def IsSimplicialVertex {V : Type*} (G : SimpleGraph V) (v : V) : Prop :=
+  G.IsClique (G.neighborSet v)
 
 /-- `G` with the vertex `v` deleted: the subgraph induced on the vertices other than `v`. -/
 abbrev deleteVertex {V : Type*} (G : SimpleGraph V) (v : V) : SimpleGraph {x : V // x ≠ v} :=
-  sorry
+  G.comap (Function.Embedding.subtype fun x => x ≠ v)
 
 /-- **Complete graphs are chordal.** -/
 theorem isChordal_top {V : Type*} : (⊤ : SimpleGraph V).IsChordal := sorry
@@ -441,12 +479,13 @@ instance instDecidableRelSumAdjBridge {V W : Type*} [DecidableEq V] [DecidableEq
 /-- `colAvoid G L v c`: the number of colorings of `G` from `L` that do **not** give the color `c`
 to the vertex `v`. -/
 def colAvoid {V : Type*} [Fintype V] [DecidableEq V] (G : SimpleGraph V) [DecidableRel G.Adj]
-    (L : ListAssignment V) (v : V) (c : ℕ) : ℕ := sorry
+    (L : ListAssignment V) (v : V) (c : ℕ) : ℕ :=
+  ((G.colorings L).filter fun f => f v ≠ c).card
 
 /-- `swapRight M c₁ c₂` agrees with `M` on the left-hand side and applies the transposition
 `Equiv.swap c₁ c₂` to every list on the right-hand side. -/
 def swapRight {V W : Type*} (M : ListAssignment (V ⊕ W)) (c₁ c₂ : ℕ) : ListAssignment (V ⊕ W) :=
-  sorry
+  Sum.elim (fun v => M (.inl v)) (fun w => (M (.inr w)).image (Equiv.swap c₁ c₂))
 
 /-- **The bridged count.** -/
 theorem col_bridge {V W : Type*} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
@@ -487,20 +526,28 @@ namespace Monophilic
 open SimpleGraph
 
 /-- The vertex type of a path of length `k` (so `k + 1` vertices). -/
-def PathV : ℕ → Type := sorry
+def PathV : ℕ → Type
+  | 0 => Unit
+  | k + 1 => Option (PathV k)
 
 instance instDecidableEqPathV : (k : ℕ) → DecidableEq (PathV k) := sorry
 
 instance instFintypePathV : (k : ℕ) → Fintype (PathV k) := sorry
 
 /-- The terminal vertex of `pathG k` that was attached last. -/
-def pathEnd : (k : ℕ) → PathV k := sorry
+def pathEnd : (k : ℕ) → PathV k
+  | 0 => ()
+  | _ + 1 => none
 
 /-- The other terminal vertex of `pathG k`. -/
-def pathStart : (k : ℕ) → PathV k := sorry
+def pathStart : (k : ℕ) → PathV k
+  | 0 => ()
+  | k + 1 => some (pathStart k)
 
 /-- The path of length `k`: `k + 1` vertices in a row. -/
-def pathG : (k : ℕ) → SimpleGraph (PathV k) := sorry
+def pathG : (k : ℕ) → SimpleGraph (PathV k)
+  | 0 => ⊥
+  | k + 1 => (pathG k).addPendant (pathEnd k)
 
 instance instDecidableRelPathG : (k : ℕ) → DecidableRel (pathG k).Adj := sorry
 
@@ -516,13 +563,21 @@ The counts `A_k` and `B_k` for the two shapes of `(n, n-1)`-list assignment on a
 closed form for `A_k`, and the three parts of Lemma 3.
 -/
 
+mutual
+
 /-- Paper's `A_k` for `n = m + 2`: the number of colorings of a path of length `k` coming from a
 type A list assignment.  `A_0 = m + 1` and `A_{k+1} = (m + 1) * B_k`. -/
-def pathA (m : ℕ) : ℕ → ℕ := sorry
+def pathA (m : ℕ) : ℕ → ℕ
+  | 0 => m + 1
+  | k + 1 => (m + 1) * pathB m k
 
 /-- Paper's `B_k` for `n = m + 2`: the number of colorings of a path of length `k` coming from a
 type B list assignment.  `B_0 = m` and `B_{k+1} = A_k + m * B_k`. -/
-def pathB (m : ℕ) : ℕ → ℕ := sorry
+def pathB (m : ℕ) : ℕ → ℕ
+  | 0 => m
+  | k + 1 => pathA m k + m * pathB m k
+
+end
 
 /-- Equation (5) of the paper: `A_k - B_k = (-1) ^ k`, as an identity in `ℤ`. -/
 theorem pathA_sub_pathB (m k : ℕ) : ((pathA m k : ℤ) - (pathB m k : ℤ)) = (-1) ^ k := sorry
@@ -534,7 +589,19 @@ theorem pathA_closed_form (m k : ℕ) :
 
 /-- The `(n, n-1)`-list assignment on the path of length `k` missing color `x` at `pathEnd` and
 color `y` at `pathStart`; type A when `x = y`, type B otherwise. -/
-def pathAssign : (k : ℕ) → (n x y : ℕ) → ListAssignment (PathV k) := sorry
+def pathInterior : (k : ℕ) → (n y : ℕ) → ListAssignment (PathV k)
+  | 0, n, y => fun _ => (range n).erase y
+  | k + 1, n, y => fun v =>
+      match v with
+      | none => range n
+      | some w => pathInterior k n y w
+
+def pathAssign : (k : ℕ) → (n x y : ℕ) → ListAssignment (PathV k)
+  | 0, n, x, y => fun _ => ((range n).erase x).erase y
+  | k + 1, n, x, y => fun v =>
+      match v with
+      | none => (range n).erase x
+      | some w => pathInterior k n y w
 
 /-- **Lemma 3(a), graph side.** The number of colorings of a path of length `k` from an
 `(n, n-1)`-list assignment is `A_k` if the assignment is type A and `B_k` if it is type B. -/
@@ -550,7 +617,10 @@ def pathSplitIso (a b : ℕ) :
 
 /-- The vertex numbered `i` of the path of length `k`, counting from `pathEnd k` (number `0`)
 towards `pathStart k` (number `k`). -/
-def pathVtx : (k : ℕ) → ℕ → PathV k := sorry
+def pathVtx : (k : ℕ) → ℕ → PathV k
+  | 0, _ => ()
+  | _ + 1, 0 => none
+  | k + 1, i + 1 => some (pathVtx k i)
 
 /-- An **`(n, n-1)`-list assignment** for the path of length `k`, with `n = m + 2`: the two
 terminal vertices get `m + 1` colors and every interior vertex gets `m + 2`. -/
@@ -606,7 +676,9 @@ open SimpleGraph
 
 /-- The path of length `k` closed up: `pathG k` together with one extra edge joining its two
 terminal vertices.  For `k ≥ 2` this is the cycle on `k + 1` vertices. -/
-def closePath : (k : ℕ) → SimpleGraph (PathV k) := sorry
+def closePath : (k : ℕ) → SimpleGraph (PathV k)
+  | 0 => ⊥
+  | k + 1 => (pathG k).addPendantPair (pathEnd k) (pathStart k)
 
 instance instDecidableRelClosePath : (k : ℕ) → DecidableRel (closePath k).Adj := sorry
 
@@ -621,7 +693,8 @@ theorem monophilic_closePath {m k : ℕ} (hk : 2 ≤ k) (hm : 1 ≤ m) :
 
 /-- The colors available at `pathStart k` to a coloring of `pathG k` from `L` that gives the color
 `c` to `pathEnd k`. -/
-def reach (k : ℕ) (L : ListAssignment (PathV k)) (c : ℕ) : Finset ℕ := sorry
+def reach (k : ℕ) (L : ListAssignment (PathV k)) (c : ℕ) : Finset ℕ :=
+  (((pathG k).colorings L).filter (fun f => f (pathEnd k) = c)).image (fun f => f (pathStart k))
 
 /-- **The rotation is an automorphism of the cycle.** -/
 def rotIso {k : ℕ} (hk : 1 ≤ k) (r : Fin (k + 1)) : closePath k ≃g closePath k := sorry
@@ -656,14 +729,18 @@ universe u
 
 /-- The data specifying a tower of `k` pendant attachments: for each step, the already-existing
 vertex at which the new pendant vertex is attached. -/
-def TowerData (V : Type u) : ℕ → Type u := sorry
+def TowerData (V : Type u) : ℕ → Type u
+  | 0 => PUnit
+  | k + 1 => TowerData V k × TowerV V k
 
 end PendantTower
 
 /-- **A tower of pendant attachments.** `pendantTower G k d` is the graph obtained from `G` by
 attaching `k` pendant vertices one after another. -/
 def pendantTower {V : Type*} (G : SimpleGraph V) :
-    (k : ℕ) → TowerData V k → SimpleGraph (TowerV V k) := sorry
+    (k : ℕ) → TowerData V k → SimpleGraph (TowerV V k)
+  | 0, _ => G
+  | k + 1, d => (pendantTower G k d.1).addPendant d.2
 
 section PendantTowerInst
 
@@ -703,7 +780,9 @@ open SimpleGraph
 abbrev ThetaV (m : ℕ) : Type := Option (Option (PathV (2 * m)))
 
 /-- The theta graph `θ_{2,2,2m}`. -/
-def theta (m : ℕ) : SimpleGraph (ThetaV m) := sorry
+def theta (m : ℕ) : SimpleGraph (ThetaV m) :=
+  coneOn (coneOn (pathG (2 * m)) {pathStart (2 * m), pathEnd (2 * m)})
+    {some (pathStart (2 * m)), some (pathEnd (2 * m))}
 
 instance instDecidableRelTheta (m : ℕ) : DecidableRel (theta m).Adj := sorry
 
@@ -748,7 +827,9 @@ abbrev K (n : ℕ) : SimpleGraph (Fin n ⊕ (Fin n → Fin n)) :=
   completeBipartiteGraph (Fin n) (Fin n → Fin n)
 
 /-- The Erdős–Rubin–Taylor list assignment on `K_{n,nⁿ}`, called `L₀` in Kirov–Naimi §5. -/
-def L₀ (n : ℕ) : ListAssignment (Fin n ⊕ (Fin n → Fin n)) := sorry
+def L₀ (n : ℕ) : ListAssignment (Fin n ⊕ (Fin n → Fin n)) :=
+  Sum.elim (fun i => (univ : Finset (Fin n)).image fun j : Fin n => i.val * n + j.val)
+    (fun φ => (univ : Finset (Fin n)).image fun i : Fin n => i.val * n + (φ i).val)
 
 /-- **The key computation**: `col(K_{n,nⁿ}, L₀) = 0`, i.e. `L₀` admits no proper coloring at all. -/
 theorem col_L₀_eq_zero (n : ℕ) : (K n).col (L₀ n) = 0 := sorry
@@ -805,7 +886,10 @@ theorem choosable_theta (m : ℕ) (hm : 1 ≤ m) : (theta m).Choosable 2 := sorr
 /-- A graph is on **Rubin's list** when it is a single vertex, an even cycle, or `θ_{2,2,2m}`,
 stated up to isomorphism. -/
 def RubinFamily {V : Type} [Fintype V] [DecidableEq V]
-    (G : SimpleGraph V) [DecidableRel G.Adj] : Prop := sorry
+    (G : SimpleGraph V) [DecidableRel G.Adj] : Prop :=
+  Subsingleton V ∨
+  (∃ k, Odd k ∧ 2 ≤ k ∧ Nonempty (G ≃g closePath k)) ∨
+  (∃ m, 1 ≤ m ∧ Nonempty (G ≃g theta m))
 
 /-- **Rubin's theorem, ⟸ direction: every graph on Rubin's list is `2`-choosable.** -/
 theorem choosable_two_of_rubinFamily {V : Type} [Fintype V] [DecidableEq V]
@@ -839,12 +923,14 @@ instance decidableRelFromEdgeSetCoe {V : Type*} [DecidableEq V] (S : Finset (Sym
 
 /-- `c(S)`: the number of connected components of the spanning subgraph of `V` whose edges are
 exactly the non-loop elements of `S`. -/
-def compCount {V : Type*} [Fintype V] [DecidableEq V] (S : Finset (Sym2 V)) : ℕ := sorry
+def compCount {V : Type*} [Fintype V] [DecidableEq V] (S : Finset (Sym2 V)) : ℕ :=
+  Fintype.card (fromEdgeSet (S : Set (Sym2 V))).ConnectedComponent
 
 /-- The **chromatic polynomial** of `G`, defined by the Whitney subset expansion
 `∑_{S ⊆ E(G)} (-1)^{|S|} X^{c(S)}`. -/
 noncomputable def chromaticPolynomial {V : Type*} [Fintype V] [DecidableEq V] (G : SimpleGraph V)
-    [DecidableRel G.Adj] : Polynomial ℤ := sorry
+    [DecidableRel G.Adj] : Polynomial ℤ :=
+  ∑ S ∈ G.edgeFinset.powerset, (-1) ^ #S * Polynomial.X ^ compCount S
 
 /-- **Evaluation of the chromatic polynomial counts colorings.** -/
 theorem eval_chromaticPolynomial {V : Type*} [Fintype V] [DecidableEq V] (G : SimpleGraph V)
@@ -858,12 +944,12 @@ theorem chromaticPolynomial_bot {V : Type*} [Fintype V] [DecidableEq V]
 
 /-- The set of coloring counts achievable by `n`-list assignments. -/
 def colCounts {V : Type*} [Fintype V] [DecidableEq V] (G : SimpleGraph V) [DecidableRel G.Adj]
-    (n : ℕ) : Set ℕ := sorry
+    (n : ℕ) : Set ℕ := {c | ∃ L : ListAssignment V, IsNListAssignment L n ∧ G.col L = c}
 
 /-- **The list color function** `P_ℓ(G, n)`: the least number of colorings achievable by any
 `n`-list assignment. -/
 noncomputable def listColorFunction {V : Type*} [Fintype V] [DecidableEq V] (G : SimpleGraph V)
-    [DecidableRel G.Adj] (n : ℕ) : ℕ := sorry
+    [DecidableRel G.Adj] (n : ℕ) : ℕ := sInf (G.colCounts n)
 
 /-- **`n`-monophilicity is exactly `P_ℓ(G, n) = P(G, n)`.** -/
 theorem monophilic_iff_listColorFunction_eq {V : Type*} [Fintype V] [DecidableEq V]
@@ -918,11 +1004,14 @@ abbrev edgeGraph {V : Type*} (S : Finset (Sym2 V)) : SimpleGraph V :=
 
 /-- `⋂_{v ∈ C} L v` for a connected component `C` of `edgeGraph S`. -/
 def compInter {V : Type*} [Fintype V] [DecidableEq V] (L : ListAssignment V)
-    (S : Finset (Sym2 V)) (C : (edgeGraph S).ConnectedComponent) : Finset ℕ := sorry
+    (S : Finset (Sym2 V)) (C : (edgeGraph S).ConnectedComponent) : Finset ℕ :=
+  let U : Finset V := Finset.univ.filter (fun v => v ∈ C.supp)
+  {a ∈ U.biUnion L | ∀ v ∈ U, a ∈ L v}
 
 /-- The number of colorings of `V` from the lists `L` that are constant on every edge of `S`. -/
 def listCount {V : Type*} [Fintype V] [DecidableEq V] (L : ListAssignment V)
-    (S : Finset (Sym2 V)) : ℕ := sorry
+    (S : Finset (Sym2 V)) : ℕ :=
+  #{f ∈ Fintype.piFinset L | ∀ e ∈ S, (Sym2.map f e).IsDiag}
 
 /-- **The key counting lemma, for arbitrary lists.** A coloring from `L` constant on every edge of
 `S` is exactly a choice, for each connected component `C` of `(V, S)`, of a color lying in *all*
