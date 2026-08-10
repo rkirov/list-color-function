@@ -271,7 +271,7 @@ Read after the `K₂,₄` correction, to stop reconstructing the proof from memo
 
 **The structural object is the *generalized* theta.** `θ_{k₁,…,k_n}` is two vertices joined by `n`
 internally disjoint paths — `n` arbitrary, not `n = 3`. The characterization is that a connected
-graph is `2`-choosable iff its core is an even cycle or `Θ_{2,2,2k}`. This is exactly what the
+graph is `2`-choosable iff its core is a single vertex, an even cycle, or `Θ_{2,2,2k}`. This is exactly what the
 `K₂,₄` counterexample was pointing at: `K₂,₄` **is** the generalized theta with four paths of
 length `2`, so a structural lemma phrased only in terms of ordinary (three-path) thetas can never
 see it. The correct structural input is therefore
@@ -484,8 +484,10 @@ subgraph.
 
 **CORRECTION — the reduction stated above was wrong.** It was claimed here (and reported twice) that
 the hard direction reduces to the structural fact *"connected, minimum degree `≥ 2`, not a cycle ⟹
-contains a theta subgraph"*. That statement is true, but **it is not sufficient**, because the theta
-it produces may be a *good* one.
+contains a theta subgraph"*. That statement is **false** *and* insufficient. False: the **bowtie**,
+two triangles sharing a single vertex, is connected, has minimum degree `2`, is not a cycle, and
+contains no theta subgraph at all — both its blocks are cycles. Insufficient even where it holds:
+the theta it produces may be a *good* one, and good thetas are `2`-choosable.
 
 **Counterexample: `K₂,₄`** — which this repository already contains, as `SimpleGraph.ERT.K 2`. It is
 connected; bipartite, so it has no odd cycle; minimum degree `2`; not a cycle (`6` vertices, `8`

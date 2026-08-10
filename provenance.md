@@ -42,10 +42,11 @@ to prove it, so that Theorem 2 carries no hypothesis.
 
 | piece | Result | Credit |
 |---|---|---|
-| ⟸ | the three families are 2-choosable | **Rubin** — **proved** |
-| 5 | `Θ(k₁,…,k_n)` is 2-choosable ⟺ `n = 3` and shape `(2,2,even)` | a component of **Rubin's theorem**; as a statement it is a corollary of it. Proved here directly from list assignments, so it can feed the proof of Rubin without circularity |
-| 1, 3 | core reduction; two cycles meeting in ≤ 1 vertex are not 2-choosable | standard, part of **Rubin's** argument |
-| 4 | 2-connected non-cycle ⟹ generalized theta, or two cycles meeting in ≤ 1 vertex | classical structural graph theory (ear decomposition) |
+| ⟸ | the three families are 2-choosable (`choosable_two_of_rubinFamily`) | **Rubin** — **proved** |
+| 5 | `Θ(k₁,…,k_n)` is 2-choosable ⟺ `n = 3` and shape `(2,2,even)`, **arity arbitrary** (`choosable_two_gtheta_iff`) | a component of **Rubin's theorem**; as a statement it is a corollary of it. Proved here directly from list assignments, so it can feed the proof of Rubin without circularity — **proved** |
+| 1 | core reduction, `G` 2-choosable ⟺ its core is (`choosable_iff_of_coreIs`) | standard, part of **Rubin's** argument — **proved** |
+| 3 | a **dumbbell** — two cycles joined by a path — is not 2-choosable (`not_choosable_two_of_dumbbell`) | standard, part of **Rubin's** argument — **proved** |
+| 4 | the structural theorem for 2-connected non-cycles | classical structural graph theory — **OPEN**, and no correct formulation of it has been established here yet |
 
 **None of this is novel.** It is a theorem from 1980 that appears not to have been machine-checked before.
 
@@ -90,14 +91,22 @@ are the parts a reader could not get from the papers.
   Rubin's theorem into a structural half and a colouring half. `K₂,₄` refutes it. It has been
   deleted. This is a defect in our scaffolding and **not** an error in Kirov–Naimi, which cites
   Rubin's theorem rather than proving it. Recorded in `plan.md`.
-* **Two further structural claims of ours, both refuted.** The repair to `ThetaAlternative` —
-  *connected, min degree `≥ 2`, not a cycle ⟹ contains a generalized theta, or two cycles meeting
-  in at most one vertex* — is **also false**, refuted by `K₃,₃ − e` on six vertices; 4,162 of the
-  129,073 bipartite 2-connected non-cycle graphs on `≤ 9` vertices satisfy neither branch. And
-  *two cycles meeting in at most one vertex are not 2-choosable* is false without a connecting
-  path, since two **disjoint** even cycles are 2-choosable. Both are defects in this repository's
-  scaffolding; neither appears in Kirov–Naimi. `plan.md` records the corrected three-branch
-  alternative, which is **empirical and unproved**.
+* **Three further structural claims of ours, all refuted.** Recorded because the *shape* of the
+  mistake repeated: **`contains` and `is` are not interchangeable here**, and neither is
+  "a theta" and "a *bad* theta".
+  * *connected, min degree `≥ 2`, not a cycle ⟹ **contains** a theta subgraph* — **false**: the
+    **bowtie** (two triangles sharing a vertex) contains no theta at all. And useless even where it
+    holds, since the theta produced may be a *good* one, and good thetas are 2-choosable.
+  * *connected, min degree `≥ 2`, not a cycle ⟹ **is** a generalized theta, or contains two cycles
+    meeting in ≤ 1 vertex* — **false**, refuted by `K₃,₃ − e` on six vertices; 4,162 of the 129,073
+    bipartite 2-connected non-cycle graphs on `≤ 9` vertices satisfy neither branch. (Note the *is*:
+    under a `contains` reading `K₃,₃ − e` refutes nothing, since it contains both `θ(1,3,3)` and
+    `θ(2,2,2)` — which is precisely why containment is the wrong predicate.)
+  * *two cycles meeting in at most one vertex are not 2-choosable* — **false** without a connecting
+    path, since two **disjoint** even cycles are 2-choosable.
+
+  All are defects in this repository's scaffolding; none appears in Kirov–Naimi. `plan.md` records
+  a corrected three-branch alternative, which is **empirical and unproved**.
 * **`Monophilic.not_choosable_two_of_dumbbell`** — two cycles joined by a path are not 2-choosable.
   A standard step of Rubin's argument, proved here. Mildly notable: it needs **no parity case
   split**, because the forcing chain kills a prescribed colour at a cycle's base point regardless
@@ -142,5 +151,6 @@ all**; `n`-monophilic remains the only one anyone has proposed.
 and Question 1 of Chi et al. 2026, and both trace it to Kirov–Naimi.
 
 **This repository's naming.** The pointwise predicate is the workhorse (Theorem 1 is "for every
-`n`", Theorem 2 is at `n = 2`), so it is `ECCAt`, with `ECC := ∀ n, ECCAt n`, each expanded in the
-module docstrings. `n`-monophilic is recorded as the historical name.
+`n`", Theorem 2 is at `n = 2`), so it **will be** `ECCAt`, with `ECC := ∀ n, ECCAt n`, each expanded
+in the module docstrings, and `n`-monophilic recorded as the historical name. **Not yet done:** the
+predicate in the code is still `SimpleGraph.Monophilic n`, and there is as yet no `∀ n` version.

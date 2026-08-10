@@ -72,12 +72,16 @@ Two notes carried over from development, both recorded in `plan.md`:
 | §5 building block — `K_{n,nⁿ}` is `n`-colourable but not `n`-choosable | ✅ |
 | §5 full `H_{n+1}` construction (Lemmas 7–10) | not attempted |
 
-Two dependencies are worth stating plainly. **Rubin's characterization of 2-choosable graphs** is not
-formalized here or, as far as we can determine, anywhere else; Theorem 2 is therefore stated with it
-as an explicit hypothesis and the classes it names left as abstract propositions, so the borrowed
-ingredient is visible in the signature rather than hidden. And **Dirac's theorem** is not needed at
-all — Kostochka–Sidorenko is proved in its simplicial-elimination-ordering form, which is what the
-argument actually uses.
+One dependency is worth stating plainly. **Rubin's characterization of 2-choosable graphs** has not,
+as far as we can determine, been formalized anywhere. Its ⟸ direction *is* proved here
+(`choosable_two_of_rubinFamily`), as is the generalized-theta classification it needs
+(`choosable_two_gtheta_iff`, arbitrary arity) and the dumbbell case
+(`not_choosable_two_of_dumbbell`). The ⟹ direction is **open**: the missing piece is a structural
+theorem about 2-connected graphs, and Mathlib at this revision has no vertex connectivity of any
+kind — see `plan.md`. Theorem 2 therefore takes `RubinTheorem` as its first explicit argument, with
+the core alternatives as **real definitions** rather than abstract propositions, so that supplying
+one term discharges it. Everything else in Theorem 2, including its whole ⟸ direction, is
+unconditional.
 
 ## Standard of proof
 
@@ -88,7 +92,8 @@ argument actually uses.
   indexing and orientation errors that would not have surfaced as type errors. See the
   "Specs verified numerically" section of `plan.md`.
 * CI runs the real [leanprover/comparator](https://github.com/leanprover/comparator) against
-  `comparator/Challenge.lean`, which lists every public definition and top-level result in one file.
+  `comparator/Challenge.lean`, which claims **ten keystone theorems** and the definitions needed to
+  state them — deliberately not the whole library, so that what is certified is legible.
   That checks three things an axiom audit cannot: that the statements really are the ones claimed,
   that only the permitted axioms are used, and that every proof replays through two independent
   kernels (Lean's, via `lean4export`, and `nanoda`). It is CI-only — it builds four external tools.
@@ -104,11 +109,15 @@ The bundled type has no `Fintype` instance at this revision, and it fixes a sing
 the whole graph, which is exactly wrong when lists vary per vertex. `G.Coloring` survives only as a
 bridge to `Colorable` / `chromaticNumber`.
 
-**The chromatic polynomial is not needed.** The natural reading of the literature suggests a
-dependency on deletion–contraction and Whitney's broken-cycle theorem. Kirov–Naimi needs the
-*number* of colorings, never the polynomial. Dropping that layer removes edge contraction — absent
-from Mathlib — from the critical path entirely. Likewise Kostochka–Sidorenko follows from Lemma 1 by
-induction along a simplicial elimination ordering, so Dirac's theorem is not needed either.
+**Kirov–Naimi does not need the chromatic polynomial.** The natural reading of the literature
+suggests a dependency on deletion–contraction and Whitney's broken-cycle theorem, but the paper
+needs the *number* of colorings, never the polynomial. Dropping that layer kept edge contraction —
+absent from Mathlib — off the critical path. The polynomial is nevertheless built here, separately,
+in `Monophilic/ChromaticPolynomial.lean` via the Whitney subset expansion, so that
+`monophilic_iff_listColorFunction_eq_eval` can say `P_ℓ(G,n) = P(G,n)` with a genuine polynomial on
+the right. Likewise Kostochka–Sidorenko needs only a simplicial elimination ordering, so **Dirac's
+theorem is not on its critical path** — though it is proved here anyway, as
+`isChordal_iff_exists_cliqueTower`.
 
 See `plan.md` for what mechanization turned up: hypotheses that proved load-bearing, hypotheses that
 proved unnecessary, and the places where a naive formalization diverges from a correct informal

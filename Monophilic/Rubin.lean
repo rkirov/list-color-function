@@ -16,10 +16,14 @@ import Monophilic.Theta
 > a connected graph is `2`-choosable **iff** its core is a single vertex, an even cycle, or
 > `θ_{2,2,2m}` for some `m ≥ 1`.
 
-Kirov–Naimi's Theorem 2 cites this. **This development proves it** rather than assuming it, so
-Theorem 2 can be stated with no hypothesis; `Monophilic.RubinTheorem` in `Monophilic.Theorem2` names
-the statement, and it is the first explicit argument of `Monophilic.monophilic_two_iff_of_rubin`.
-This file proves the **⟸ direction** outright — every graph on Rubin's list really is `2`-choosable.
+Kirov–Naimi's Theorem 2 cites this. **It is not proved in this development.** The goal is to prove
+it, so that Theorem 2 carries no hypothesis; until then `Monophilic.RubinTheorem` in
+`Monophilic.Theorem2` names the statement and is the first explicit argument of
+`Monophilic.monophilic_two_iff_of_rubin`, so that supplying a term of that type — and nothing else —
+discharges Theorem 2.
+
+What **is** proved, here, is the **⟸ direction**: every graph on Rubin's list really is
+`2`-choosable. The outstanding half is ⟹.
 
 ## What is proved here
 
@@ -45,17 +49,20 @@ is nonetheless not `2`-choosable. The error was reading "theta" as the three-pat
 structural object is the **generalized** theta `Θ(k₁,…,k_n)` — `n` internally disjoint paths between
 two vertices, `n` arbitrary — and `K₂,₄` is the one with four paths of length `2`.
 
-**That correction was itself insufficient**, and is recorded here so the next reader does not spend
-the effort a third time. The natural repair — *connected, minimum degree `≥ 2`, not a cycle ⟹
-contains a generalized theta, or two cycles meeting in at most one vertex* — is **also false**.
+**That correction was itself insufficient**, and the details matter, because *contains* and *is*
+behave completely differently here.
+
+*Containing* a generalized theta is the wrong predicate — nearly vacuous. `K₃,₃ − e` contains both
+`θ(1,3,3)` and `θ(2,2,2)`; `K₂,₄` contains only `θ(2,2,2)`. Since the good `θ(2,2,2m)` **is**
+`2`-choosable, exhibiting a theta subgraph implies nothing whatever. What matters is containing a
+**bad** one.
+
+The natural repair in its *is* form — *connected, minimum degree `≥ 2`, not a cycle ⟹ **is** a
+generalized theta, **or** contains two cycles meeting in at most one vertex* — is **false**.
 `K₃,₃` minus an edge refutes it on six vertices: four of its vertices have degree `≥ 3` whereas a
 generalized theta has exactly two, and its girth is `4`, so two cycles meeting in at most one vertex
-would need seven vertices. An exhaustive sweep of the 129,073 bipartite 2-connected non-cycle graphs
-on `≤ 9` vertices finds 4,162 such graphs.
-
-The lesson is that *containing* a generalized theta is the wrong predicate: `K₃,₃ − e` contains both
-`θ(1,3,3)` and `θ(2,2,2)`, and `K₂,₄` contains only `θ(2,2,2)`. What matters is containing a **bad**
-one. The alternative that closes all 129,073 cases adds a third branch — *is* a generalized theta,
+would need seven. An exhaustive sweep of the 129,073 bipartite 2-connected non-cycle graphs on
+`≤ 9` vertices finds 4,162 satisfying neither branch. The alternative that closes all 129,073 cases adds a third branch — *is* a generalized theta,
 **or** contains a dumbbell, **or** contains a `θ(a,b,c)` of shape other than `(2,2,\text{even})` —
 but that is an **empirical observation, not a theorem**, and `plan.md` records what would be needed
 to establish it.

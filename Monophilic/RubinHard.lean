@@ -18,9 +18,17 @@ connected graph `H` of minimum degree `≥ 2` which is none of the three fails t
 because:
 
 1. if `H` has an odd cycle it is not even `2`-colorable, and choosability passes to subgraphs;
-2. otherwise `H` is bipartite with a vertex of degree `≥ 3`, and then `H` contains a **generalized
-   theta subgraph** — two vertices joined by three *or more* internally disjoint paths;
-3. a theta `θ_{a,b,c}` whose three lengths are not `(2, 2, \text{even})` is not `2`-choosable.
+2. otherwise `H` is bipartite, and some structural alternative applies — **this step is open, and
+   every formulation of it tried here so far has been false**; see the correction section below;
+3. a generalized theta `Θ(k₁,…,k_n)` is `2`-choosable exactly when `n = 3` and the lengths are
+   `(2, 2, \text{even})` (`Monophilic.choosable_two_gtheta_iff`, **proved**, arity arbitrary), and a
+   **dumbbell** — two cycles joined by a path — is not `2`-choosable
+   (`Monophilic.not_choosable_two_of_dumbbell`, **proved**).
+
+Step 2 as previously written here claimed that a bipartite `H` with a vertex of degree `≥ 3`
+contains a generalized theta subgraph. That is **false**: two `4`-cycles glued at a single vertex
+satisfies the hypotheses and contains no generalized theta of any arity. It is also the wrong shape
+of claim even where true, since containing a *good* theta implies nothing.
 
 Step 2 is the missing structural ingredient (Mathlib has no block or ear decomposition), and its
 "three arms" version is *not enough*: `K_{2,4}` — this development's own `SimpleGraph.ERT.K 2` — is
