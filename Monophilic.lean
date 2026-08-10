@@ -29,3 +29,5 @@ import Monophilic.ChromaticPolynomial
 import Monophilic.Threshold
 import Monophilic.Dirac
 import Monophilic.RubinHard
+import Monophilic.ThetaClass
+import Monophilic.Theorem2

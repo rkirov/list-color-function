@@ -7,17 +7,14 @@ import Monophilic.RubinHard
 /-!
 # The classification of `2`-choosable theta graphs
 
-`Monophilic.RubinHard` reduces Rubin's hard direction to two named hypotheses, one purely
-structural (`Monophilic.ThetaAlternative`) and one the classification of `2`-choosable *theta*
-graphs (`Monophilic.ThetaClassification`). This file **discharges the second**:
+`Monophilic.RubinHard` names `Monophilic.ThetaClassification`, the classification of `2`-choosable
+*theta* graphs. This file **discharges it**:
 
 > `θ_{a,b,c}` of a valid shape is `2`-choosable if and only if the shape is `(2, 2, \text{even})`.
 
-Only the forward implication is a loan; it is proved here in the form
-`Monophilic.not_choosable_two_thetaGen`, and `Monophilic.thetaClassification` is the resulting
-term of type `Monophilic.ThetaClassification`. Consequently
-`Monophilic.rubinFamily_of_choosable'`, `Monophilic.choosable_two_iff_rubinFamily'` and
-`Monophilic.choosable_two_pendantTower_iff'` need only `ThetaAlternative`.
+The forward implication is proved here in the form `Monophilic.not_choosable_two_thetaGen`, and
+`Monophilic.thetaClassification` is the resulting term of type `Monophilic.ThetaClassification`;
+nothing is assumed.
 
 ## The argument
 
@@ -70,9 +67,6 @@ as the three ranges of indices that `Monophilic.armStepB` links up.
   and `Monophilic.choosable_two_thetaGen_of_goodShape` : **Rubin's own shape is `2`-choosable** on
   the general model
 * `Monophilic.choosable_two_thetaGen_iff` : **the classification as an `↔`**
-* `Monophilic.rubinFamily_of_choosable'`, `Monophilic.choosable_two_iff_rubinFamily'`,
-  `Monophilic.choosable_two_pendantTower_iff'` : Rubin's theorem relative to
-  `Monophilic.ThetaAlternative` alone
 -/
 
 open Finset
@@ -313,7 +307,6 @@ private lemma arm_facts {a b c : ℕ} (hsum : 5 ≤ a + b + c) (F : ℕ → ℕ)
       (harm _ _ (armStepB_last o m _ _ (by omega)))
   · subst hm
     exact hadj _ _ (by omega) (by omega) (by omega) (harm _ _ (armStepB_direct o _ _))
-
 
 /-! ### Combining the three arms -/
 
@@ -711,24 +704,6 @@ theorem choosable_two_thetaGen_iff {a b c : ℕ} (hv : ValidShape a b c) :
       exact not_choosable_two_thetaGen hv hg h,
     choosable_two_thetaGen_of_goodShape hv⟩
 
-/-! ### Rubin's hard direction, with one hypothesis fewer -/
-
-/-- **Rubin's hard direction, relative to `Monophilic.ThetaAlternative` alone.** -/
-theorem rubinFamily_of_choosable' {V : Type} [Fintype V] [DecidableEq V] (H : SimpleGraph V)
-    [DecidableRel H.Adj] (halt : ThetaAlternative H) (hch : H.Choosable 2) : RubinFamily H :=
-  rubinFamily_of_choosable thetaClassification H halt hch
-
-/-- **Rubin's theorem as an `↔`, relative to `Monophilic.ThetaAlternative` alone.** -/
-theorem choosable_two_iff_rubinFamily' {V : Type} [Fintype V] [DecidableEq V] (H : SimpleGraph V)
-    [DecidableRel H.Adj] (halt : ThetaAlternative H) : H.Choosable 2 ↔ RubinFamily H :=
-  choosable_two_iff_rubinFamily thetaClassification H halt
-
-/-- **Rubin's theorem over a core, relative to `Monophilic.ThetaAlternative` alone.** -/
-theorem choosable_two_pendantTower_iff' {V : Type} [Fintype V] [DecidableEq V] (H : SimpleGraph V)
-    [DecidableRel H.Adj] (halt : ThetaAlternative H) (k : ℕ) (d : TowerData V k) :
-    (pendantTower H k d).Choosable 2 ↔ RubinFamily H :=
-  choosable_two_pendantTower_iff thetaClassification H halt k d
-
 /-! ### Cross-checks
 
 The general theorems specialize to the explicit cases proved by hand in `Monophilic.RubinHard`,
@@ -776,6 +751,3 @@ end Monophilic
 #print axioms Monophilic.choosable_two_thetaGen_of_goodShape
 #print axioms Monophilic.choosable_two_thetaGen_iff
 #print axioms Monophilic.thetaClassification
-#print axioms Monophilic.rubinFamily_of_choosable'
-#print axioms Monophilic.choosable_two_iff_rubinFamily'
-#print axioms Monophilic.choosable_two_pendantTower_iff'

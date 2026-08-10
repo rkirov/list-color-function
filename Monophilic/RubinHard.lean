@@ -13,26 +13,24 @@ list is `2`-choosable — and isolates the hard direction
 
 > a `2`-choosable connected graph has a single vertex, an even cycle or `θ_{2,2,2m}` for its core
 
-as the one thing still borrowed. This file attacks that direction. Contrapositively, a connected
-graph `H` of minimum degree `≥ 2` which is none of the three fails to be `2`-choosable because:
+as the one thing still to be proved. This file attacks that direction. Contrapositively, a
+connected graph `H` of minimum degree `≥ 2` which is none of the three fails to be `2`-choosable
+because:
 
 1. if `H` has an odd cycle it is not even `2`-colorable, and choosability passes to subgraphs;
-2. otherwise `H` is bipartite with a vertex of degree `≥ 3`, and then `H` contains a **theta
-   subgraph** — two vertices joined by three internally disjoint paths;
+2. otherwise `H` is bipartite with a vertex of degree `≥ 3`, and then `H` contains a **generalized
+   theta subgraph** — two vertices joined by three *or more* internally disjoint paths;
 3. a theta `θ_{a,b,c}` whose three lengths are not `(2, 2, \text{even})` is not `2`-choosable.
 
-Step 2 is the missing structural ingredient (Mathlib has no block or ear decomposition). It is
-also, as it stands, *not enough*: see the discussion in the section "The reduction", where
-`K_{2,4}` — this development's own `SimpleGraph.ERT.K 2` — is exhibited as a connected bipartite
-graph of minimum degree `2`, not a cycle and not a `θ_{2,2,2m}`, all of whose theta subgraphs are
-`θ_{2,2,2}`, and which is nevertheless not `2`-choosable. A universal structural statement strong
-enough to finish Rubin's argument therefore has to offer generalized thetas and pairs of cycles as
-well.
+Step 2 is the missing structural ingredient (Mathlib has no block or ear decomposition), and its
+"three arms" version is *not enough*: `K_{2,4}` — this development's own `SimpleGraph.ERT.K 2` — is
+a connected bipartite graph of minimum degree `2`, not a cycle and not a `θ_{2,2,2m}`, whose only
+three-arm theta subgraph is the *good* `θ_{2,2,2}`, and which is nevertheless not `2`-choosable. It
+is the generalized theta with four arms of length two. See the section "A removed definition, and
+why it must stay removed" below, which records the brute-force refutation of the three-arm form.
 
 Everything else is developed here: general theta graphs, explicit `2`-list assignments with no
-coloring at all for the excluded shapes, the transfer of non-choosability along subgraphs, and the
-resulting reduction of Rubin's hard direction to two named hypotheses — one purely structural, one
-the classification of `2`-choosable *theta* graphs.
+coloring at all for the excluded shapes, and the transfer of non-choosability along subgraphs.
 
 ## General theta graphs
 
@@ -69,8 +67,8 @@ induction along an arm of unbounded length, is missing.
 * `Monophilic.Contains` : `G` contains a copy of `K` as a subgraph
 * `Monophilic.armBlockLists`, `Monophilic.thetaBadLists` : the general witness assignment
 * `Monophilic.ValidShape`, `Monophilic.GoodShape` : normalized theta shapes, and Rubin's shape
-* `Monophilic.ThetaAlternative`, `Monophilic.ThetaClassification` : the two hypotheses that
-  Rubin's hard direction is reduced to
+* `Monophilic.ThetaClassification` : the classification of `2`-choosable theta graphs, discharged
+  in `Monophilic.ThetaClass`
 
 ## Main results
 
@@ -87,10 +85,6 @@ induction along an arm of unbounded length, is missing.
   a cycle
 * `Monophilic.card_lt_card_edgeFinset` : with a vertex of degree `≥ 3` it has more edges than
   vertices, and `Monophilic.degree_eq_two_of_card_edgeFinset_le` is the converse reading
-* `Monophilic.rubinFamily_of_choosable` : **Rubin's hard direction**, relative to
-  `ThetaAlternative` and to the classification of `2`-choosable theta graphs
-* `Monophilic.choosable_two_iff_rubinFamily`, `Monophilic.choosable_two_pendantTower_iff` :
-  Rubin's theorem as an `↔`, relative to the same two hypotheses
 -/
 
 open Finset
@@ -473,33 +467,46 @@ theorem degree_eq_two_of_card_edgeFinset_le (hdeg : ∀ v, 2 ≤ G.degree v)
 
 end Structural
 
-/-! ### The reduction
+/-! ### Theta shapes
 
-What is left of Rubin's hard direction after the above is packaged as two named hypotheses:
-`Monophilic.ThetaAlternative H`, which is **purely structural** — no coloring occurs in it, only
-subgraph containment and the lengths of three paths — and `Monophilic.ThetaClassification`, the
-classification of `2`-choosable *theta* graphs, i.e. Rubin's theorem for the single family
-`θ_{a,b,c}`.
+### A removed definition, and why it must stay removed
 
-`ThetaAlternative` is deliberately a hypothesis **about the graph at hand**, not a universally
-quantified structural lemma. The tempting universal statement
+An earlier version of this file carried a definition `ThetaAlternative H`, a four-way structural
+disjunction:
 
-> a connected graph of minimum degree `≥ 2` is a cycle, or `θ_{2,2,2m}`, or it contains an odd
-> cycle or a theta of some other shape
+> `H` is a cycle, or a `θ_{2,2,2m}`, or it contains an odd cycle, or it contains a theta
+> `θ_{a,b,c}` of a shape other than `(2, 2, \text{even})`,
 
-is **false**, and a counterexample is one this development already knows: `SimpleGraph.ERT.K 2`,
-that is `K_{2,4}`. It is connected and bipartite (so it has no odd cycle), its two left vertices
-have degree four and its four right vertices degree two, it is not a cycle and it is not any
-`θ_{2,2,2m}` — and *every* theta subgraph of it is a `θ_{2,2,2}`, since three internally disjoint
-paths between two of its vertices can only be three of the four length-two paths joining the two
-vertices of degree four. Yet `K_{2,4}` is not `2`-choosable: that is `SimpleGraph.ERT.not_choosable
-2`, the Erdős–Rubin–Taylor example, in `Monophilic.NotChoosable`.
+offered as the "purely structural" half of Rubin's hard direction. That definition was **invented in
+this repository**; it is not Kirov–Naimi's, not Rubin's, and not from the literature at all. **It is
+false** as a universal statement about connected graphs of minimum degree `≥ 2`, and it has been
+deleted, together with everything that took it as a hypothesis. The refutation is by brute force on
+a graph this development already owns: `SimpleGraph.ERT.K 2`, that is `K_{2,4}`.
 
-So a *universal* structural statement strong enough to finish the argument must offer more
-configurations than "odd cycle or bad theta": at least generalized thetas — two vertices joined by
-four or more internally disjoint paths — and pairs of cycles meeting in at most one vertex, each
-of which then needs its own non-choosability witness. `ThetaAlternative` is exactly the part of
-that dichotomy that the present file can consume. -/
+* `K_{2,4}` is not a cycle and not any `θ_{2,2,2m}` — its degree sequence is `4, 4, 2, 2, 2, 2`,
+  whereas a cycle is `2`-regular and a `θ_{2,2,2m}` has maximum degree three;
+* it contains no odd cycle, being bipartite;
+* it contains no *bad* three-arm theta: all six valid shapes with `a + b + c ≤ 7` fail to embed,
+  and the only theta that does embed is the **good** `θ_{2,2,2}` — three internally disjoint paths
+  between two of its vertices can only be three of the four length-two paths joining the two
+  vertices of degree four.
+
+Yet `K_{2,4}` is not `2`-choosable (`SimpleGraph.ERT.not_choosable 2`, the Erdős–Rubin–Taylor
+example, in `Monophilic.NotChoosable`), so it is a counterexample to every disjunct at once.
+
+The definition offered only *three-arm* thetas. The correct structural object is the **generalized
+theta** — two vertices joined by arbitrarily many internally disjoint paths — and `K_{2,4}` is
+precisely the generalized theta with four arms of length two. A universal structural statement
+strong enough to finish Rubin's argument must therefore offer generalized thetas (and pairs of
+cycles meeting in at most one vertex), each with its own non-choosability witness.
+
+**This is a defect in this repository's scaffolding, and not an error in Kirov–Naimi**, whose proof
+of Theorem 2 cites Rubin's theorem rather than proving it and therefore never asserts anything of
+the kind. The distinction matters: no claim is being made here about the correctness of the paper.
+The note is recorded so that the same shortcut is not reinvented; see also `provenance.md` §3.
+
+What survives is `Monophilic.ThetaClassification`, discharged in `Monophilic.ThetaClass`, which is
+a genuine theorem about theta graphs. -/
 
 /-- A **valid, normalized** theta shape: `1 ≤ a ≤ b ≤ c` with `2 ≤ b`. Sorting the three arms
 costs nothing, and `2 ≤ b` says at most one arm is a single edge — two would collapse to the same
@@ -508,21 +515,6 @@ def ValidShape (a b c : ℕ) : Prop := 1 ≤ a ∧ a ≤ b ∧ b ≤ c ∧ 2 ≤
 
 /-- **Rubin's shape**: `θ_{2,2,2m}`, in normalized form. -/
 def GoodShape (a b c : ℕ) : Prop := a = 2 ∧ b = 2 ∧ Even c
-
-/-- **The structural alternative for a single graph `H`.** `H` is a cycle, or a `θ_{2,2,2m}`, or
-it contains an odd cycle, or it contains a theta of a shape other than `(2, 2, \text{even})`.
-
-Nothing about colorings appears here: the alternatives are subgraph containment and the lengths of
-three internally disjoint paths. Establishing it for a given graph is the "follow a path until it
-returns to the cycle" induction over walks that Mathlib's lack of a block or ear decomposition
-makes expensive. See the discussion above for why the universally quantified form — every
-connected graph of minimum degree `≥ 2` satisfies this — is *false*. -/
-def ThetaAlternative {V : Type} [Fintype V] [DecidableEq V] (H : SimpleGraph V)
-    [DecidableRel H.Adj] : Prop :=
-  (∃ k, 2 ≤ k ∧ Nonempty (H ≃g closePath k)) ∨
-  (∃ m, 1 ≤ m ∧ Nonempty (H ≃g theta m)) ∨
-  (∃ k, Even k ∧ 2 ≤ k ∧ Contains H (closePath k)) ∨
-  (∃ a b c, ValidShape a b c ∧ ¬ GoodShape a b c ∧ Contains H (thetaGen a b c))
 
 /-- **The classification of `2`-choosable theta graphs**: a theta graph of any shape other than
 `θ_{2,2,\text{even}}` fails to be `2`-choosable. This is Rubin's theorem restricted to the single
@@ -539,20 +531,6 @@ unbounded length that turns the uniform witness into a uniform proof. -/
 def ThetaClassification : Prop :=
   ∀ a b c, ValidShape a b c → ¬ GoodShape a b c → ¬ (thetaGen a b c).Choosable 2
 
-/-- A cycle satisfies the structural alternative, through its first disjunct. -/
-theorem thetaAlternative_closePath {k : ℕ} (hk : 2 ≤ k) : ThetaAlternative (closePath k) :=
-  Or.inl ⟨k, hk, ⟨Iso.refl⟩⟩
-
-/-- A `θ_{2,2,2m}` satisfies the structural alternative, through its second disjunct. -/
-theorem thetaAlternative_theta {m : ℕ} (hm : 1 ≤ m) : ThetaAlternative (theta m) :=
-  Or.inr (Or.inl ⟨m, hm, ⟨Iso.refl⟩⟩)
-
-/-- A theta graph of a valid shape other than Rubin's satisfies the structural alternative,
-through its last disjunct: it contains itself. -/
-theorem thetaAlternative_thetaGen {a b c : ℕ} (h : ValidShape a b c) (hg : ¬ GoodShape a b c) :
-    ThetaAlternative (thetaGen a b c) :=
-  Or.inr (Or.inr (Or.inr ⟨a, b, c, h, hg, contains_self _⟩))
-
 /-- **A worked, hypothesis-free instance**: a graph containing `θ_{3,3,3}` is not `2`-choosable.
 The shape `(3,3,3)` is settled outright above, so nothing is borrowed here — this is the shape of
 conclusion that the missing structural ingredient is supposed to feed. -/
@@ -560,51 +538,6 @@ theorem not_choosable_two_of_contains_theta333 {V : Type*} [Fintype V] [Decidabl
     {G : SimpleGraph V} [DecidableRel G.Adj] (h : Contains G (thetaGen 3 3 3)) :
     ¬ G.Choosable 2 :=
   not_choosable_of_contains not_choosable_two_thetaGen_333 h
-
-/-- **Rubin's hard direction, relative to `ThetaAlternative` and `ThetaClassification`.** A
-`2`-choosable graph satisfying the structural alternative is an even cycle or a `θ_{2,2,2m}` — in
-other words it is on Rubin's list.
-
-The proof is the contrapositive of the introduction: the structural hypothesis offers four
-alternatives, and the last two are eliminated because an odd cycle and a theta of the wrong shape
-are not `2`-choosable, while choosability passes to subgraphs. In the first alternative the cycle
-must have an even number of vertices, again because an odd cycle is not `2`-choosable. No
-connectivity or degree hypothesis is needed here: those are what it takes to *establish* the
-structural alternative, not to use it. -/
-theorem rubinFamily_of_choosable (hclass : ThetaClassification)
-    {V : Type} [Fintype V] [DecidableEq V] (H : SimpleGraph V) [DecidableRel H.Adj]
-    (halt : ThetaAlternative H) (hch : H.Choosable 2) : RubinFamily H := by
-  rcases halt with ⟨k, hk2, ⟨e⟩⟩ | ⟨m, hm, he⟩ | ⟨k, hk, hk2, hcon⟩ | h
-  · -- a cycle: it must have an even number of vertices, i.e. `Odd k`
-    refine Or.inr (Or.inl ⟨k, ?_, hk2, ⟨e⟩⟩)
-    rcases Nat.even_or_odd k with hev | hodd
-    · exact absurd ((choosable_iso e 2).mp hch) (not_choosable_two_closePath_of_even hev hk2)
-    · exact hodd
-  · exact Or.inr (Or.inr ⟨m, hm, he⟩)
-  · exact absurd hch (not_choosable_two_of_contains_odd_cycle hk hk2 hcon)
-  · obtain ⟨a, b, c, hvalid, hbad, hcon⟩ := h
-    exact absurd hch (not_choosable_of_contains (hclass a b c hvalid hbad) hcon)
-
-/-- **Rubin's theorem, as an `↔`**, relative to the two hypotheses: a graph satisfying the
-structural alternative is `2`-choosable exactly when it is an even cycle or a `θ_{2,2,2m}`. The
-backward implication is `Monophilic.choosable_two_of_rubinFamily`, proved outright. -/
-theorem choosable_two_iff_rubinFamily (hclass : ThetaClassification)
-    {V : Type} [Fintype V] [DecidableEq V] (H : SimpleGraph V) [DecidableRel H.Adj]
-    (halt : ThetaAlternative H) : H.Choosable 2 ↔ RubinFamily H :=
-  ⟨rubinFamily_of_choosable hclass H halt, choosable_two_of_rubinFamily H⟩
-
-/-- **Rubin's theorem for a graph presented over its core**, relative to the two hypotheses. A
-graph obtained from `H` by any finite sequence of pendant attachments — `H` being its core — is
-`2`-choosable exactly when `H` is an even cycle or a `θ_{2,2,2m}`.
-
-The pendant tower is `SimpleGraph.pendantTower`, and the reduction of the whole graph to its core
-is `SimpleGraph.choosable_pendantTower_iff`. -/
-theorem choosable_two_pendantTower_iff (hclass : ThetaClassification)
-    {V : Type} [Fintype V] [DecidableEq V] (H : SimpleGraph V) [DecidableRel H.Adj]
-    (halt : ThetaAlternative H) (k : ℕ) (d : TowerData V k) :
-    (pendantTower H k d).Choosable 2 ↔ RubinFamily H :=
-  (choosable_pendantTower_iff (G := H) (by omega) k d).trans
-    (choosable_two_iff_rubinFamily hclass H halt)
 
 end Monophilic
 
@@ -621,13 +554,7 @@ end Monophilic
 #print axioms Monophilic.not_monophilic_two_thetaGen_133
 #print axioms Monophilic.not_monophilic_two_thetaGen_333
 #print axioms Monophilic.not_choosable_two_of_contains_theta333
-#print axioms Monophilic.thetaAlternative_closePath
-#print axioms Monophilic.thetaAlternative_theta
-#print axioms Monophilic.thetaAlternative_thetaGen
 #print axioms Monophilic.exists_cycle_of_two_le_degree
 #print axioms Monophilic.three_le_card_of_two_le_degree
 #print axioms Monophilic.card_lt_card_edgeFinset
 #print axioms Monophilic.degree_eq_two_of_card_edgeFinset_le
-#print axioms Monophilic.rubinFamily_of_choosable
-#print axioms Monophilic.choosable_two_iff_rubinFamily
-#print axioms Monophilic.choosable_two_pendantTower_iff

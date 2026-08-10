@@ -74,6 +74,13 @@ are the parts a reader could not get from the papers.
 
 * **The formalization itself.** As far as we can determine, list coloring and choosability had not
   been formalized in any proof assistant before this project.
+* **A Mathlib `TODO` discharged.** *A graph that is not 2-colourable contains an odd cycle* is listed
+  as an open `TODO` in Mathlib's `Combinatorics/SimpleGraph/Bipartite.lean` at the pinned revision.
+  Theorem 2's converse needs it, so it is proved here —
+  `Monophilic.exists_odd_isCycle_of_odd_closed_walk` (strong induction on walk length: rotate to a
+  repeated vertex, cut at its second visit, and one of the two shorter closed walks is odd) plus the
+  bridge from Mathlib's `cycleGraph` to `closePath`. Classical mathematics, but a genuine and
+  reusable gap in the library rather than a fact about this project. Worth upstreaming.
 * **`Monophilic.const_block`, `armBlockLists_forced`, `alt_chain`** (`ThetaClass.lean`) — the
   induction along an arm of unbounded length. The informal proofs say "it is then easy to check";
   these lemmas are what that phrase expands to. Presentation, not mathematics.
@@ -89,7 +96,38 @@ are the parts a reader could not get from the papers.
 
 Kirov–Naimi's "`n`-monophilic" is the pointwise property `P_ℓ(G,n) = P(G,n)` at one `n`. The term
 that has since taken hold is **enumeratively chromatic-choosable**, first formally defined in Kaul
-et al., *Bounding the list color function threshold from above*, Involve **16** (2023) 849–882, for
-the stronger "at *every* `m`" property. The literature gives the pointwise property no separate
-name. The two are not known to coincide: whether `P_ℓ(G,m) = P(G,m)` propagates from `m` to `m+1` is
-**open** — Question 1 of Chi et al. 2026, raised in Kirov–Naimi.
+et al., *Bounding the list color function threshold from above*, Involve **16** (2023) 849–882.
+
+Allred and Mudrock, *Enumerative Chromatic Choosability* ([arXiv:2505.05662](https://arxiv.org/abs/2505.05662)),
+give the precise vocabulary, built on two invariants:
+
+* **`ν(G)`**, the *list color function number* — the smallest `t ≥ χ(G)` with `P_ℓ(G,t) = P(G,t)`.
+* **`τ(G)`**, the *list color function threshold* — the smallest `k ≥ χ(G)` such that
+  `P_ℓ(G,m) = P(G,m)` for **every** `m ≥ k`. Always `χ(G) ≤ χ_ℓ(G) ≤ ν(G) ≤ τ(G)`.
+
+| term | definition | |
+|---|---|---|
+| **enumeratively chromatic-choosable** | `τ(G) = χ(G)` | agreement at every `m` |
+| **weakly enumeratively chromatic-choosable** | `ν(G) = χ(G)` | agreement at the single value `m = χ(G)` |
+
+**Why the name is built this way.** *Chromatic-choosable* is Ohba's 2002 notion `χ(G) = χ_ℓ(G)` —
+lists cost nothing at the level of the *number*. `P_ℓ` is the enumerative analogue of the chromatic
+polynomial, so *enumeratively* chromatic-choosable lifts the same property from a number to a
+counting function. The implication runs the right way, which is what justifies the name: if
+`P_ℓ(G,χ(G)) = P(G,χ(G))` then that common value is positive, so `G` is `χ(G)`-choosable and
+`χ_ℓ(G) = χ(G)`. Allred–Mudrock note that examples separating the two notions are scarce.
+
+**Where Kirov–Naimi sits.** For a graph with `χ(G) = 2`, "2-monophilic" is exactly *weakly
+enumeratively chromatic-choosable*, i.e. `ν(G) = 2`. Allred–Mudrock's Theorem 10 obtains the same
+classification — core `K₁`, `C_{2k+2}`, or `K₂,₃` — for the full notion, i.e. `τ(G) = 2`. So their
+result strengthens Kirov–Naimi's Theorem 2 from `ν` to `τ`, settling the `χ = 2` case of the open
+question below. For a general fixed `n` the literature gives the pointwise property **no name at
+all**; `n`-monophilic remains the only one anyone has proposed.
+
+**The open question.** Whether `ν(G) = τ(G)` for every graph — equivalently, whether
+`P_ℓ(G,m) = P(G,m)` propagates from `m` to `m+1` — is **open**. It is Question 2 of Allred–Mudrock
+and Question 1 of Chi et al. 2026, and both trace it to Kirov–Naimi.
+
+**This repository's naming.** The pointwise predicate is the workhorse (Theorem 1 is "for every
+`n`", Theorem 2 is at `n = 2`), so it is `ECCAt`, with `ECC := ∀ n, ECCAt n`, each expanded in the
+module docstrings. `n`-monophilic is recorded as the historical name.
