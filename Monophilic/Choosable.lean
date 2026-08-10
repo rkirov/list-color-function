@@ -9,7 +9,7 @@ import Monophilic.CycleRotate
 # Infrastructure for choosability
 
 `Monophilic.Basic` defines `SimpleGraph.Choosable G n` — every `n`-list assignment admits a proper
-coloring — and relates it to `Monophilic.Colorable` and to `n`-monophilicity. This file develops
+coloring — and relates it to `SimpleGraph.Colorable` and to `n`-monophilicity. This file develops
 the structural theory of that predicate: how it transfers along isomorphisms, how it behaves under
 adding or removing edges and vertices, and what it says about the two smallest graphs that matter
 for `n = 2`.

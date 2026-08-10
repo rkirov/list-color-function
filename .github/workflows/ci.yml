@@ -44,6 +44,17 @@ jobs:
           fi
           echo "clean"
 
+      # The kernel checks theorem *statements*. It checks nothing inside a docstring, a
+      # markdown table, or a README claim -- so deleting a declaration leaves every
+      # reference to it in prose silently dangling, and the claim built around that
+      # reference silently false. That is not hypothetical: a false structural claim
+      # survived the deletion of `ThetaAlternative` in exactly this way, in a module
+      # docstring, and was found by accident rather than by any check.
+      - name: No stale references in prose
+        run: |
+          lake env lean --run scripts/DumpNames.lean > /tmp/names.txt
+          python3 scripts/check_refs.py /tmp/names.txt
+
 
   book:
     name: Build the Verso companion
