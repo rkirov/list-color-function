@@ -657,3 +657,103 @@ Build notes:
 Disk is at 94% (5.2 GB free); a second Mathlib checkout does not fit. `.lake/packages` is a symlink
 to a sibling Mathlib checkout's `.lake/packages` (same toolchain `v4.32.2`, same rev `905b9581`), so the
 prebuilt Mathlib is shared read-only. Full build: ~12 s.
+
+---
+
+## The plan for Rubin's theorem, from the primary source
+
+**Source found.** The original is online at Erdős's own archive:
+[users.renyi.hu/~p_erdos/1980-07.pdf](https://users.renyi.hu/~p_erdos/1980-07.pdf) — P. Erdős,
+A. L. Rubin, H. Taylor, *Choosability in graphs*, Congr. Numer. **26** (1980), 125–157. The
+characterization is on pp. 131–134 under "CHARACTERIZATION OF 2-CHOOSABLE GRAPHS", with Rubin's
+proof given in full.
+
+Two negative findings first, so nobody re-treads them. **Zhu (EJC 2009) does not prove it** — he
+states it as his Theorem 14 with citation [6] and *reduces to it*: "since every on-line 2-choosable
+graph is 2-choosable, to prove that all the other graphs are not on-line 2-choosable, it suffices to
+show that `θ₂,₂,₂ₙ` is not on-line 2-choosable". Likewise Chi et al. 2026 and Allred–Mudrock 2025
+cite it only.
+
+### The headline: **the proof needs no ear decomposition, no Menger, and no 2-connectivity**
+
+This overturns the ≈2,000–4,000-line estimate recorded above. Rubin never introduces
+2-connectivity. He works directly with the core (minimum degree `≥ 2`) and disposes of the
+non-2-connected case *as two of his five types*. The whole argument runs on a **shortest cycle** and
+two **shortest connecting paths**, with a six-way case analysis on where the second one lands.
+
+### Rubin's five types, verbatim
+
+> either `G` is in `T`, or else `G` contains a subgraph belonging to one of the following five types.
+> 1. An odd cycle.
+> 2. Two node disjoint even cycles connected by a path.
+> 3. Two even cycles having exactly one node in common.
+> 4. `θ_{a,b,c}` where `a ≠ 2` and `b ≠ 2`.
+> 5. *(shown as a figure; from case (v) it is the generalized theta on four arms, `K₂,₄`-like)*
+
+where `T = {K₁, C_{2m+2}, θ_{2,2,2m} : m ≥ 1}`.
+
+**All five are already proved non-2-choosable in this library.** That half of the work is done:
+
+| Rubin's type | our theorem |
+|---|---|
+| 1. odd cycle | `not_choosable_two_of_contains_odd_cycle` |
+| 2. two disjoint even cycles joined by a path | `not_choosable_two_of_dumbbell` |
+| 3. two even cycles sharing one node | `not_choosable_two_of_figureEight` |
+| 4. `θ_{a,b,c}`, `a ≠ 2 ≠ b` | `not_choosable_two_thetaGen` / `choosable_two_gtheta_iff` |
+| 5. generalized theta on `≥ 4` arms | `not_choosable_two_gtheta_of_four` |
+
+(Type 4 looks narrower than our "bad shape", but it is not a gap: `θ_{2,2,c}` with `c` odd contains
+a cycle of odd length `2 + c`, so it is already type 1.)
+
+Rubin also gives a *merge reduction* for types 2–5 — delete a node `b` and merge its neighbours,
+which preserves non-2-choosability because the graph stays bipartite, so no loops appear — reducing
+each type to one of four small graphs checked by hand. **We do not need it**, having proved each
+type directly. Worth recording that he flags it as special: "this proof would not have worked for
+3-choosability."
+
+### What is actually left: the extraction
+
+Only the structural half. Rubin's argument, step by step:
+
+1. If `G` has an odd cycle → **type 1**. So assume `G` is **bipartite**.
+2. Let `C₁` be a **shortest cycle**. Some edge of `G` is not in `C₁`, else `G` is an even cycle and
+   so in `T`.
+3. If some cycle `C₂` meets `C₁` in at most one node → **type 2 or 3**.
+4. Otherwise let `P₁` be a **shortest path, edge-disjoint from `C₁`, joining two distinct nodes of
+   `C₁`** — known to exist by step 3. If `C₁ ∪ P₁ ∉ T` → **type 4**.
+5. Otherwise `C₁ ∪ P₁ = θ_{2,2,2m}` and `C₁` is a **4-cycle**. There must be more to `G`, so let
+   `P₂` be a shortest path edge-disjoint from `C₁ ∪ P₁` joining two distinct nodes of `C₁ ∪ P₁`.
+6. **Six cases** on the ends of `P₂`, against the labelled nodes `a, b, a', b'` of `C₁`:
+   (i) two interior nodes of `P₁` → a cycle disjoint from `C₁`, **type 2**;
+   (ii) `a` and an interior node of `P₁` → cycle meeting `C₁` once, **type 3**;
+   (iii) `b` and an interior node of `P₁` → **type 4**;
+   (iv) `a` and `b` → **type 4**;
+   (v) `a` and `a'`: if `|P₁| = 2` → **type 5**, else → **type 4**;
+   (vi) `b` and `b'` → delete any edge of `C₁` to expose a `θ`, **type 4**.
+
+### Revised cost, and what to build
+
+Everything here is finite case analysis over walks, which Mathlib *does* support
+(`Walk`, `IsCycle`, `takeUntil`, `dropUntil`, `rotate`, `bypass`, `girth`). The estimate drops from
+2,000–4,000 lines to roughly **800–1,500**, and the risky dependencies vanish. New pieces needed:
+
+* **E1.** Minimum degree `≥ 2` ⟹ a cycle exists; and a *shortest* cycle exists (Mathlib has `girth`
+  and `exists_girth_eq_length` — likely most of this).
+* **E2.** The existence claim in step 4: if no cycle meets `C₁` in `≤ 1` node, and `G` is connected
+  with an edge outside `C₁`, then some path edge-disjoint from `C₁` joins two distinct nodes of
+  `C₁`. **This is the one genuinely new piece of graph theory**, and it is where the effort should
+  go first — it is also the step most likely to hide a subtlety, given this project's record with
+  structural claims.
+* **E3.** The `Walk`-to-index bridge already identified as cheap (~150–250 lines): turn a
+  `c : G.Walk v v` with `c.IsCycle` into the `(A, m)` index form that
+  `not_choosable_two_of_dumbbell` consumes.
+* **E4.** The six-case analysis of step 6, and assembly.
+
+**Do E3 first** — it is cheap, unblocks types 2 and 3 in Mathlib's own vocabulary, and is useful
+regardless. Then E2, alone, brute-force checked before any proof. Then E1 and E4.
+
+**Before writing any Lean for E2 and E4, machine-check the case analysis** on all bipartite
+minimum-degree-`≥ 2` graphs up to 9 or 10 vertices: for each, confirm that the type Rubin's
+procedure lands on really is one of the five and really contains the claimed subgraph. Three
+structural claims written from memory in this project have been refuted by graphs on 6–7 vertices;
+this one comes from the primary source, but it should still be checked before it is trusted.
