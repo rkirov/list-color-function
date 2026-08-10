@@ -23,11 +23,11 @@ These are known results. The Lean proof is ours; the mathematics is not.
 |---|---|---|
 | `SimpleGraph.eval_chromaticPolynomial` | the Whitney subset expansion evaluates to the colouring count | **Whitney 1932**; Birkhoff 1912 for the polynomial itself |
 | `SimpleGraph.monophilic_iff_listColorFunction_eq_eval` | `n`-monophilic ⟺ `P_ℓ(G,n) = P(G,n)` | definitional bridge; the notions are **Kostochka–Sidorenko 1990/92** and **Kirov–Naimi 2016** |
-| `SimpleGraph.ERT.not_choosable`, `ERT.colorable` | `K_{n,nⁿ}` is `n`-colourable but not `n`-choosable | **Erdős–Rubin–Taylor 1979**; also Kirov–Naimi §5 |
+| `SimpleGraph.ERT.not_choosable`, `ERT.colorable` | `K_{n,nⁿ}` is `n`-colourable but not `n`-choosable | **Erdős–Rubin–Taylor 1980**; also Kirov–Naimi §5 |
 | `SimpleGraph.monophilic_of_isChordal` | chordal ⟹ `n`-monophilic for every `n` | **Kostochka–Sidorenko 1990/92**; = Thm 2(i) of Chi et al. 2026 |
 | `SimpleGraph.isChordal_iff_exists_cliqueTower` | chordal ⟺ has a simplicial elimination ordering | **Dirac 1961**; Fulkerson–Gross 1965 |
 | `Monophilic.monophilic_closePath_of_two_le` | **every cycle is `n`-monophilic, every `n ≥ 2`** | **Kirov–Naimi 2016, Theorem 1**; = Thm 2(ii) of Chi et al. 2026 |
-| `Monophilic.choosable_two_of_rubinFamily` | a vertex / even cycle / `θ_{2,2,2m}` is 2-choosable | **Rubin**, in Erdős–Rubin–Taylor 1979 — the *easy* direction |
+| `Monophilic.choosable_two_of_rubinFamily` | a vertex / even cycle / `θ_{2,2,2m}` is 2-choosable | **Rubin**, in Erdős–Rubin–Taylor 1980 — the *easy* direction |
 | Theorem 2 (`monophilic_two_iff…`) | connected `G` is 2-monophilic ⟺ core is a vertex, a cycle, `K₂,₃`, or `G` has an odd cycle | **Kirov–Naimi 2016, Theorem 2**; = Thm 2(iv) of Chi et al. 2026, there attributed to [1, 6, 13, 16, 17] |
 | `SimpleGraph.exists_monophilic_forall_ge` | `P_ℓ(G,m) = P(G,m)` for all large `m` | **Donner 1992**; threshold via **Wang–Qian–Yan 2017** |
 | `SimpleGraph.monophilic_of_two_pow_lt` | explicit threshold `2^{\|E(G)\|} < m` | weaker form of **Wang–Qian–Yan 2017**; superseded by **Dong–Zhang 2023** (`m ≥ \|E(G)\| − 1`) |
@@ -36,7 +36,7 @@ These are known results. The Lean proof is ours; the mathematics is not.
 ### In progress — Rubin's theorem
 
 The target is **Rubin's theorem** (A. L. Rubin, in **Erdős–Rubin–Taylor**, *Choosability in graphs*,
-Congr. Numer. **26** (1979), 125–157): *a connected graph is 2-choosable iff its core is a single
+Congr. Numer. **26** (1980), 125–157): *a connected graph is 2-choosable iff its core is a single
 vertex, an even cycle, or `θ_{2,2,2m}` for some `m ≥ 1`.* Kirov–Naimi cite it; this development aims
 to prove it, so that Theorem 2 carries no hypothesis.
 
@@ -47,7 +47,7 @@ to prove it, so that Theorem 2 carries no hypothesis.
 | 1, 3 | core reduction; two cycles meeting in ≤ 1 vertex are not 2-choosable | standard, part of **Rubin's** argument |
 | 4 | 2-connected non-cycle ⟹ generalized theta, or two cycles meeting in ≤ 1 vertex | classical structural graph theory (ear decomposition) |
 
-**None of this is novel.** It is a 1979 theorem that appears not to have been machine-checked before.
+**None of this is novel.** It is a theorem from 1980 that appears not to have been machine-checked before.
 
 ## 2. Theorems in the literature that this project does *not* claim
 

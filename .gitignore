@@ -13,3 +13,7 @@ book/_out/
 .DS_Store
 *.swp
 *~
+
+# Exploratory notes from a separate agent searching for new theorems (no formalization).
+# Deliberately not part of the formalization; see provenance.md for what this repo claims.
+ai_research_notes/

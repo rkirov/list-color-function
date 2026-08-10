@@ -9,13 +9,17 @@ import Monophilic.Theta
 /-!
 # Rubin's theorem: the easy direction, and what remains
 
-Rubin's characterization (Erdős–Rubin–Taylor 1980) says:
+**Rubin's characterization.** Due to A. L. Rubin, in P. Erdős, A. L. Rubin and H. Taylor,
+*Choosability in graphs*, Proc. West Coast Conf. on Combinatorics, Graph Theory and Computing
+(Arcata, California, 1979), Congr. Numer. **26**, Utilitas Math., Winnipeg, **1980**, 125–157:
 
 > a connected graph is `2`-choosable **iff** its core is a single vertex, an even cycle, or
 > `θ_{2,2,2m}` for some `m ≥ 1`.
 
-Theorem 2 of Kirov–Naimi borrows this. This file proves the **⟸ direction** outright — every graph
-on Rubin's list really is `2`-choosable — and isolates precisely what is still borrowed.
+Kirov–Naimi's Theorem 2 cites this. **This development proves it** rather than assuming it, so
+Theorem 2 can be stated with no hypothesis; `Monophilic.RubinTheorem` in `Monophilic.Theorem2` names
+the statement, and it is the first explicit argument of `Monophilic.monophilic_two_iff_of_rubin`.
+This file proves the **⟸ direction** outright — every graph on Rubin's list really is `2`-choosable.
 
 ## What is proved here
 
@@ -29,23 +33,40 @@ The three families, each already established in the files this one imports:
 Passing from the core back to the whole graph is `SimpleGraph.choosable_pendantTower_iff`. Together
 these give `choosable_two_of_rubinFamily` below.
 
-## What is still borrowed, and why
+## What remains, and a correction
 
-Only the **⟹ direction** — that a `2`-choosable graph *must* have one of those three cores. That is
-the direction Theorem 2 actually consumes, and `monophilic_two_iff_of_rubin_hard` now takes it as a
-one-way implication rather than an `↔`, so the half proved here is no longer assumed.
+Only the **⟹ direction** — that a `2`-choosable graph *must* have one of those three cores.
 
-The remaining direction reduces to a purely *structural* fact with no colouring content in it: a
-connected graph of minimum degree `≥ 2` that is not a cycle contains a theta subgraph. Given that,
-the rest is: an odd cycle is not `2`-colourable (hence not `2`-choosable), choosability passes to
-subgraphs (`SimpleGraph.Choosable.mono`, `SimpleGraph.Choosable.comap`), and a theta whose three
-path lengths are not `(2,2,\text{even})` is not `2`-choosable. Mathlib has no block or ear
-decomposition, which is what extracting the theta subgraph would need.
+An earlier version of this file claimed the remaining work reduced to the structural fact that *a
+connected graph of minimum degree `≥ 2` that is not a cycle contains a theta subgraph*. **That is
+false**, and the mis-statement was this repository's, not the literature's. `K₂,₄` is connected, has
+minimum degree `2` and is not a cycle, yet every theta subgraph of it is the *good* `θ_{2,2,2}`; it
+is nonetheless not `2`-choosable. The error was reading "theta" as the three-path graph. The
+structural object is the **generalized** theta `Θ(k₁,…,k_n)` — `n` internally disjoint paths between
+two vertices, `n` arbitrary — and `K₂,₄` is the one with four paths of length `2`. The corrected
+statement is
+
+> connected, minimum degree `≥ 2`, not a cycle ⟹ contains a **generalized** theta with `n ≥ 3`
+> paths, **or** two cycles meeting in at most one vertex.
+
+Given that, the rest is: an odd cycle is not `2`-colourable (hence not `2`-choosable), choosability
+passes to subgraphs (`SimpleGraph.Choosable.mono`, `SimpleGraph.Choosable.comap`), two cycles
+meeting in at most one vertex are not `2`-choosable, and `Θ(k₁,…,k_n)` is `2`-choosable exactly when
+`n = 3` and the lengths are `(2,2,\text{even})`. Mathlib has no block or ear decomposition, which is
+what extracting the generalized theta needs.
+
+The three-path case of that last classification is **proved**, in `Monophilic.ThetaClass` as
+`Monophilic.choosable_two_thetaGen_iff`.
 
 ## Main results
 
-* `Monophilic.choosable_two_of_rubinFamily` — Rubin's ⟸ direction
-* `SimpleGraph.monophilic_two_iff_of_rubin_hard` — Theorem 2, borrowing only Rubin's ⟹ direction
+* `Monophilic.choosable_two_of_rubinFamily` — Rubin's ⟸ direction, proved
+
+`SimpleGraph.monophilic_two_iff_of_rubin_hard` and `monophilic_two_iff_of_rubin'` below state
+Theorem 2 with its three core alternatives left as abstract propositions. They are **superseded** by
+`Monophilic.monophilic_two_iff_of_rubin` in `Monophilic.Theorem2`, which uses concrete `CoreIs`
+notions and takes Rubin's theorem as a single named hypothesis to be discharged. They are kept only
+until that discharge lands.
 -/
 
 namespace Monophilic
