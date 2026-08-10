@@ -72,6 +72,9 @@ Compiled 2026-08-08.
 - **F. Dong and M. Zhang**, "An improved lower bound of $P(G,L) - P(G,k)$ for $k$-assignments $L$,"
   *Journal of Combinatorial Theory, Series B* **161** (2023), 109–119.
   DOI [10.1016/j.jctb.2023.02.002](https://doi.org/10.1016/j.jctb.2023.02.002).
+  — ***The best known threshold:*** $P_\ell(G,m) = P(G,m)$ for every $m \ge |E(G)| - 1$. This
+  supersedes Wang–Qian–Yan above, and is far stronger than what this repository formalizes
+  (`monophilic_of_two_pow_lt`, which needs $2^{|E(G)|} < m$).
 
 - **H. Kaul, A. Kumar, J. A. Mudrock, P. Rewers, P. Shin, and K. To**, "On the list color function
   threshold," *Journal of Graph Theory* **105** (3) (2024), 386–397.

@@ -281,6 +281,48 @@ see it. The correct structural input is therefore
 
 with the classification then covering `Θ_{k₁,…,k_n}` for all `n ≥ 3`, not just `n = 3`.
 
+**The coded `ThetaAlternative` never absorbed this correction, and is false.** `Monophilic.ThetaAlternative`
+in `RubinHard.lean` offers only *three-arm* thetas (`thetaGen a b c`), so `K₂,₄` refutes it — the very
+graph the paragraph above was written about. Machine-checked, by brute force over all injective
+edge-preserving maps out of every candidate:
+
+| disjunct | on `K₂,₄` | how refuted |
+|---|---|---|
+| is an even cycle | ✗ | degree sequence is `4,4,2,2,2,2`; a cycle is `2`-regular |
+| `≃g theta m` | ✗ | `theta m` has maximum degree `3` |
+| contains an odd cycle | ✗ | `containsB (cyc 3) = containsB (cyc 5) = false` (bipartite) |
+| contains a **bad** `thetaGen a b c` | ✗ | all six valid shapes with `a+b+c ≤ 7` return `false`; only the **good** `θ_{2,2,2}` is present (`true`) |
+
+`a+b+c ≤ 7` is exhaustive because `thetaGen a b c` has `a+b+c-1` vertices and `K₂,₄` has six. So
+`ThetaAlternative` must be restated over generalized thetas of arbitrary arity, plus the two-cycle
+case, exactly as displayed above. `ThetaClassification` — now **discharged** in `ThetaClass.lean` —
+correspondingly needs extending from `thetaGen a b c` to `Θ_{k₁,…,k_n}`.
+
+**This is a defect in the formalization's scaffolding, not in Kirov–Naimi.** The paper cites Rubin's
+characterization as known and does not prove it; `ThetaAlternative` is an auxiliary hypothesis
+invented here to split Rubin into a structural half and a coloring half.
+
+### The 2026 terminology, and two results that supersede ours
+
+Chi, Lee, Morrissette, Mudrock, Nguyen and Whatley, *Enumeratively Chromatic-Choosable Theta Graphs*
+([arXiv:2605.10861](https://arxiv.org/abs/2605.10861), v2, 27 Jun 2026):
+
+* **The name.** `G` is **enumeratively chromatic-choosable** when `P_ℓ(G,m) = P(G,m)` for *every*
+  `m ∈ ℕ`. The term was first formally defined in Kaul et al., *Bounding the list color function
+  threshold from above*, Involve **16** (2023) 849–882. Note this is the "for all `m`" notion; the
+  paper's `n`-monophilic is the **pointwise** one, and the literature gives that no separate name —
+  it simply writes `P_ℓ(G,m) = P(G,m)`. The two are not known to coincide: whether
+  `P_ℓ(G,m) = P(G,m)` propagates from `m` to `m+1` is **open** (their Question 1, from Kirov–Naimi).
+* **Kirov–Naimi is [16]**, and their Theorem 2(iv) — *a connected `G` with `χ(G) = 2` is
+  enumeratively chromatic-choosable iff its core is `K₁`, `C_{2k+2}`, or `Θ(2,2,2) = K₂,₃`* — is
+  the paper's Theorem 2, attributed to [1, 6, 13, 16, 17].
+* **Their Theorem 4** settles all theta graphs: for `Θ(l₁,l₂,l₃)` with `l₁` minimal and `l₂, l₃ ≥ 2`,
+  `G` is *not* enumeratively chromatic-choosable iff `l₁, l₂, l₃` all have the same parity and
+  `{l₁,l₂,l₃} ≠ {2}`. The proof goes through **DP-coloring**, not list coloring directly.
+* **Dong–Zhang, JCTB 161 (2023) 109–119** prove `P_ℓ(G,m) = P(G,m)` for all `m ≥ |E(G)| − 1`. Our
+  `monophilic_of_two_pow_lt` gives `2^{|E(G)|} < m`, which is exponentially weaker. Wang–Qian–Yan
+  [26] is the earlier bound we followed; Dong–Zhang supersedes it.
+
 **A false lead, recorded so it is not chased again.** "Rubin's Block Lemma" — *every 2-connected
 graph that is neither complete nor an odd cycle contains an induced even cycle with at most one
 chord* — is a **different theorem by the same author**, used for degree-choosability and Brooks-type

@@ -194,12 +194,21 @@ example : (closePath 4).colConst 2 = 0 := by decide
 
 *Bipartite graphs.* Being `2`-colourable, they have at least the two colourings that use one colour
 per side — and often exactly those two. The complete bipartite graph $`K_{2,3}`, two vertices on one
-side joined to all three on the other, is the smallest example that will matter later:
+side joined to all three on the other, is the smallest example that will matter later. Count it by
+splitting on whether the two left vertices get the same colour: if they do, `n` ways, each right
+vertex then has `n - 1` choices; if they do not, $`n(n-1)` ways, and each right vertex has `n - 2`.
+So $`\mathrm{col}(K_{2,3}, n) = n(n-1)^3 + n(n-1)(n-2)^3`, which is `2` at `n = 2` and `30` at
+`n = 3`:
 
 ```lean
 open SimpleGraph in
 example : (completeBipartiteGraph (Fin 2) (Fin 3)).colConst 2 = 2 :=
   colConst_completeBipartite_two_three_two
+```
+
+```lean
+open SimpleGraph in
+example : (completeBipartiteGraph (Fin 2) (Fin 3)).colConst 3 = 30 := by decide
 ```
 
 *Graphs with no edges.* $`\mathrm{col} = n^{|V|}`, the largest the count can be. Every constraint
@@ -232,12 +241,13 @@ first hint of the next chapter: those functions are all polynomials.
 *
   * $`K_{2,3}`
   * `2`
-  * $`2(n-1)^3 + \dots` (see below)
+  * $`n(n-1)^3 + n(n-1)(n-2)^3`
 :::
 
-The last entry is deliberately left ragged. $`K_{2,3}` is a graph for which no one-line formula
-suggests itself, and it is exactly the sort of graph — small, bipartite, unremarkable — that will
-turn out to sit on the boundary of the classification in {ref "twomonophilic"}[a later chapter].
+The last entry is the odd one out. The first four rows are formulas one can guess from the shape of
+the graph; the fifth had to be computed. $`K_{2,3}` is exactly the sort of graph — small, bipartite,
+unremarkable — that will turn out to sit on the boundary of the classification in
+{ref "twomonophilic"}[a later chapter].
 
 # The question this book is about
 

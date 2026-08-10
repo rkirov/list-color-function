@@ -4,6 +4,12 @@ import Book.Map
 import Book.Colouring
 import Book.Polynomial
 import Book.Lists
+import Book.Chordal
+import Book.Theorem1
+import Book.TwoChoosable
+import Book.TwoMonophilic
+import Book.Threshold
+import Book.ReadingChallenge
 import Book.Counting
 import Book.Cliques
 import Book.Paths
@@ -36,20 +42,32 @@ Kostochka and Sidorenko {citep kostochkaSidorenko}[] raised the question in 1990
 every cycle is `n`-monophilic for every `n`, characterize the `2`-monophilic graphs, and construct,
 for each `n`, a graph that is `n`-choosable but not `n`-monophilic.
 
-This book accompanies a Lean 4 formalization of that paper. It is written for two audiences at once:
-a combinatorialist who wants to know what the mechanized proofs actually say, and a Lean user who
-wants to see how a counting argument in graph theory is set up so that the counting stays tractable.
-Every displayed statement below is elaborated when the book is built, and each is discharged against
-the corresponding theorem in the development — so what you read is what has been checked.
+This book accompanies a Lean 4 formalization of that paper. Every displayed statement below is
+elaborated when the book is built, and each is discharged against the corresponding theorem in the
+development — so what you read is what has been checked.
 
-The order of business is: how to count list colorings in a proof assistant at all
-({ref "counting"}[Chapter 1]); the cheapest real theorem and what it costs
-({ref "cliques"}[Chapter 2]); paths, where all the arithmetic lives ({ref "paths"}[Chapter 3]); the
-swapping lemma that makes minimizing assignments rigid ({ref "swapping"}[Chapter 4]); and the
-assembly into Theorem 1 ({ref "cycles"}[Chapter 5]). The last chapter
-({ref "findings"}[Chapter 6]) collects what mechanization taught us that reading did not — which
-hypotheses turned out to be load-bearing, which turned out to be unnecessary, and which pieces of
-surrounding folklore did not survive checking.
+It is written to be read in one direction, ending at a single file. The development's statement
+surface is `comparator/Challenge.lean`: ten theorems and the vocabulary they need, stated exactly as
+the library states them, with the proofs removed. *Part I* is the path that makes that file readable
+top to bottom, for a reader who is mathematically strong but has never met a chromatic polynomial.
+It starts from what a proper colouring is ({ref "colouring"}[Colouring a Graph]) and proceeds
+through the chromatic polynomial ({ref "polynomial"}[The Chromatic Polynomial]), list assignments
+and monophilicity ({ref "lists"}[Lists Instead of a Palette]), the first positive answer
+({ref "chordal"}[First Answers: Chordal Graphs]), the theorem about cycles
+({ref "theorem1"}[Theorem 1: Cycles]), the two classifications at `n = 2`
+({ref "twochoosable"}[Which Graphs Are 2-Choosable?] and
+{ref "twomonophilic"}[Which Graphs Are 2-Monophilic?]) and the eventual-agreement theorem
+({ref "threshold"}[Every Graph, Eventually]), to a guide to the file itself
+({ref "readingchallenge"}[Reading `Challenge.lean`]). Part I states results and explains them; it
+proves nothing.
+
+*Part II* is the proofs, and is written for a different reader: someone who wants to know how a
+counting argument in graph theory is set up in a proof assistant so that the counting stays
+tractable. It covers how to count list colourings at all, the cone construction, the arithmetic on
+paths, the swapping lemma that makes minimizing assignments rigid, the assembly into Theorem 1, and
+the material on cores and theta graphs. Its last chapter collects what mechanization taught us that
+reading did not — which hypotheses turned out to be load-bearing, which turned out to be
+unnecessary, and which pieces of surrounding folklore did not survive checking.
 
 A word on what "verified" means here and what it does not. The development contains no `sorry`, and
 every result cited in this book depends only on Lean's three standard axioms — propositional
@@ -64,6 +82,18 @@ cross-checks scattered through the development, and the discussion in this book,
 {include 1 Book.Polynomial}
 
 {include 1 Book.Lists}
+
+{include 1 Book.Chordal}
+
+{include 1 Book.Theorem1}
+
+{include 1 Book.TwoChoosable}
+
+{include 1 Book.TwoMonophilic}
+
+{include 1 Book.Threshold}
+
+{include 1 Book.ReadingChallenge}
 
 {include 1 Book.Counting}
 

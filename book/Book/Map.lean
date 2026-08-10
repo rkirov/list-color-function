@@ -19,10 +19,16 @@ statement in the paper to the Lean proof of it.
 
 # How to read this
 
-The chapters are ordered by dependency, not by the paper's section order. In particular
-{ref "counting"}[Counting List Colorings] comes first because every later chapter needs its
-definitions, and the material on cores and $`K_{2,3}` is deferred until after Theorem 1 even though
-the paper introduces it earlier.
+The book is in two parts. *Part I* tells the story, from the definition of a proper colouring to a
+guide to `comparator/Challenge.lean`; it states results and explains them, and proves nothing. It
+begins at {ref "colouring"}[Colouring a Graph] and ends at
+{ref "readingchallenge"}[Reading `Challenge.lean`]. *Part II* is the proofs, and its chapters are
+ordered by dependency rather than by the paper's section order: {ref "counting"}[Counting List
+Colorings] comes first because every later chapter needs its definitions, and the material on cores
+and $`K_{2,3}` is deferred until after Theorem 1 even though the paper introduces it earlier.
+
+This chapter is orientation for Part II. If you are reading for the mathematics rather than for the
+formalization, skip it and start at {ref "colouring"}[Colouring a Graph].
 
 Every displayed Lean block is an `example` whose proof is the corresponding theorem in the
 development. That means two things for you as a reader. First, the statements you see are the
