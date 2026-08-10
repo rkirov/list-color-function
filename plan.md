@@ -265,6 +265,28 @@ of which is proved in this development — trees (Kostochka–Sidorenko), cycles
 (Lemma 6), and `θ_{2,2,2m}` for `m ≥ 2` (this file). The borrowed ingredient is visible in the
 statement's own signature and cannot be mistaken for something proved here.
 
+## What the literature actually says about Rubin's hard direction
+
+Read after the `K₂,₄` correction, to stop reconstructing the proof from memory.
+
+**The structural object is the *generalized* theta.** `θ_{k₁,…,k_n}` is two vertices joined by `n`
+internally disjoint paths — `n` arbitrary, not `n = 3`. The characterization is that a connected
+graph is `2`-choosable iff its core is an even cycle or `Θ_{2,2,2k}`. This is exactly what the
+`K₂,₄` counterexample was pointing at: `K₂,₄` **is** the generalized theta with four paths of
+length `2`, so a structural lemma phrased only in terms of ordinary (three-path) thetas can never
+see it. The correct structural input is therefore
+
+> connected, minimum degree `≥ 2`, not a cycle ⟹ contains a **generalized** theta (`n ≥ 3`
+> internally disjoint paths between two vertices), **or** two cycles meeting in at most one vertex.
+
+with the classification then covering `Θ_{k₁,…,k_n}` for all `n ≥ 3`, not just `n = 3`.
+
+**A false lead, recorded so it is not chased again.** "Rubin's Block Lemma" — *every 2-connected
+graph that is neither complete nor an odd cycle contains an induced even cycle with at most one
+chord* — is a **different theorem by the same author**, used for degree-choosability and Brooks-type
+results. It is not the route to the `2`-choosability characterization, and its cutset argument does
+not specialize to one.
+
 ## Specs verified numerically before delegation
 
 Each of the remaining milestones was pinned down by brute-force search *before* any Lean effort was
