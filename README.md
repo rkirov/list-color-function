@@ -42,14 +42,14 @@ choosability, no DP-coloring, no chordality, and no Brooks or Vizing. Everything
 
 ## Building
 
-Toolchain: `leanprover/lean4:v4.32.2`; Mathlib is pinned in `lake-manifest.json`.
+Toolchain: `leanprover/lean4:v4.33.0`; Mathlib is pinned in `lake-manifest.json`.
 
 ```sh
 lake exe cache get     # fetch Mathlib oleans (first time only)
 lake build             # the formalization
 ```
 
-For the companion book (Verso `v4.32.0`):
+For the companion book (Verso `v4.33.0`):
 
 ```sh
 cd book

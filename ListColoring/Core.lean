@@ -332,6 +332,17 @@ instance instDecidableRelPendantTower {V : Type u} [DecidableEq V] {G : SimpleGr
       letI := instDecidableRelPendantTower (G := G) k d.1
       inferInstanceAs (DecidableRel ((pendantTower G k d.1).addPendant d.2).Adj)
 
+/-- The successor case of `instDecidableRelPendantTower`, for the same reason as
+`ListColoring.instDecidableRelPathGSucc`: `DecidableRel` unfolds to a `Π`-type, so synthesis
+introduces the two vertex binders before matching, and by then their type has been reduced to
+`Option (TowerV V k)` — which the general instance cannot meet without inverting `TowerV` at an
+unknown index. Ascribing `α` and `β` makes the index first-order again. -/
+instance instDecidableRelPendantTowerSucc {V : Type u} [DecidableEq V] {G : SimpleGraph V}
+    [DecidableRel G.Adj] (k : ℕ) (d : TowerData V (k + 1)) :
+    DecidableRel (α := Option (TowerV V k)) (β := Option (TowerV V k))
+      (pendantTower G (k + 1) d).Adj :=
+  instDecidableRelPendantTower (k + 1) d
+
 omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
 @[simp] lemma pendantTower_zero (d : TowerData V 0) : pendantTower G 0 d = G := rfl
 
@@ -371,6 +382,15 @@ open _root_.ListColoring
 #guard (coneOn (pathG 2) {pathEnd 2}).colConst 4 = 3 * (pathG 2).colConst 4
 
 -- the tower of two pendant attachments over a point is a path on three vertices: `3 * 2 * 2 = 12`
+--
+-- The instance has to be named: at a *numeral* height the goal's vertex type has been reduced all
+-- the way to `Option (Option (PathV 0))`, which neither `instDecidableRelPendantTower` nor its
+-- successor form can match without inverting `TowerV` twice. Supplying it directly costs nothing,
+-- since the height is a literal here.
+local instance : DecidableRel
+    (pendantTower (pathG 0) 2 ((PUnit.unit, pathEnd 0), pathEnd 1)).Adj :=
+  instDecidableRelPendantTower 2 _
+
 #guard (pendantTower (pathG 0) 2 ((PUnit.unit, pathEnd 0), pathEnd 1)).colConst 3 = 12
 
 /-- The path of length `2` is literally a tower of two pendant attachments over the one-point

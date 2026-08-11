@@ -7,7 +7,7 @@
 #
 # Tool pins below mirror lean-eval's .github/workflows/ci.yml (as of 2026-08-03). The
 # comparator/lean4export repos are tagged per Lean *minor* release, so there is no
-# v4.32.2 tag; upstream pins lean4export by SHA and copies the workspace `lean-toolchain`
+# v4.33.0 patch tag either; upstream pins lean4export by SHA and copies the workspace `lean-toolchain`
 # over it, which is what makes lean4export able to read this toolchain's `.olean`s.
 #
 # Script adapted from github.com/rkirov/jacobian-fable (verify.sh), which in turn came from
@@ -16,7 +16,7 @@ set -euo pipefail
 
 # Upstream-pinned tool revisions (lean-eval ci.yml; bump only alongside upstream).
 COMPARATOR_REV=71b52ec29e06d4b7d882726553b1ceb99a2499e0
-LEAN4EXPORT_REV=4e7915201d3f9f04470d9eae002fa695f7cdc589  # = refs/tags/v4.32.0
+LEAN4EXPORT_REV=15f6055e299ad5b89345e533cc2192f4cc00f659  # = refs/tags/v4.33.0
 NANODA_REV=68d5ca9db226849b41a6fff59d796ff19d0a8840
 LANDRUN_REV=5ed4a3db3a4ad930d577215c6b9abaa19df7f99f
 

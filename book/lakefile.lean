@@ -1,7 +1,7 @@
 import Lake
 open Lake DSL
 
-require verso from git "https://github.com/leanprover/verso" @ "v4.32.0"
+require verso from git "https://github.com/leanprover/verso" @ "v4.33.0"
 require graph_coloring from ".."
 
 -- `warningAsError` is the point of this block. Verso's failure path for a backticked name it

@@ -67,6 +67,54 @@ result. Deferred to an optional milestone.
 
 ## Progress log
 
+**2026-08-11 — Lean 4.33.0.** Toolchain `v4.32.2 → v4.33.0`, Mathlib `905b9581 → db584cd6`
+(*chore: bump toolchain to v4.33.0*), all eight transitive packages to their matching revisions, in
+the root, `comparator/` and `book/`. `verify.sh`'s `lean4export` pin moves to the real `v4.33.0`
+tag (`15f6055e`); the `comparator` and `nanoda` pins are upstream lean-eval's and are left alone.
+Library, comparator workspace and book all build; no `sorry` in `ListColoring/`; the headline
+results still depend on exactly the three permitted axioms.
+
+The forcing move was external: `.lake/packages` is a symlink into a sibling checkout, and that
+checkout went to 4.33.0 — its Mathlib `.olean`s were rebuilt while its *sources* were still at
+v4.32.2, which is what "incompatible header" meant. Repairing it (checking out `db584cd6` and the
+eight package revisions the manifest already named) is what made the shared tree consistent again.
+No Mathlib rebuild was needed, which matters on a disk with ~5 GB free.
+
+**One Lean change caused essentially all of the breakage: `DecidableRel` became heterogeneous**,
+`{α : Sort u} {β : Sort v} → (α → β → Prop) → _`. It is a *reducible* abbreviation for a `Π`-type,
+so instance synthesis now unfolds it and introduces the two vertex binders **before** matching — and
+by then the binder types have been reduced, `PathV (k+1)` to `Option (PathV k)`. Every
+index-recursive instance here (`instDecidableRelPathG`, `…ClosePath`, `…PendantTower`,
+`…CliqueTower`, `…Theta`) is offered as a candidate and then fails to resolve, because matching
+would mean inverting `PathV`/`TowerV` at an unknown index. Three shapes of fix, by situation:
+
+* **general `k`** — a successor instance with `α` and `β` *ascribed*, e.g.
+  `DecidableRel (α := Option (PathV k)) (β := Option (PathV k)) (pathG (k + 1)).Adj`. The binder
+  types are then syntactically what the goal already has, so the index is fixed first-order. This is
+  possible only because `DecidableRel` is now heterogeneous — the change is its own cure.
+* **numeral heights** (`pendantTower _ 2 _`, `theta 3`, `cliqueTower _ 3 _`) — no indexed instance
+  can match, since the type is reduced all the way down; the instance is named in a `local instance`
+  beside the `#guard` that needs it.
+* **`rw`/`simp` that stopped firing** — `rw` matches syntactically and needs the target to be
+  type-correct at `implicit` transparency, which fails across the `PathV (k+1)` / `Option (PathV k)`
+  boundary, and the instances in the goal are often not the ones the lemma carries. Replaced by
+  `exact`/`rfl`/`show`, or by a `have` stating the equation in the local context and rewriting with
+  that. Same lesson as the `rw` note in `ListColoring/PathColorable`'s docstring, now biting in more
+  places.
+
+**A route that looks right and is not:** making `PathV`/`TowerV` `@[reducible]`. It does fix the
+whole `Cycle` file at a stroke — but it defeats the discrimination-tree key `PathV *`, so
+`DecidableEq (PathV 6)` and friends stop resolving at numerals, and it changes defeq globally.
+Making `pathG`/`pendantTower` reducible is worse still. Both were tried and reverted; the targeted
+instances are the smaller change.
+
+Three unrelated Mathlib/Lean drifts, all local: `Finset.card_sdiff` is now the unconditional
+`#(t \ s) = #t - #(s ∩ t)` (use `card_sdiff_of_subset`); `simp` no longer strips `Fin.cast` under
+`congrArg Fin.val` (go through `Fin.cast_injective` instead); and `simp_all` needs `Subtype.ext_iff`
+spelled out for a `Subtype.mk` equality. In `ThetaGen` neither `if_pos`/`if_neg`, `rw`, nor `split`
+could select an `ite` branch any more — rewriting the *condition* to `True`/`False` with a named
+hypothesis is what works.
+
 **2026-08-08.** M0, M1, M2 complete and machine-checked; no `sorry`, axioms are exactly
 `propext, Classical.choice, Quot.sound` throughout.
 
@@ -690,7 +738,7 @@ book stops building.
 
 Build notes:
 
-* Verso `v4.32.0` (its own toolchain is `v4.32.0`; it compiles fine under our `v4.32.2`).
+* Verso `v4.33.0` (its own toolchain is `v4.33.0`, matching ours).
 * `book/.lake/packages` holds symlinks to the shared Mathlib chain plus real clones of `verso`,
   `subverso`, `MD4Lean`, `illuminate` (~43 MB). `plausible` pins to the *same* rev in Verso and
   Mathlib, so there is no dependency conflict.

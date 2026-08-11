@@ -121,7 +121,8 @@ def isoAddPendantOfDegreeOne {V : Type} [DecidableEq V] {G : SimpleGraph V} {v u
   toEquiv := complSingletonEquiv v
   map_rel_iff' := by
     rintro (_ | ⟨a, ha⟩) (_ | ⟨b, hb⟩) <;>
-      simp_all [complSingletonEquiv, SimpleGraph.addPendant, SimpleGraph.addPendantAdj, G.adj_comm]
+      simp_all [complSingletonEquiv, SimpleGraph.addPendant, SimpleGraph.addPendantAdj, G.adj_comm,
+        Subtype.ext_iff]
 
 /-! ### Every connected finite graph has a core -/
 
@@ -1186,6 +1187,12 @@ section Guards
     (pathNum 5 a = 0 ∧ pathNum 5 b = 5) ∨ (pathNum 5 b = 0 ∧ pathNum 5 a = 5)))
 
 -- a pendant tower over the one-vertex graph really does have a vertex of degree one to delete
+-- (the instance is named because the height is a numeral; see
+-- `ListColoring.instDecidableRelPathGSucc`)
+local instance : DecidableRel
+    (SimpleGraph.pendantTower (pathG 0) 2 ((PUnit.unit, pathEnd 0), pathEnd 1)).Adj :=
+  SimpleGraph.instDecidableRelPendantTower 2 _
+
 #guard ((univ : Finset (TowerV (PathV 0) 2)).filter fun v =>
   (SimpleGraph.pendantTower (pathG 0) 2 ((PUnit.unit, pathEnd 0), pathEnd 1)).degree v = 1).card = 2
 

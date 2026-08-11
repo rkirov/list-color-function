@@ -91,8 +91,14 @@ theorem inducedList_pathAssign (k n x y c : ℕ) :
   funext w
   rw [inducedList_pathG_succ]
   match k, w with
-  | 0, () => simpa [pathAssign, pathInterior, pathEnd] using Finset.erase_right_comm
-  | _ + 1, none => simp [pathAssign, pathInterior, pathEnd]
+  -- These two branches are closed by definitional unfolding, not by `simp`. The condition
+  -- `inducedList_pathG_succ` leaves is `w = pathEnd k`, which `reduceIte` will not evaluate
+  -- because `pathEnd k` does not reduce on its own; and `rw`/`simp` cannot be pointed at it
+  -- either, since the target is not type-correct at `implicit` transparency across the
+  -- `PathV 0` / `Unit` boundary (`ListColoring.PathColorable`'s module docstring has the general
+  -- version of this). `exact` and `rfl` unify at default transparency and go straight through.
+  | 0, () => exact Finset.erase_right_comm
+  | _ + 1, none => rfl
   | _ + 1, some w' => simp [pathAssign, pathInterior, pathEnd]
 
 /-- **Lemma 3(a), graph side.** The number of colorings of a path of length `k` from an

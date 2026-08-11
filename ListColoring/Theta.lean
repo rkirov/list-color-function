@@ -152,6 +152,14 @@ instance instDecidableRelTheta (m : ℕ) : DecidableRel (theta m).Adj :=
 `θ_{2,2,4}` has `2m + 1 + 2 = 7` vertices and `2m + 4 = 8` edges, and being bipartite and
 connected it has exactly two colorings from a constant list of two colors. -/
 
+-- At a *numeral* height the vertex type reduces past anything `instDecidableRelTheta` can match
+-- (it would have to invert `2 * ?m`), so the instances the `#guard`s below need are named here.
+-- See `ListColoring.instDecidableRelPathGSucc` for the general story.
+local instance : DecidableRel (theta 2).Adj := instDecidableRelTheta 2
+local instance : DecidableRel (theta 3).Adj := instDecidableRelTheta 3
+local instance : DecidableRel (theta 4).Adj := instDecidableRelTheta 4
+local instance : DecidableRel (theta 5).Adj := instDecidableRelTheta 5
+
 #guard Fintype.card (ThetaV 2) = 7
 #guard (theta 2).edgeFinset.card = 8
 #guard (theta 3).edgeFinset.card = 10

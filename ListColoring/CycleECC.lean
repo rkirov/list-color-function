@@ -506,7 +506,10 @@ theorem ecc_closePath_of_even (hj : 2 ≤ j) (hev : Even j) (hm : 1 ≤ m) :
     · exact ⟨pathEnd j, Or.inl rfl, h, hc₀u⟩
   obtain ⟨d, hdT, hdnot⟩ : ∃ d ∈ M (pathEnd (j + 1)), d ∉ M (some w') := by
     by_contra hcon
-    refine hw'ne (Finset.eq_of_subset_of_card_le (fun z hz => ?_) (by rw [hM _, hM _]))
+    -- both arguments given explicitly: `some w'` has type `Option (PathV j)`, so the implicit
+    -- form `hM _` matches only the `pathEnd` occurrence and leaves the other behind.
+    refine hw'ne (Finset.eq_of_subset_of_card_le (fun z hz => ?_)
+      (by rw [hM (pathEnd (j + 1)), hM (some w')]))
     by_contra hz'
     exact hcon ⟨z, hz, hz'⟩
   have hdne : d ≠ c₀ := fun h => hdnot (by rw [h]; exact hc₀w')

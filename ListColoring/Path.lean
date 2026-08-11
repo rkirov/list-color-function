@@ -101,6 +101,27 @@ instance instDecidableRelPathG : (k : ℕ) → DecidableRel (pathG k).Adj
       letI := instDecidableRelPathG k
       inferInstanceAs (DecidableRel ((pathG k).addPendant (pathEnd k)).Adj)
 
+/-- The successor case of `instDecidableRelPathG`, which instance search cannot reach on its own.
+
+Another face of the `PathV (k+1)` / `Option (PathV k)` gap that keeps `rw` from firing on
+`pathG (k + 1)`; see the module docstring of `ListColoring.PathColorable`.
+
+`DecidableRel` is a reducible abbreviation for a `Π`-type, so synthesis unfolds it and turns the
+goal into `(a b : Option (PathV k)) → Decidable ((pathG (k + 1)).Adj a b)` — note that the *binder
+types have been reduced* while the graph has not. Resolving `instDecidableRelPathG` against that
+abstracts its index over the two binders and leaves `PathV (?k a b) ≟ Option (PathV k)`, which
+means inverting `PathV` at an unknown index; the unifier will not do it, and synthesis fails with
+the instance sitting right there in the candidate list.
+
+Ascribing `α` and `β` is what fixes it: the instance's binder types are then syntactically the
+`Option (PathV k)` the goal already has, so `?k` is determined first-order before `pathG` is ever
+examined. This is possible only because `DecidableRel` became **heterogeneous** in Lean 4.33
+(`{α : Sort u} {β : Sort v} → (α → β → Prop) → _`) — which is also why nothing of the sort was
+needed before 4.33, when synthesis matched the goal's head ahead of the binders. -/
+instance instDecidableRelPathGSucc (k : ℕ) :
+    DecidableRel (α := Option (PathV k)) (β := Option (PathV k)) (pathG (k + 1)).Adj :=
+  instDecidableRelPathG (k + 1)
+
 /-- The other terminal vertex of `pathG k`. -/
 def pathStart : (k : ℕ) → PathV k
   | 0 => ()

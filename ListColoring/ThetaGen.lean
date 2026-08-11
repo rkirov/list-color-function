@@ -303,11 +303,11 @@ theorem choosable_gtheta_triple_iff {a b c : ℕ} (ha : 1 ≤ a) (hb : 1 ≤ b) 
   constructor
   · refine fun h => Choosable.comap h (f := Fin.cast hcard.symm) (Fin.cast_injective _) ?_
     rintro u v ⟨hne, huv⟩
-    refine ⟨fun hc' => hne (Fin.val_injective (by simpa using congrArg Fin.val hc')), ?_⟩
+    refine ⟨fun hc' => hne (Fin.cast_injective _ hc'), ?_⟩
     simpa only [Fin.val_cast, gAdjB_triple ha hb hc] using huv
   · refine fun h => Choosable.comap h (f := Fin.cast hcard) (Fin.cast_injective _) ?_
     rintro u v ⟨hne, huv⟩
-    refine ⟨fun hc' => hne (Fin.val_injective (by simpa using congrArg Fin.val hc')), ?_⟩
+    refine ⟨fun hc' => hne (Fin.cast_injective _ hc'), ?_⟩
     simpa only [Fin.val_cast, ← gAdjB_triple ha hb hc] using huv
 
 /-! ### What an arm blocks
@@ -460,14 +460,17 @@ theorem gListsAux_apply (R : ℕ → ℕ → ℕ → Finset ℕ) (ks : List ℕ)
       cases i with
       | zero =>
           simp only [List.getElem_cons_zero] at hj ⊢
-          simp only [List.take_zero, gsize_nil, Nat.add_zero, gListsAux,
-            if_pos (show o + j < o + (k - 1) from by omega)]
-          simp only [Nat.add_sub_cancel_left]
+          -- The branch is selected by rewriting the *condition* to `True`. Neither
+          -- `simp only [if_pos h]` nor `rw [if_pos h]` nor `split` works here any more: the
+          -- `Decidable` instance sitting in the goal does not unify with the one those carry.
+          have hlt : o + j < o + (k - 1) := by omega
+          simp only [List.take_zero, gsize_nil, Nat.add_zero, gListsAux, hlt, if_true,
+            Nat.add_sub_cancel_left]
       | succ i =>
           have hi' : i < ks.length := by simpa using hi
           simp only [List.getElem_cons_succ] at hj ⊢
-          simp only [List.take_succ_cons, gsize_cons, gListsAux,
-            if_neg (show ¬ (o + ((k - 1) + gsize (ks.take i)) + j < o + (k - 1)) from by omega)]
+          have hge : ¬ (o + ((k - 1) + gsize (ks.take i)) + j < o + (k - 1)) := by omega
+          simp only [List.take_succ_cons, gsize_cons, gListsAux, hge, if_false]
           rw [show o + ((k - 1) + gsize (ks.take i)) + j
                 = o + (k - 1) + gsize (ks.take i) + j from by omega,
             ih i hi' (i₀ + 1) (o + (k - 1)) hj]

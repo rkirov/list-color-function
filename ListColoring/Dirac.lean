@@ -1137,6 +1137,13 @@ theorem not_isChordal_cycleGraph_five : ¬ (cycleGraph 5).IsChordal := by
 #guard c5.support.dedup.length = 5
 
 -- and Dirac's theorem is not vacuous at the small end: `K₄` is a clique tower, `C₄` is not chordal
+--
+-- At a numeral height the vertex type is reduced past what `instDecidableRelCliqueTower` can
+-- match, so the instance is named; see `ListColoring.instDecidableRelPathGSucc`.
+local instance : DecidableRel (cliqueTower (⊥ : SimpleGraph (Fin 1)) 3
+    (((PUnit.unit, ({0} : Finset (Fin 1))), Finset.univ), Finset.univ)).Adj :=
+  instDecidableRelCliqueTower 3 _
+
 #guard (cliqueTower (⊥ : SimpleGraph (Fin 1)) 3
   (((PUnit.unit, ({0} : Finset (Fin 1))), Finset.univ), Finset.univ)).colConst 4 = 24
 

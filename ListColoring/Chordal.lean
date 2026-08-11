@@ -307,6 +307,9 @@ example : ∀ a b : TowerV (Fin 1) 2,
     (cliqueTower (⊥ : SimpleGraph (Fin 1)) 2 triangleData).Adj a b ↔ a ≠ b := by decide
 
 -- adding a fourth vertex joined to the whole triangle gives `K₄`: `4 * 3 * 2 * 1 = 24`
+local instance : DecidableRel (cliqueTower (⊥ : SimpleGraph (Fin 1)) 3 (triangleData, univ)).Adj :=
+  instDecidableRelCliqueTower 3 _
+
 #guard (cliqueTower (⊥ : SimpleGraph (Fin 1)) 3 (triangleData, univ)).colConst 4 = 24
 
 -- a pendant tower is the singleton case of a clique tower

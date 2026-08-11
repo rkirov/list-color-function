@@ -339,6 +339,13 @@ open ListColoring SimpleGraph
 #guard (pathG 3).colConst 2 = 2
 #guard (coneOn (pathG 3) {pathEnd 3}).colConst 2 = (pathG 3).colConst 2
 
+-- The tower's height is a numeral, so its vertex type is reduced past what
+-- `instDecidableRelPendantTower` can match; name the instance. See
+-- `ListColoring.instDecidableRelPathGSucc`.
+local instance : DecidableRel
+    (pendantTower (pathG 0) 2 ((PUnit.unit, pathEnd 0), pathEnd 1)).Adj :=
+  instDecidableRelPendantTower 2 _
+
 /-- The path of length `2` is literally a tower of two pendant attachments over the one-point
 graph, so `SimpleGraph.choosable_pendantTower_iff` applies to it verbatim. -/
 example {n : ℕ} (hn : 2 ≤ n) :

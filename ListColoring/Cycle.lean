@@ -135,6 +135,13 @@ instance instDecidableRelClosePath : (k : ℕ) → DecidableRel (closePath k).Ad
       inferInstanceAs
         (DecidableRel ((pathG k).addPendantPair (pathEnd k) (pathStart k)).Adj)
 
+/-- The successor case of `instDecidableRelClosePath`. See `ListColoring.instDecidableRelPathGSucc`
+for why the general instance is in the candidate list and still cannot be resolved, and why
+ascribing `α` and `β` is what fixes it. -/
+instance instDecidableRelClosePathSucc (k : ℕ) :
+    DecidableRel (α := Option (PathV k)) (β := Option (PathV k)) (closePath (k + 1)).Adj :=
+  instDecidableRelClosePath (k + 1)
+
 @[simp] lemma closePath_zero : closePath 0 = ⊥ := rfl
 
 @[simp] lemma closePath_succ (k : ℕ) :
@@ -223,12 +230,20 @@ theorem pathInterior_eq_ite_pathStart :
     intro n y w
     match w with
     | none =>
+      -- The `if`'s `Decidable` argument no longer resolves on its own: `none`/`some w'` are
+      -- elaborated at `Option (PathV k)` while `pathStart (k+1)` has type `PathV (k+1)`, and
+      -- instance search will not cross that gap at `instances` transparency. Naming the instance
+      -- for the exact proposition sidesteps the unification entirely.
+      letI : Decidable ((none : PathV (k + 1)) = pathStart (k + 1)) :=
+        instDecidableEqPathV (k + 1) _ _
       have h : ¬ ((none : PathV (k + 1)) = pathStart (k + 1)) :=
         fun hc => absurd hc.symm (Option.some_ne_none (pathStart k))
       show range n
           = if (none : PathV (k + 1)) = pathStart (k + 1) then (range n).erase y else range n
       rw [if_neg h]
     | some w' =>
+      letI : Decidable ((some w' : PathV (k + 1)) = pathStart (k + 1)) :=
+        instDecidableEqPathV (k + 1) _ _
       have key : ((some w' : PathV (k + 1)) = pathStart (k + 1)) ↔ w' = pathStart k :=
         ⟨fun h => Option.some_inj.mp h, fun h => congrArg some h⟩
       show pathInterior k n y w'
@@ -257,6 +272,10 @@ theorem pathAssign_self_apply :
     intro n c w
     match w with
     | none =>
+      letI : Decidable ((none : PathV (k + 1)) = pathEnd (k + 1)) :=
+        instDecidableEqPathV (k + 1) _ _
+      letI : Decidable ((none : PathV (k + 1)) = pathStart (k + 1)) :=
+        instDecidableEqPathV (k + 1) _ _
       have h : (none : PathV (k + 1)) = pathEnd (k + 1) ∨
           (none : PathV (k + 1)) = pathStart (k + 1) := Or.inl rfl
       show (range n).erase c
@@ -264,6 +283,10 @@ theorem pathAssign_self_apply :
               (none : PathV (k + 1)) = pathStart (k + 1) then (range n).erase c else range n
       rw [if_pos h]
     | some w' =>
+      letI : Decidable ((some w' : PathV (k + 1)) = pathEnd (k + 1)) :=
+        instDecidableEqPathV (k + 1) _ _
+      letI : Decidable ((some w' : PathV (k + 1)) = pathStart (k + 1)) :=
+        instDecidableEqPathV (k + 1) _ _
       have key : ((some w' : PathV (k + 1)) = pathEnd (k + 1) ∨
           (some w' : PathV (k + 1)) = pathStart (k + 1)) ↔ w' = pathStart k := by
         constructor
@@ -287,8 +310,11 @@ theorem inducedList_closePath_constList (k n c : ℕ) :
     (closePath (k + 1)).inducedList (constList (PathV (k + 1)) n) c = pathAssign k n c c := by
   funext w
   rw [inducedList_closePath_succ]
-  simp only [constList_apply]
+  -- `constList_apply` is definitional, and `simp` cannot be used to apply it here: the target is
+  -- not type-correct at `implicit` transparency across the `PathV (k+1)` / `Option (PathV k)`
+  -- boundary. `rw` on the next lemma sees through it anyway.
   rw [pathAssign_self_apply]
+  rfl
 
 /-- The colorings of the cycle giving the color `c` to `pathEnd` are the colorings of the path
 `pathG k` from the type A assignment `pathAssign k n c c`. -/

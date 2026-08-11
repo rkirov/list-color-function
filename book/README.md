@@ -45,7 +45,7 @@ does not work — serve it.
 
 ## Notes on the setup
 
-* Verso `v4.32.0`, built from source under this project's `v4.32.2` toolchain.
+* Verso `v4.33.0`, built from source under this project's `v4.33.0` toolchain.
 * This is a **separate Lake project** from the formalization, deliberately: a Verso breakage cannot
   affect the verified development.
 * `plausible` pins to the same revision in both Verso and Mathlib, so there is no dependency

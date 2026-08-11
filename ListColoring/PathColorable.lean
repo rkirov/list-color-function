@@ -138,13 +138,20 @@ theorem col_pos_of_one_le_card_pathEnd :
     obtain ⟨c, hc⟩ := Finset.card_pos.mp hend
     refine col_addPendant_pos (pathG k) (pathEnd k) L hc (ih _ ?_ ?_)
     · -- the new endpoint lost at most one color from a list of size at least two
-      rw [inducedList_addPendant, if_pos rfl]
+      -- `rw [inducedList_addPendant]` no longer matches: the goal carries a different (though
+      -- defeq) `DecidableRel` instance than the lemma's, and `rw` matches syntactically. Naming
+      -- the equation instead works, because `inducedList_addPendant` is definitional and the
+      -- ascription is checked at default transparency.
+      have e : ((pathG k).addPendant (pathEnd k)).inducedList L c (pathEnd k)
+          = (L (some (pathEnd k))).erase c := if_pos rfl
+      rw [e]
       have h2 : 2 ≤ (L (some (pathEnd k))).card := hrest _ (some_ne_pathEnd_succ _)
       have h1 := Finset.pred_card_le_card_erase (s := L (some (pathEnd k))) (a := c)
       omega
     · -- every other vertex keeps its whole list
       intro v hv
-      rw [inducedList_addPendant, if_neg hv]
+      have e : ((pathG k).addPendant (pathEnd k)).inducedList L c v = L (some v) := if_neg hv
+      rw [e]
       exact hrest _ (some_ne_pathEnd_succ v)
 
 /-! ### Greedy colorability, with a prescribed color -/
@@ -175,12 +182,15 @@ theorem colFix_pos_of_two_le_card :
       -- prescribing a color at the endpoint is deletion; then color greedily
       refine colFix_none_addPendant_pos (pathG k) (pathEnd k) L hc
         (col_pos_of_one_le_card_pathEnd k _ ?_ ?_)
-      · rw [inducedList_addPendant, if_pos rfl]
+      · have e : ((pathG k).addPendant (pathEnd k)).inducedList L c (pathEnd k)
+            = (L (some (pathEnd k))).erase c := if_pos rfl
+        rw [e]
         have h2 := hcard (some (pathEnd k))
         have h1 := Finset.pred_card_le_card_erase (s := L (some (pathEnd k))) (a := c)
         omega
       · intro v hv
-        rw [inducedList_addPendant, if_neg hv]
+        have e : ((pathG k).addPendant (pathEnd k)).inducedList L c v = L (some v) := if_neg hv
+        rw [e]
         exact hcard (some v)
     | some w' =>
       -- color the shorter path first, then extend over the endpoint
