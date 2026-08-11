@@ -81,8 +81,8 @@ Turning to the triangle, whose three edges give eight subsets:
 
 ```diagram (cssWidth := "92%")
 open Illuminate Diagram in
-let v (x y : Float) : Diagram _ := translate x y (circle 7)
-let e (x1 y1 x2 y2 : Float) : Diagram _ := line ⟨x1, y1⟩ ⟨x2, y2⟩
+let v (x y : Float) : Diagram SVG := translate x y (circle 7)
+let e (x1 y1 x2 y2 : Float) : Diagram SVG := line ⟨x1, y1⟩ ⟨x2, y2⟩
 -- four panels: the same three vertices, with the edges of S drawn in
 let verts := [v 0 40, v (-38) (-30), v 38 (-30),
               v 190 40, v 152 (-30), v 228 (-30),

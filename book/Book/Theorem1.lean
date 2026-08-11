@@ -105,8 +105,8 @@ the *same* the assignment has *type A*; if they are different, *type B*.
 
 ```diagram (cssWidth := "94%")
 open Illuminate Diagram in
-let v (x y : Float) : Diagram _ := translate x y (circle 9)
-let e (x1 y1 x2 y2 : Float) : Diagram _ := line ⟨x1, y1⟩ ⟨x2, y2⟩
+let v (x y : Float) : Diagram SVG := translate x y (circle 9)
+let e (x1 y1 x2 y2 : Float) : Diagram SVG := line ⟨x1, y1⟩ ⟨x2, y2⟩
 let edges :=
   [e (-240) 70 (-120) 70, e (-120) 70 0 70, e 0 70 120 70, e 120 70 240 70,
    e (-240) (-70) (-120) (-70), e (-120) (-70) 0 (-70), e 0 (-70) 120 (-70),

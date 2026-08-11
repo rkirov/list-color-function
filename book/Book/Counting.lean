@@ -166,8 +166,8 @@ assignment the *induced* one.
 
 ```diagram (cssWidth := "88%")
 open Illuminate Diagram in
-let v (x y : Float) : Diagram _ := translate x y (circle 8)
-let e (x1 y1 x2 y2 : Float) : Diagram _ := line ⟨x1, y1⟩ ⟨x2, y2⟩
+let v (x y : Float) : Diagram SVG := translate x y (circle 8)
+let e (x1 y1 x2 y2 : Float) : Diagram SVG := line ⟨x1, y1⟩ ⟨x2, y2⟩
 -- left: the whole graph, with the chosen vertex on the left and its three neighbours
 let left :=
   [e 0 0 90 70, e 0 0 90 0, e 0 0 90 (-70), e 90 70 170 0, e 90 (-70) 170 0, e 90 0 170 0,

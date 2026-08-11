@@ -30,8 +30,8 @@ The setting is a graph that falls into two pieces joined by a single edge:
 
 ```diagram (cssWidth := "72%")
 open Illuminate Diagram in
-let v (x y : Float) : Diagram _ := translate x y (circle 8)
-let e (x1 y1 x2 y2 : Float) : Diagram _ := line ⟨x1, y1⟩ ⟨x2, y2⟩
+let v (x y : Float) : Diagram SVG := translate x y (circle 8)
+let e (x1 y1 x2 y2 : Float) : Diagram SVG := line ⟨x1, y1⟩ ⟨x2, y2⟩
 -- left piece G, with its distinguished vertex v₀ on the right
 let g := [v (-230) 60, v (-230) (-60), v (-150) 0, v (-70) 0]
 let gEdges := [e (-230) 60 (-150) 0, e (-230) (-60) (-150) 0, e (-150) 0 (-70) 0,

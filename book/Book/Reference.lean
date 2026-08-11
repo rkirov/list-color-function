@@ -31,7 +31,7 @@ backticked span of a docstring through `tryElabInlineCode`, whose failure path i
 but the last elaborator in its chain is `tryElabInlineCodeTerm (ignoreElabErrors := true)`, which
 discards the message log and succeeds regardless. So an unresolvable name renders as ordinary
 highlighted code, nothing is ever logged, and `warningAsError` has nothing to promote. Checked
-empirically against Verso `v4.32.0`: a docstring referring to `Nonexistent.name` builds green.
+empirically against Verso `v4.33.0`: a docstring referring to `Nonexistent.name` builds green.
 
 The check below closes that hole directly. It walks every declaration docstring in the
 `ListColoring` library, picks out the backticked spans that are shaped like qualified names in the

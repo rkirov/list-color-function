@@ -151,8 +151,8 @@ has to be handled by hand:
 
 ```diagram (cssWidth := "56%")
 open Illuminate Diagram in
-let v (x y : Float) : Diagram _ := translate x y (circle 8)
-let e (x1 y1 x2 y2 : Float) : Diagram _ := line ⟨x1, y1⟩ ⟨x2, y2⟩
+let v (x y : Float) : Diagram SVG := translate x y (circle 8)
+let e (x1 y1 x2 y2 : Float) : Diagram SVG := line ⟨x1, y1⟩ ⟨x2, y2⟩
 let small := [v 0 70, v 0 (-70)]
 let large := [v 170 90, v 170 0, v 170 (-90)]
 let edges := [e 0 70 170 90, e 0 70 170 0, e 0 70 170 (-90),

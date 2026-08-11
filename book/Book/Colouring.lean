@@ -33,8 +33,8 @@ open Illuminate Diagram in
 let red   : Fill := .solid { color := { r := 214, g := 96, b := 77 } }
 let blue  : Fill := .solid { color := { r := 70, g := 118, b := 180 } }
 let gold  : Fill := .solid { color := { r := 232, g := 184, b := 70 } }
-let v (x y : Float) (f : Fill) : Diagram _ := translate x y (circle 12 f)
-let e (x1 y1 x2 y2 : Float) : Diagram _ := line ⟨x1, y1⟩ ⟨x2, y2⟩
+let v (x y : Float) (f : Fill) : Diagram SVG := translate x y (circle 12 f)
+let e (x1 y1 x2 y2 : Float) : Diagram SVG := line ⟨x1, y1⟩ ⟨x2, y2⟩
 let edges :=
   [e 0 90 (-110) 0, e 0 90 110 0, e (-110) 0 110 0,
    e (-110) 0 (-110) (-110), e 110 0 110 (-110), e (-110) (-110) 110 (-110)]

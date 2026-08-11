@@ -55,9 +55,9 @@ particular shape.
 
 ```diagram (cssWidth := "88%")
 open Illuminate Diagram in
-let box (x y : Float) (s : String) : Diagram _ :=
+let box (x y : Float) (s : String) : Diagram SVG :=
   atop (translate x y (rect 150 34)) (translate x y (text s))
-let arrow (x1 y1 x2 y2 : Float) : Diagram _ := line ⟨x1, y1⟩ ⟨x2, y2⟩
+let arrow (x1 y1 x2 y2 : Float) : Diagram SVG := line ⟨x1, y1⟩ ⟨x2, y2⟩
 let boxes := [
   box 0 0 "col G L",
   box (-190) (-70) "deletion identity",

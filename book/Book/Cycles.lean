@@ -103,8 +103,8 @@ and the two graphs live on the same vertex type — which is what makes the argu
 
 ```diagram (cssWidth := "78%")
 open Illuminate Diagram in
-let v (x : Float) : Diagram _ := translate x 0 (circle 8)
-let e (x1 x2 : Float) : Diagram _ := line ⟨x1, 0⟩ ⟨x2, 0⟩
+let v (x : Float) : Diagram SVG := translate x 0 (circle 8)
+let e (x1 x2 : Float) : Diagram SVG := line ⟨x1, 0⟩ ⟨x2, 0⟩
 let xs : List Float := [0, 60, 120, 180, 240, 300]
 let verts := xs.map v
 let edges := [e 0 60, e 60 120, e 120 180, e 180 240, e 240 300]

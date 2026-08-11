@@ -100,8 +100,8 @@ vertex joined to every right vertex. It is bipartite, so $`\chi = 2`. Now assign
 
 ```diagram (cssWidth := "72%")
 open Illuminate Diagram in
-let v (x y : Float) : Diagram _ := translate x y (circle 9)
-let e (x1 y1 x2 y2 : Float) : Diagram _ := line ⟨x1, y1⟩ ⟨x2, y2⟩
+let v (x y : Float) : Diagram SVG := translate x y (circle 9)
+let e (x1 y1 x2 y2 : Float) : Diagram SVG := line ⟨x1, y1⟩ ⟨x2, y2⟩
 let left := [v (-150) 70, v (-150) (-70)]
 let right := [v 150 165, v 150 55, v 150 (-55), v 150 (-165)]
 let edges :=

@@ -76,9 +76,9 @@ Pictured, with $`S` the common interior palette and the two ends each missing on
 
 ```diagram (cssWidth := "86%")
 open Illuminate Diagram in
-let v (x y : Float) : Diagram _ := translate x y (circle 8)
-let e (x1 y1 : Float) (x2 y2 : Float) : Diagram _ := line ⟨x1, y1⟩ ⟨x2, y2⟩
-let row (y : Float) (lbl : String) (l r : String) : List (Diagram _) :=
+let v (x y : Float) : Diagram SVG := translate x y (circle 8)
+let e (x1 y1 : Float) (x2 y2 : Float) : Diagram SVG := line ⟨x1, y1⟩ ⟨x2, y2⟩
+let row (y : Float) (lbl : String) (l r : String) : List (Diagram SVG) :=
   let xs : List Float := [0, 70, 140, 210, 280]
   let verts := xs.map (fun x => v x y)
   let edges := [e 0 y 70 y, e 70 y 140 y, e 140 y 210 y, e 210 y 280 y]

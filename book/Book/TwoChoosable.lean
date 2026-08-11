@@ -95,8 +95,8 @@ $`\theta_{2,2,2m}` for some $`m \ge 1`.*
 
 ```diagram (cssWidth := "96%")
 open Illuminate Diagram in
-let v (x y : Float) : Diagram _ := translate x y (circle 8)
-let e (x1 y1 x2 y2 : Float) : Diagram _ := line ⟨x1, y1⟩ ⟨x2, y2⟩
+let v (x y : Float) : Diagram SVG := translate x y (circle 8)
+let e (x1 y1 x2 y2 : Float) : Diagram SVG := line ⟨x1, y1⟩ ⟨x2, y2⟩
 -- a single vertex
 let one := [v (-400) 0, translate (-400) (-46) (text "a single vertex")]
 -- an even cycle, drawn as a hexagon
@@ -638,8 +638,8 @@ example : Fintype.card (Fin 2 → Fin 2) = 2 ^ 2 :=
 
 ```diagram (cssWidth := "80%")
 open Illuminate Diagram in
-let v (x y : Float) : Diagram _ := translate x y (circle 8)
-let e (x1 y1 x2 y2 : Float) : Diagram _ := line ⟨x1, y1⟩ ⟨x2, y2⟩
+let v (x y : Float) : Diagram SVG := translate x y (circle 8)
+let e (x1 y1 x2 y2 : Float) : Diagram SVG := line ⟨x1, y1⟩ ⟨x2, y2⟩
 let left := [v (-160) 0, v 160 0]
 let mid := [v 0 120, v 0 40, v 0 (-40), v 0 (-120)]
 let edges :=

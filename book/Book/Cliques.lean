@@ -33,8 +33,8 @@ Lemma 1 is about:
 
 ```diagram (cssWidth := "62%")
 open Illuminate Diagram in
-let v (x y : Float) : Diagram _ := translate x y (circle 8)
-let e (x1 y1 x2 y2 : Float) : Diagram _ := line ⟨x1, y1⟩ ⟨x2, y2⟩
+let v (x y : Float) : Diagram SVG := translate x y (circle 8)
+let e (x1 y1 x2 y2 : Float) : Diagram SVG := line ⟨x1, y1⟩ ⟨x2, y2⟩
 -- the clique K, drawn as a triangle
 let k := [v 0 0, v 110 0, v 55 (-90)]
 let kEdges := [e 0 0 110 0, e 110 0 55 (-90), e 55 (-90) 0 0]

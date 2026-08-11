@@ -79,9 +79,9 @@ example {V : Type} (G : SimpleGraph V) (v : V) :
 ```diagram (cssWidth := "80%")
 open Illuminate Diagram in
 let red : Fill := .solid { color := { r := 214, g := 96, b := 77 } }
-let v (x y : Float) : Diagram _ := translate x y (circle 9)
-let hi (x y : Float) : Diagram _ := translate x y (circle 13 red)
-let e (x1 y1 x2 y2 : Float) : Diagram _ := line ⟨x1, y1⟩ ⟨x2, y2⟩
+let v (x y : Float) : Diagram SVG := translate x y (circle 9)
+let hi (x y : Float) : Diagram SVG := translate x y (circle 13 red)
+let e (x1 y1 x2 y2 : Float) : Diagram SVG := line ⟨x1, y1⟩ ⟨x2, y2⟩
 let edges :=
   [e (-170) 0 (-60) 95, e (-170) 0 (-60) (-95), e (-60) 95 (-60) (-95),
    e (-60) 95 60 0, e (-60) (-95) 60 0, e (-60) (-95) 110 (-110), e 60 0 110 (-110)]

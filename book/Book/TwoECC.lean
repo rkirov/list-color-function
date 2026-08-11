@@ -106,8 +106,8 @@ at `2`. Every larger one is not.
 
 ```diagram (cssWidth := "94%")
 open Illuminate Diagram in
-let v (x y : Float) : Diagram _ := translate x y (circle 8)
-let e (x1 y1 x2 y2 : Float) : Diagram _ := line ⟨x1, y1⟩ ⟨x2, y2⟩
+let v (x y : Float) : Diagram SVG := translate x y (circle 8)
+let e (x1 y1 x2 y2 : Float) : Diagram SVG := line ⟨x1, y1⟩ ⟨x2, y2⟩
 let small :=
   [e (-360) 0 (-260) 80, e (-260) 80 (-160) 0, e (-360) 0 (-260) 0, e (-260) 0 (-160) 0,
    e (-360) 0 (-260) (-80), e (-260) (-80) (-160) 0,

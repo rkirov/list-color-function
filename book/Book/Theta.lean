@@ -42,8 +42,8 @@ lengths $`2`, $`2` and $`2m`:
 
 ```diagram (cssWidth := "80%")
 open Illuminate Diagram in
-let v (x y : Float) : Diagram _ := translate x y (circle 8)
-let e (x1 y1 x2 y2 : Float) : Diagram _ := line ⟨x1, y1⟩ ⟨x2, y2⟩
+let v (x y : Float) : Diagram SVG := translate x y (circle 8)
+let e (x1 y1 x2 y2 : Float) : Diagram SVG := line ⟨x1, y1⟩ ⟨x2, y2⟩
 -- branch vertices, and the long path between them along the middle
 let branch := [v 0 0, v 300 0]
 let longPath := [v 75 0, v 150 0, v 225 0]
