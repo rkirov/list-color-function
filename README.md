@@ -32,6 +32,8 @@ choosability, no DP-coloring, no chordality, and no Brooks or Vizing. Everything
 | | |
 |---|---|
 | `ListColoring/` | the formalization |
+| `OpenProblems.lean` | Kirov–Naimi §6's two open questions, stated in Lean and asserted with `sorry` |
+| `formalization.yaml` | machine-readable map: every numbered result of the paper → its Lean name, file, and status |
 | `book/` | a Verso textbook companion (see `book/README.md`) |
 | `plan.md` | milestones, design decisions, progress log, and findings |
 | `references.md` | verified bibliography, with corrections to the literature |
@@ -79,7 +81,23 @@ Two notes carried over from development, both recorded in `plan.md`:
 | Lemma 6 (`K₂,₃` is enumeratively chromatic-choosable at `2`) | ✅ |
 | **Theorem 2** — the characterization of the graphs enumeratively chromatic-choosable at `2`, unconditionally | ✅ |
 | §5 building block — `K_{n,nⁿ}` is `n`-colourable but not `n`-choosable | ✅ |
-| §5 full `H_{n+1}` construction (Lemmas 7–10) | not attempted |
+| §5 Lemmas 7, 8, 9, 10 and the full `H_{n+1}` construction | ✅ |
+| **§5's conclusion at every list size `k ≥ 2`** — a graph that is `k`-choosable but not enumeratively chromatic-choosable at `k` | ✅ |
+
+**One erratum in the paper, at `n = 1`.** Lemmas 7 and 10 of §5 are stated "for all `n ≥ 1`", i.e.
+down to list size `2`. Lemmas 7, 9 and 10 are all false there, and
+`ListColoring/Section5.lean` therefore assumes `2 ≤ n` throughout. The reason is structural: `p` is
+defined as the least integer with `nᵖ > x^{n²}`, which at `n = 1` reads `1 > x` with
+`x = col(K_{1,1}, L_j) = 2` — no such `p` exists, so `H₂` is not defined. Take any `p` anyway and
+`v₁` is joined to both ends of the single edge of `G_{1,1} = K_{1,1}`, so `H₂` contains a triangle;
+then `col(H₂, 2) = 0 < 2 = col(H₂, L)`, which is Lemma 7's inequality reversed, and `H₂` is not
+`2`-colourable, so it is not `2`-choosable either. All three failures are `#guard`s at the foot of
+that file. The paper's conclusion is unaffected: list size `2` is witnessed instead by `θ_{2,2,4}`,
+`2`-choosable by Rubin and not enumeratively chromatic-choosable at `2` by the paper's own Figure 2
+— both already proved here, and combined in
+`SimpleGraph.KN5.exists_choosable_not_ecc_of_two_le`. This is the only error found in Kirov–Naimi;
+`provenance.md` §3 records it, along with the rather longer list of claims of *ours* that were
+refuted.
 
 One dependency is worth stating plainly. **Rubin's characterization of 2-choosable graphs** (A. L.
 Rubin, in Erdős–Rubin–Taylor 1980, pp. 131–134) had not, as far as we can determine, been formalized
@@ -97,7 +115,11 @@ theorem is proved from imports `ListColoring/Theorem2.lean`.)
 
 ## Standard of proof
 
-* No `sorry`, `admit`, or `native_decide` anywhere in `ListColoring/`.
+* No `sorry`, `admit`, or `native_decide` anywhere in `ListColoring/`, checked by CI.
+  The three `sorry`s in the repository are all in `OpenProblems.lean`, which is a **separate
+  `lean_lib`** for exactly that reason: it imports `ListColoring` and nothing imports it, so no
+  theorem can rest on an unproved statement. A `sorry` there means *nobody knows* — those are
+  §6's open questions, not gaps in the formalization of the paper.
 * Every headline result depends on exactly the three standard Lean axioms — `propext`,
   `Classical.choice`, `Quot.sound` — enforced by the comparator's `permitted_axioms`.
 * Statements were checked by brute-force evaluation *before* being proved, which repeatedly caught

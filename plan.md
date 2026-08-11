@@ -51,7 +51,7 @@ result. Deferred to an optional milestone.
 | ID | Content | Depends on | Risk |
 |----|---------|-----------|------|
 | **M0** | Project scaffold, shared Mathlib build | — | ✅ done |
-| — | *(status of M1–M9 is in the progress log below; M1–M5 done, M6 done for `n ≥ 3`, M7 Lemma 5 done, M9 foundation done)* | | |
+| — | *(status of M1–M9 is in the progress log below; **all of M1–M9 are now done**, M8 unconditionally — Rubin's theorem is proved here — and M9 including the full `H_{n+1}` construction)* | | |
 | **M1** | `ListAssignment`, `colorings`, `col`, `ECCAt`; renaming invariance; `Colorable` bridge | M0 | low |
 | **M2** | Regime facts: `n < χ(G) ⟹` enumeratively chromatic-choosable; `χ ≤ n < χ_ℓ ⟹` not enumeratively chromatic-choosable; `col` multiplies over components | M1 | low |
 | **M3** | **Lemma 1** (adding a simplicial vertex) → **Kostochka–Sidorenko**: SEO ⟹ enumeratively chromatic-choosable at `n` ∀n. Corollaries: complete graphs, trees | M1 | low–med |
@@ -234,7 +234,34 @@ not to be needed at all.
 **M9 foundation done.** `ListColoring/NotChoosable.lean` — `K_{n,nⁿ}` with the large side indexed by
 *functions* `Fin n → Fin n`, the separating assignment `L₀`, `col = 0`, hence not `n`-choosable but
 `n`-colourable, hence not enumeratively chromatic-choosable at `n`. The `0 < n` hypothesis proved unnecessary (at `n = 0` the
-single vertex gets an empty list). The full `H_{n+1}` construction of §5 remains unformalized.
+single vertex gets an empty list).
+
+**M9 complete — §5 in full, and the paper's one error.** `ListColoring/Section5.lean` — the graph
+`H n p` (`K_{n,p}` with each `vᵢ` joined to every vertex of `n` copies of `K_{n,nⁿ}`), the block
+assignment `Lblock`, and Lemmas 7–10: `coloring_v` / `coloring_w` / `col_LH_le` /
+`pow_le_colConst` / `not_ecc`, `left_disjoint` / `left_card_eq`, `badColor_unique`, `choosable`.
+`exists_choosable_not_ecc` is the theorem for `n ≥ 2`, and
+`exists_choosable_not_ecc_of_two_le` is the statement for every list size.
+
+Three things worth recording.
+
+* **The paper's `n ≥ 1` is wrong.** Lemmas 7, 9 and 10 all fail at `n = 1`. `p` is the least
+  integer with `nᵖ > x^{n²}`, which at `n = 1` is `1 > 2` — no such `p`, so `H₂` is undefined; and
+  for any `p`, `v₁` joins both ends of the single edge of `K_{1,1}`, so `H₂` has a triangle and
+  `col(H₂,2) = 0 < 2 = col(H₂,L)`. Lemma 9 fails separately: `K_{1,1}` with both lists `{0,1}` has
+  two killing colours. All three are `#guard`s. List size `2` is instead `θ_{2,2,4}`, which this
+  development already had from both sides. This is the **first and only** error found in
+  Kirov–Naimi; `provenance.md` §3 carries it.
+* **Lemma 8 is proved only in the form Lemma 9 consumes** — small-side lists pairwise disjoint,
+  each of size exactly `n`. The paper's "`L` is equivalent to `L₀`" needs a colour bijection *and*
+  an automorphism, neither of which anything downstream uses. Likewise `col_LH_le` gives the `≤` of
+  the paper's `col(H_{n+1},L) = x^{n²}`.
+* **A `#guard` that cannot be run.** `#guard f ∈ G.colorings L` unfolds through
+  `Finset.decidableMem` to a scan of `Fintype.piFinset L` — `3^29` functions for `H 2 3` — which
+  exhausts memory rather than failing. Check the two conjuncts (`∀ x, f x ∈ L x` and
+  `G.IsProperColoring f`) instead: same statement, `|V|²` work. `col`/`colConst` are only safe when
+  the whole product of list sizes is small, which is why the evaluated checks live at `n = 1` and
+  on `K_{2,4}`.
 
 *Arithmetic note:* `a * n + c = b * n + d` with `c, d < n` forcing `a = b ∧ c = d` is **not**
 reachable by `omega` — `a * n` is nonlinear with both factors variable. The `Nat.div`/`Nat.mod`
@@ -536,6 +563,11 @@ Sequential where the API contract matters (M1), parallel subagents for independe
 frozen. **Invariant: no `sorry` is ever left in `ListColoring/` without being listed in this file.**
 Every milestone ends with a clean `lake build` and a `grep -c sorry` check.
 
+The invariant is unchanged by `OpenProblems.lean`, added later: §6's two open questions are stated
+and asserted with `sorry` in a **separate `lean_lib`** that imports `ListColoring` and is imported
+by nothing, so `ListColoring/` stays clean and no theorem can depend on an unproved statement. CI's
+grep is scoped to `ListColoring/` and needs no exception.
+
 ## Where the paper stands
 
 | Paper result | Status |
@@ -555,15 +587,21 @@ Every milestone ends with a clean `lake build` and a `grep -c sorry` check.
 | Lemma 6 (K₂,₃ is enumeratively chromatic-choosable at `2`) | ✅ |
 | Theorem 2 (θ-graphs; rest relative to Rubin) | ✅ |
 | §5 foundation (`K_{n,nⁿ}` colourable not choosable) | ✅ |
-| §5 full `H_{n+1}` construction (Lemmas 7–10) | not attempted |
+| §5 Lemma 7 (`H_{n+1}` is not `(n+1)`-monophilic) | ✅ |
+| §5 Lemma 8 — in the form Lemma 9 consumes, not the full "equivalent to `L₀`" | ✅ |
+| §5 Lemma 9, Lemma 10 | ✅ |
+| **§5's conclusion at every list size `k ≥ 2`** | ✅ |
+| §3 remark: for `n = 2` a minimizing assignment need not be type A/B | not formalized |
+| §6 Question 1's negative answer at `n = 2` (`P₂ □ P₃`) | not formalized |
 
-Rubin's characterization of 2-choosable graphs is a genuine external dependency and is not
-formalized here or anywhere else; Theorem 2 is being done relative to it, taken as an explicit
-hypothesis so the borrowed ingredient stays visible.
+Rubin's characterization of 2-choosable graphs was the one genuine external dependency. It is now
+**proved here** (`ListColoring.rubinTheorem`), so Theorem 2 (`ListColoring.ecc_two_iff`) assumes
+nothing beyond connectivity. The version taken relative to Rubin survives as
+`SimpleGraph.ecc_two_iff_of_rubin` and `ecc_two_iff_of_rubin_hard`.
 
 The full `H_{n+1}` construction of §5 — `n²` copies of `K_{n,nⁿ}` beneath a complete bipartite
-`K_{n,p}`, with `p` chosen by a counting argument — is a substantial project of its own and is the
-one part of the paper deliberately left for later.
+`K_{n,p}`, with `p` chosen by a counting argument — is in `ListColoring/Section5.lean`, restricted
+to `n ≥ 2` because the paper's `n ≥ 1` is wrong; see the progress log entry and `provenance.md` §3.
 
 ### Theorem 1 at `n = 2` — closed
 

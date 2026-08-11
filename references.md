@@ -472,3 +472,23 @@ consistent with today's date (2026-08-08).
   except for the two AFP entries listed above (both confirmed). survey.md's own caveat that these
   are "inferences from absence" still stands and should be re-checked against live Mathlib before
   publication.
+
+### 14. ERRATUM in the primary paper — Kirov–Naimi §5, Lemmas 7, 9 and 10 fail at $n = 1$
+
+Found by formalization, not by reading; recorded here because it is a correction to the literature
+and this file is where those live. The full statement, with the machine-checked witnesses, is in
+`provenance.md` §3, and the Lean is `ListColoring/Section5.lean`.
+
+Lemmas 7 and 10 are stated "For all $n \ge 1$", i.e. down to list size $2$. The construction does
+not reach that far. $p$ is defined as the least integer with $n^p > x^{n^2}$; at $n = 1$ this is
+$1 > x$ with $x = \operatorname{col}(K_{1,1}, L_j) = 2$, so **no such $p$ exists** and $H_2$ is
+undefined. For any $p$ regardless, $v_1$ is joined to both ends of the single edge of
+$G_{1,1} = K_{1,1}$, so $H_2$ contains a triangle, giving $\operatorname{col}(H_2,2) = 0 < 2 =
+\operatorname{col}(H_2,L)$ — Lemma 7's inequality reversed — and $H_2$ is not $2$-colourable, hence
+not $2$-choosable, so Lemma 10 fails too. Lemma 9 fails separately at $n = 1$: $K_{1,1}$ with both
+lists $\{0,1\}$ has *two* colours whose deletion destroys every colouring.
+
+**The paper's conclusion is unaffected.** At list size $2$ the witness is $\theta_{2,2,4}$, which is
+$2$-choosable by Rubin's theorem and not $2$-monophilic by the paper's own Figure 2. The correct
+statement of the three lemmas is "for all $n \ge 2$", and §5's theorem then holds at every list size
+$k \ge 2$ with $\theta_{2,2,4}$ supplying $k = 2$.

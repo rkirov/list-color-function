@@ -1,0 +1,362 @@
+# formalization.yaml — machine-readable map from Kirov & Naimi to this Lean development.
+#
+# One entry per numbered result of the paper, plus the results the paper cites and this
+# development proves rather than assumes. Prose lives in provenance.md (credit), plan.md
+# (what mechanization turned up) and references.md (bibliography); this file is the index.
+#
+# Every `lean.name` below was checked to resolve against the built library. Keep it that way:
+# a name here that no longer type-checks is a bug, not a stale note.
+
+schema_version: 1
+
+paper:
+  title: "List coloring and n-monophilic graphs"
+  authors: ["Radoslav Kirov", "Ramin Naimi"]
+  journal: "Ars Combinatoria"
+  volume: 124
+  year: 2016
+  pages: "329-340"
+  arxiv: "1004.5183"
+  formalized_against: "arXiv:1004.5183v1, 29 Apr 2010"
+  note: >-
+    The paper's "n-monophilic" is what the later literature calls enumeratively
+    chromatic-choosable; this development uses the modern name throughout
+    (SimpleGraph.ECCAt at one n, SimpleGraph.ECC for all n). See provenance.md section 4.
+
+project:
+  library: ListColoring
+  entry_point: ListColoring.lean
+  open_problems_library: OpenProblems
+  open_problems_entry_point: OpenProblems.lean
+  lean_toolchain: "leanprover/lean4:v4.32.2"
+  mathlib_rev: "905b95818eb32af7874a58b427f50c1711a5e96c"
+  permitted_axioms: [propext, Classical.choice, Quot.sound]
+  standard_of_proof: >-
+    No sorry, admit or native_decide anywhere in ListColoring/. Every headline result
+    depends on exactly the three permitted axioms, asserted by #print axioms at the foot of
+    each file and enforced in CI by leanprover/comparator against comparator/Challenge.lean.
+    The only sorries in the repository are the three in OpenProblems.lean, a separate lean_lib
+    that imports ListColoring and is imported by nothing; there a sorry means the question is
+    open, not that a proof is missing.
+
+# Vocabulary for the `status` field.
+statuses:
+  proved: "Stated and proved here, in the paper's generality."
+  proved_weakened: "Proved in a weaker form than the paper states, sufficient for everything downstream. See `deviation`."
+  proved_corrected: "Proved, but with a hypothesis the paper does not have, because the paper's stated range is wrong. See `deviation`."
+  stated_open: "Stated in Lean in OpenProblems.lean and asserted with `sorry`. The question is OPEN — the `sorry` records that nobody knows, not that a proof is missing here."
+  stated_unproved: "Stated in Lean in OpenProblems.lean and asserted with `sorry`. Known in the literature; simply not proved here."
+  not_formalized: "Not formalized. Absence is deliberate and recorded; it is not a claim."
+
+results:
+
+  # ---------------------------------------------------------------- section 1
+  - id: fact-1-2
+    paper: {section: 1, kind: observation, number: "(2)", statement: "if n < chi(G) then G is n-monophilic"}
+    lean: {name: SimpleGraph.ecc_of_not_colorable, file: ListColoring/Basic.lean}
+    status: proved
+    credit: "Kirov-Naimi 2016 (immediate from the definitions)"
+
+  - id: fact-1-3
+    paper: {section: 1, kind: observation, number: "(3)", statement: "if chi(G) <= n < chi_l(G) then G is not n-monophilic"}
+    lean: {name: SimpleGraph.not_ecc_of_colorable_of_not_choosable, file: ListColoring/Basic.lean}
+    status: proved
+    credit: "Kirov-Naimi 2016 (immediate from the definitions)"
+
+  # ---------------------------------------------------------------- section 2
+  - id: lemma-1
+    paper: {section: 2, kind: lemma, number: 1, statement: "adding a vertex joined to a clique of an n-monophilic graph leaves it n-monophilic"}
+    lean: {name: SimpleGraph.ECCAt.coneOn, file: ListColoring/Cone.lean}
+    status: proved
+    credit: "Kirov-Naimi 2016, Lemma 1"
+
+  - id: corollary-kostochka-sidorenko
+    paper: {section: 2, kind: corollary, number: null, statement: "every chordal graph is n-monophilic for every n"}
+    lean:
+      name: SimpleGraph.ecc_of_isChordal
+      file: ListColoring/Dirac.lean
+      also: [SimpleGraph.IsChordal.ecc, SimpleGraph.ecc_cliqueTower]
+    status: proved
+    credit: "Kostochka-Sidorenko 1990/92; = Theorem 2(i) of Chi et al. 2026"
+    note: >-
+      ecc_cliqueTower is the general form the paper actually needs — a simplicial elimination
+      ordering — so Dirac's theorem is not on the critical path.
+
+  - id: dirac
+    paper: {section: 2, kind: cited_theorem, number: null, statement: "a graph is chordal iff it has a simplicial elimination ordering"}
+    lean: {name: SimpleGraph.isChordal_iff_exists_cliqueTower, file: ListColoring/Dirac.lean}
+    status: proved
+    credit: "Dirac 1961; Fulkerson-Gross 1965"
+    note: "Cited by the paper, proved here; not needed by any Kirov-Naimi result."
+
+  # ---------------------------------------------------------------- section 3
+  - id: lemma-2
+    paper: {section: 3, kind: lemma, number: 2, statement: "a list swap across a bridge produces nested endpoint lists without increasing col"}
+    lean: {name: SimpleGraph.exists_nested_of_bridge, file: ListColoring/Bridge.lean}
+    status: proved
+    credit: "Kirov-Naimi 2016, Lemma 2"
+
+  - id: lemma-3a
+    paper: {section: 3, kind: lemma, number: "3(a)", statement: "A_k - B_k = (-1)^k and A_k = ((n-1)/n)((n-1)^{k+1} + (-1)^k)"}
+    lean:
+      name: ListColoring.col_pathAssign
+      file: ListColoring/PathCount.lean
+      also: [ListColoring.col_of_isPathShape]
+    status: proved
+    credit: "Kirov-Naimi 2016, Lemma 3(a)"
+    note: "col_of_isPathShape (PathMinimizing.lean) is the same count off the canonical assignment."
+
+  - id: lemma-3b
+    paper: {section: 3, kind: lemma, number: "3(b)", statement: "col(P,L) >= min(A_k, B_k)"}
+    lean: {name: ListColoring.min_pathA_pathB_le_col, file: ListColoring/PathMinimizing.lean}
+    status: proved
+    credit: "Kirov-Naimi 2016, Lemma 3(b)"
+
+  - id: lemma-3c
+    paper: {section: 3, kind: lemma, number: "3(c)", statement: "for n >= 3, a minimizing assignment is type A with k odd, or type B with k even"}
+    lean:
+      name: ListColoring.isPathShape_parity_of_minimizing
+      file: ListColoring/PathMinimizing.lean
+      also: [ListColoring.exists_isPathShape_of_minimizing]
+    status: proved
+    credit: "Kirov-Naimi 2016, Lemma 3(c)"
+    note: >-
+      The paper's "path of length at least one" is load-bearing, not decorative:
+      ListColoring.not_parity_of_minimizing_length_zero is a machine-checked counterexample
+      at k = 0. This confirms the paper.
+
+  - id: remark-3-n-two
+    paper: {section: 3, kind: remark, number: null, statement: "for n = 2 a minimizing list assignment need not be type A or type B"}
+    lean: null
+    status: not_formalized
+    credit: "Kirov-Naimi 2016, remark after Lemma 3"
+    note: "Asserted without proof in the paper ('examples are easy to construct')."
+
+  - id: lemma-4
+    paper: {section: 3, kind: lemma, number: 4, statement: "enlarging the lists on a path strictly increases col, when all lists have at least 2 colors"}
+    lean: {name: ListColoring.col_lt_col_of_ssubset, file: ListColoring/PathColorable.lean}
+    status: proved
+    credit: "Kirov-Naimi 2016, Lemma 4"
+
+  - id: theorem-1
+    paper: {section: 3, kind: theorem, number: 1, statement: "every cycle is n-monophilic for all n >= 2"}
+    lean:
+      name: ListColoring.ecc_closePath_of_two_le
+      file: ListColoring/CycleRotate.lean
+      also: [ListColoring.ecc_closePath_all, ListColoring.closePath_ecc, ListColoring.ecc_closePath_two]
+    status: proved
+    credit: "Kirov-Naimi 2016, Theorem 1; = Theorem 2(ii) of Chi et al. 2026"
+    note: >-
+      The n >= 3 half is CycleECC.lean; the n = 2 half is CycleTwo.lean (forcing and
+      propagation) plus CycleRotate.lean (the rotation automorphism, which is the freedom the
+      paper exercises when it chooses an edge with L(v) != L(w)).
+
+  - id: note-3-tight-example
+    paper: {section: 3, kind: remark, number: null, statement: "every even cycle has a non-constant minimizing 2-list assignment: {1,2} on two adjacent vertices, {2,3} elsewhere"}
+    lean: {name: null, file: ListColoring/CycleTwo.lean, anchor: "testTight, checked by #guard"}
+    status: proved
+    credit: "Kirov-Naimi 2016, note after Theorem 1"
+    note: "Evaluated, not stated as a theorem: the witness is private and checked by #guard."
+
+  # ---------------------------------------------------------------- section 4
+  - id: lemma-5
+    paper: {section: 4, kind: lemma, number: 5, statement: "a connected graph is n-monophilic iff its core is"}
+    lean:
+      name: SimpleGraph.ecc_pendantTower_iff
+      file: ListColoring/Core.lean
+      also: [SimpleGraph.ecc_addPendant_iff]
+    status: proved
+    credit: "Kirov-Naimi 2016, Lemma 5"
+
+  - id: rubin
+    paper: {section: 4, kind: cited_theorem, number: null, statement: "a connected graph is 2-choosable iff its core is a single vertex, an even cycle, or theta_{2,2,2m}"}
+    lean:
+      name: ListColoring.rubinTheorem
+      file: ListColoring/RubinProof.lean
+      also:
+        - ListColoring.choosable_two_of_rubinFamily
+        - ListColoring.choosable_two_gtheta_iff
+        - ListColoring.not_choosable_two_of_dumbbell
+        - ListColoring.rubin_structure
+        - ListColoring.hasCore
+        - ListColoring.choosable_iff_of_coreIs
+    status: proved
+    credit: "A. L. Rubin, in Erdos-Rubin-Taylor 1980, pp. 131-134"
+    note: >-
+      Cited by the paper, proved here in both directions, which is what makes Theorem 2
+      unconditional. Apparently not machine-checked anywhere before. None of the mathematics
+      is ours.
+
+  - id: lemma-6
+    paper: {section: 4, kind: lemma, number: 6, statement: "K_{2,3} is 2-monophilic"}
+    lean: {name: SimpleGraph.ecc_K23, file: ListColoring/K23.lean}
+    status: proved
+    credit: "Kirov-Naimi 2016, Lemma 6"
+    note: >-
+      The paper's first two cases (|L(x) cap L(y)| = 2 and = 1) merge; only the disjoint case
+      needs its own argument. Renaming invariance is not needed at all.
+
+  - id: theorem-2
+    paper: {section: 4, kind: theorem, number: 2, statement: "a connected graph is 2-monophilic iff its core is a single vertex, is a cycle, is K_{2,3}, or it contains an odd cycle"}
+    lean:
+      name: ListColoring.ecc_two_iff
+      file: ListColoring/RubinProof.lean
+      also: [SimpleGraph.ecc_two_iff_of_rubin, SimpleGraph.ecc_two_iff_of_rubin_hard]
+    status: proved
+    credit: "Kirov-Naimi 2016, Theorem 2; = Theorem 2(iv) of Chi et al. 2026"
+    note: >-
+      Unconditional. The ..._of_rubin forms, which take Rubin's theorem as an explicit
+      hypothesis with the core alternatives left abstract, are kept as the weaker statements
+      they are. The converse needs "not 2-colorable implies an odd cycle", an open TODO in
+      Mathlib at the pinned revision, proved here as
+      ListColoring.exists_odd_isCycle_of_odd_closed_walk.
+
+  # ---------------------------------------------------------------- section 5
+  - id: ert-block
+    paper: {section: 5, kind: construction, number: null, statement: "K_{n,n^n} with L_0 has no coloring, so it is n-colorable but not n-choosable"}
+    lean:
+      name: SimpleGraph.ERT.col_L₀_eq_zero
+      file: ListColoring/NotChoosable.lean
+      also: [SimpleGraph.ERT.not_choosable, SimpleGraph.ERT.colorable, SimpleGraph.ERT.not_ecc]
+    status: proved
+    credit: "Erdos-Rubin-Taylor 1980; also Kirov-Naimi 2016, section 5"
+
+  - id: lemma-7
+    paper: {section: 5, kind: lemma, number: 7, statement: "for all n >= 1, H_{n+1} is not (n+1)-monophilic"}
+    lean:
+      name: SimpleGraph.KN5.not_ecc
+      file: ListColoring/Section5.lean
+      also: [SimpleGraph.KN5.coloring_v, SimpleGraph.KN5.coloring_w, SimpleGraph.KN5.col_LH_le, SimpleGraph.KN5.pow_le_colConst]
+    status: proved_corrected
+    credit: "Kirov-Naimi 2016, Lemma 7"
+    deviation: >-
+      Requires 2 <= n. The paper's n >= 1 is wrong: at n = 1 no admissible p exists, and for
+      any p the graph H_2 contains a triangle, so col(H_2,2) = 0 < 2 = col(H_2,L) — the
+      inequality reversed. Machine-checked #guards in the file. See erratum kn5-n-1 below.
+    note: >-
+      col_LH_le proves the <= of the paper's col(H_{n+1},L) = x^{n^2}, which is the direction
+      Lemma 7 uses.
+
+  - id: lemma-8
+    paper: {section: 5, kind: lemma, number: 8, statement: "if col(K_{n,n^n}, L) = 0 for an assignment of lists of size >= n, then L is equivalent to L_0"}
+    lean:
+      name: SimpleGraph.KN5.left_disjoint
+      file: ListColoring/Section5.lean
+      also: [SimpleGraph.KN5.left_card_eq]
+    status: proved_weakened
+    credit: "Kirov-Naimi 2016, Lemma 8"
+    deviation: >-
+      Only the two consequences Lemma 9 consumes are proved: the lists on the n-element side
+      are pairwise disjoint, and each has exactly n colors. The paper's "equivalent to L_0"
+      additionally asserts a color bijection and a graph automorphism, which nothing
+      downstream uses.
+
+  - id: lemma-9
+    paper: {section: 5, kind: lemma, number: 9, statement: "at most one color of the apex list of K_{n,n^n,1} can kill every coloring"}
+    lean: {name: SimpleGraph.KN5.badColor_unique, file: ListColoring/Section5.lean}
+    status: proved_corrected
+    credit: "Kirov-Naimi 2016, Lemma 9"
+    deviation: >-
+      Requires 2 <= n; false at n = 1, where K_{1,1} with both lists {0,1} has two such
+      colors. Stated on K_{n,n^n} with an erased color rather than on K_{n,n^n,1} with an
+      apex vertex; the two are the same statement.
+
+  - id: lemma-10
+    paper: {section: 5, kind: lemma, number: 10, statement: "for all n >= 1, H_{n+1} is (n+1)-choosable"}
+    lean: {name: SimpleGraph.KN5.choosable, file: ListColoring/Section5.lean}
+    status: proved_corrected
+    credit: "Kirov-Naimi 2016, Lemma 10"
+    deviation: "Requires 2 <= n, through Lemma 9. H_2 is not 2-colorable, hence not 2-choosable."
+
+  - id: section-5-theorem
+    paper: {section: 5, kind: theorem, number: null, statement: "for every n >= 2 there is a graph that is n-choosable but not n-monophilic"}
+    lean:
+      name: SimpleGraph.KN5.exists_choosable_not_ecc_of_two_le
+      file: ListColoring/Section5.lean
+      also: [SimpleGraph.KN5.exists_choosable_not_ecc, SimpleGraph.KN5.H, ListColoring.choosable_and_not_ecc_theta]
+    status: proved
+    credit: "Kirov-Naimi 2016, section 5"
+    note: >-
+      Proved at every list size k >= 2. For k >= 3 the witness is the paper's H_k
+      (exists_choosable_not_ecc); for k = 2 it is theta_{2,2,4}, which is 2-choosable by
+      Rubin and not 2-monophilic by the paper's own Figure 2, since H_2 does not exist.
+
+  # ---------------------------------------------------------------- section 6
+  - id: question-1-n-two
+    paper: {section: 6, kind: remark, number: null, statement: "the product of two 2-monophilic graphs need not be 2-monophilic: P_2 box P_3 is not, while every path is"}
+    lean: {name: ListColoring.OpenProblem.not_ecc_two_boxProd_path_two_three, file: OpenProblems.lean}
+    status: stated_unproved
+    credit: "Kirov-Naimi 2016, remark under Question 1"
+    note: >-
+      Not open — a corollary of Theorem 2 rather than a separate argument, so
+      ListColoring.ecc_two_iff is the route to a proof. The other half of the remark, that every
+      path is 2-monophilic, is already available from SimpleGraph.ecc_of_isChordal.
+
+  - id: question-1
+    paper: {section: 6, kind: question, number: 1, statement: "is the product of two n-monophilic graphs n-monophilic, for n >= 3?"}
+    lean:
+      name: ListColoring.OpenProblem.Question1
+      file: OpenProblems.lean
+      also: [ListColoring.OpenProblem.question1]
+    status: stated_open
+    credit: "Kirov-Naimi 2016, Question 1"
+    note: >-
+      OPEN. The paper's product is Mathlib's SimpleGraph.boxProd (G box H); the DecidableRel
+      instance it needs to be stated at all is supplied in OpenProblems.lean. The n >= 3 is the
+      paper's own, since the answer at n = 2 is No — see question-1-n-two.
+
+  - id: question-2
+    paper: {section: 6, kind: question, number: 2, statement: "if a graph is n-colorable and n-monophilic, is it (n+1)-monophilic?"}
+    lean:
+      name: ListColoring.OpenProblem.Question2
+      file: OpenProblems.lean
+      also: [ListColoring.OpenProblem.question2]
+    status: stated_open
+    credit: "Kirov-Naimi 2016, Question 2"
+    note: >-
+      OPEN. In modern terms: is nu(G) = tau(G) for every graph? It is Question 2 of
+      Allred-Mudrock and Question 1 of Chi et al. 2026, both tracing it to this paper. The
+      chi = 2 case is settled by Allred-Mudrock's Theorem 10. SimpleGraph.ecc_iff_forall_two_le
+      and provenance.md section 4 record why ListColoring.ecc_two_iff is a statement about
+      ECCAt _ 2 and not about ECC.
+
+# Results this development proves that the paper does not state. Formalizing a known theorem is
+# not a mathematical contribution and none of these is presented as one; they are here so the
+# index is complete. provenance.md is the credit ledger.
+beyond_the_paper:
+  - {name: SimpleGraph.eval_chromaticPolynomial, file: ListColoring/ChromaticPolynomial.lean, credit: "Whitney 1932; Birkhoff 1912", note: "The paper needs the number of colorings, never the polynomial; this is built separately so that ecc_iff_listColorFunction_eq_eval can put a genuine polynomial on the right."}
+  - {name: SimpleGraph.ecc_iff_listColorFunction_eq_eval, file: ListColoring/ListColorFunction.lean, credit: "definitional bridge; the notions are Kostochka-Sidorenko 1990/92 and Kirov-Naimi 2016"}
+  - {name: SimpleGraph.exists_ecc_forall_ge, file: ListColoring/Threshold.lean, credit: "Donner 1992; threshold via Wang-Qian-Yan 2017"}
+  - {name: SimpleGraph.ecc_of_two_pow_lt, file: ListColoring/Threshold.lean, credit: "weaker form of Wang-Qian-Yan 2017; superseded by Dong-Zhang 2023, which is not formalized"}
+  - {name: ListColoring.exists_odd_isCycle_of_odd_closed_walk, file: ListColoring/Theorem2.lean, credit: "classical", note: "Listed as an open TODO in Mathlib's Combinatorics/SimpleGraph/Bipartite.lean at the pinned revision. Worth upstreaming."}
+
+# Corrections to the literature found by formalizing it. references.md section 14 and
+# provenance.md section 3 carry the full statements.
+errata:
+  - id: kn5-n-1
+    target: "Kirov-Naimi 2016, section 5, Lemmas 7, 9 and 10"
+    claim: "stated 'for all n >= 1', i.e. down to list size 2"
+    verdict: false_at_n_1
+    reasons:
+      - "p is the least integer with n^p > x^{n^2}; at n = 1 this reads 1 > 2, so no p exists and H_2 is undefined."
+      - "For any p, v_1 is joined to both ends of the single edge of G_{1,1} = K_{1,1}, so H_2 has a triangle: col(H_2,2) = 0 < 2 = col(H_2,L), Lemma 7's inequality reversed, and H_2 is not 2-colorable so Lemma 10 fails too."
+      - "Lemma 9 fails separately: K_{1,1} with both lists {0,1} has two colors whose deletion destroys every coloring."
+    witnesses: "#guards at the foot of ListColoring/Section5.lean"
+    consequence_for_the_paper: none
+    repair: >-
+      Read the three lemmas as "for all n >= 2". Section 5's theorem then holds at every list
+      size k >= 2, with theta_{2,2,4} supplying k = 2 —
+      SimpleGraph.KN5.exists_choosable_not_ecc_of_two_le.
+    note: "The only mathematical error found in Kirov-Naimi. Every other refuted claim in this project has been one of ours; provenance.md section 3 lists those."
+
+  - id: kn6-theorem-3
+    target: "Kirov-Naimi 2016, section 6, remark under Question 1"
+    claim: "'while by Theorem 3 every P_i is 2-monophilic'"
+    verdict: dangling_cross_reference
+    reasons:
+      - "The paper has Theorems 1 and 2 only; there is no Theorem 3."
+    consequence_for_the_paper: none
+    repair: >-
+      The intended reference is the Kostochka-Sidorenko corollary of section 2: paths are
+      chordal, hence n-monophilic for every n (SimpleGraph.ecc_of_isChordal).
+    note: "Typographic, not mathematical. Recorded so a reader chasing the reference is not left hunting."

@@ -29,6 +29,9 @@ These are known results. The Lean proof is ours; the mathematics is not.
 | `ListColoring.ecc_closePath_of_two_le`, `ListColoring.closePath_ecc` | **every cycle is enumeratively chromatic-choosable, every `n ≥ 2`** | **Kirov–Naimi 2016, Theorem 1**; = Thm 2(ii) of Chi et al. 2026 |
 | `ListColoring.choosable_two_of_rubinFamily` | a vertex / even cycle / `θ_{2,2,2m}` is 2-choosable | **Rubin**, in Erdős–Rubin–Taylor 1980 — the *easy* direction |
 | Theorem 2 (`ecc_two_iff…`) | connected `G` is enumeratively chromatic-choosable at `2` (the paper's "2-monophilic") ⟺ core is a vertex, a cycle, `K₂,₃`, or `G` has an odd cycle | **Kirov–Naimi 2016, Theorem 2**; = Thm 2(iv) of Chi et al. 2026, there attributed to [1, 6, 13, 16, 17] |
+| `SimpleGraph.KN5.not_ecc`, `KN5.choosable`, `KN5.exists_choosable_not_ecc` | `H_{n+1}` is `(n+1)`-choosable but not enumeratively chromatic-choosable at `n+1`, for `n ≥ 2` | **Kirov–Naimi 2016, §5**, Lemmas 7 and 10 |
+| `SimpleGraph.KN5.left_disjoint`, `KN5.left_card_eq`, `KN5.badColor_unique` | the two structural facts about `n`-lists on `K_{n,nⁿ}` with no colouring, and the uniqueness of a killing colour | **Kirov–Naimi 2016, §5**, Lemmas 8 and 9 |
+| `SimpleGraph.KN5.exists_choosable_not_ecc_of_two_le` | for **every** list size `k ≥ 2`, a graph that is `k`-choosable but not enumeratively chromatic-choosable at `k` | **Kirov–Naimi 2016, §5**; the `k = 2` case is `θ_{2,2,4}`, not their `H₂` — see §3 |
 | `SimpleGraph.exists_ecc_forall_ge` | `P_ℓ(G,m) = P(G,m)` for all large `m` | **Donner 1992**; threshold via **Wang–Qian–Yan 2017** |
 | `SimpleGraph.ecc_of_two_pow_lt` | explicit threshold `2^{\|E(G)\|} < m` | weaker form of **Wang–Qian–Yan 2017**; superseded by **Dong–Zhang 2023** (`m ≥ \|E(G)\| − 1`) |
 | Lemmas 1–6 | the supporting lemmas | **Kirov–Naimi 2016**, numbered as in the paper |
@@ -72,9 +75,15 @@ Listed so no reader mistakes an absence for a claim.
   Bui–Kaul–Maxfield–Mudrock–Shin–Thomason 2023). **Not formalized.**
 * **Dong–Zhang 2023** — the sharp threshold `m ≥ |E(G)| − 1`. **Not formalized**; we prove a weaker
   exponential bound.
-* **Kirov–Naimi §5, the full `H_{n+1}` construction (Lemmas 7–10)** — for each `n`, a graph that is
-  `n`-choosable but not enumeratively chromatic-choosable at `n`. **Not attempted**; only the
-  building block `K_{n,nⁿ}` is done.
+* **Kirov–Naimi's §3 remark** that for `n = 2` a minimizing list assignment on a path need not be of
+  type A or type B ("examples are easy to construct"). **Not formalized.**
+* **Kirov–Naimi §6, Question 1's negative answer at `n = 2`** — that `P₂ □ P₃` is not
+  `2`-monophilic while every path is. A corollary of Theorem 2 rather than a separate argument.
+  **Stated but not proved**, as `ListColoring.OpenProblem.not_ecc_two_boxProd_path_two_three`.
+* **Kirov–Naimi §6, Questions 1 and 2** — both **open**, and stated as such in `OpenProblems.lean`.
+  A `sorry` there means nobody knows, not that a proof is missing here; the file is a separate
+  `lean_lib` precisely so that no theorem can rest on one. Question 2 is the modern `ν = τ`
+  question recorded in §4 below.
 
 ## 3. Not from the literature
 
@@ -119,8 +128,27 @@ are the parts a reader could not get from the papers.
   A standard step of Rubin's argument, proved here. Mildly notable: it needs **no parity case
   split**, because the forcing chain kills a prescribed colour at a cycle's base point regardless
   of the cycle's parity.
-* **Zero errors found in Kirov–Naimi.** Stated positively because it is the more useful fact.
-  Every refuted claim in this project has been one of ours.
+* **One error found in Kirov–Naimi: §5's Lemmas 7, 9 and 10 fail at `n = 1`.** The paper states
+  Lemmas 7 and 10 "for all `n ≥ 1`" — i.e. down to list size `2` — and §5's opening sentence claims
+  the construction for each `n ≥ 2` in the `H_n` indexing. It does not reach the bottom case:
+  * `p` is the least integer with `nᵖ > x^{n²}`, which at `n = 1` reads `1 > x` with
+    `x = col(K_{1,1}, L_j) = 2`. **No such `p` exists**, so `H₂` is not defined.
+  * For any `p` whatsoever, `v₁` is joined to both ends of the single edge of `G_{1,1} = K_{1,1}`,
+    so `H₂` contains a **triangle**. Then `col(H₂, 2) = 0 < 2 = col(H₂, L)` — Lemma 7's inequality
+    reversed — and `H₂` is vacuously enumeratively chromatic-choosable at `2` by the paper's own
+    fact (2); not being `2`-colourable it is not `2`-choosable, so Lemma 10 fails as well.
+  * Lemma 9 fails independently at `n = 1`: `K_{1,1}` with both lists `{0,1}` has **two** colours
+    whose deletion destroys every colouring, not at most one.
+
+  All three are machine-checked `#guard`s in `ListColoring/Section5.lean`, which assumes `2 ≤ n`
+  throughout. **The paper's conclusion survives**: at list size `2` the witness is `θ_{2,2,4}`,
+  which is `2`-choosable by Rubin's theorem and not enumeratively chromatic-choosable at `2` by
+  Kirov–Naimi's own Figure 2 — both proved here, and `SimpleGraph.KN5.exists_choosable_not_ecc_of_two_le`
+  assembles the two ranges into the statement for every `k ≥ 2`. The defect is in the stated range
+  of three lemmas, not in the theorem they serve.
+
+  This is the **only** error found in the paper. Every other refuted claim in this project has been
+  one of ours — see the four above.
 
 ## 4. A note on the name
 
