@@ -37,3 +37,4 @@ import ListColoring.RubinStructure
 import ListColoring.RubinCases
 import ListColoring.CoreExtract
 import ListColoring.RubinProof
+import ListColoring.Section5
