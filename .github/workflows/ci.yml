@@ -36,6 +36,12 @@ jobs:
       # check -- statements, permitted axioms, and replay through two independent kernels --
       # is the comparator workflow. Note comparator/Challenge.lean contains placeholders by
       # design, so it is deliberately outside this grep.
+      #
+      # OpenProblems.lean is outside it too, and deliberately so: it states Kirov-Naimi's two
+      # open questions and asserts them with `sorry`. It is a separate lean_lib that imports
+      # ListColoring and that nothing imports, so no theorem can rest on an unproved statement.
+      # Do NOT widen the paths below to the repository root -- that would make the open
+      # questions unstateable rather than making the library any cleaner.
       - name: No sorry, admit, or native_decide
         run: |
           if grep -rnwE 'sorry|admit|native_decide' ListColoring/ ListColoring.lean; then

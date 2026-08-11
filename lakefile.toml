@@ -1,7 +1,7 @@
 name = "graph_coloring"
 version = "0.1.0"
 keywords = ["math", "graph theory", "list coloring"]
-defaultTargets = ["ListColoring"]
+defaultTargets = ["ListColoring", "OpenProblems"]
 
 [leanOptions]
 pp.unicode.fun = true
@@ -15,3 +15,9 @@ rev = "905b95818eb32af7874a58b427f50c1711a5e96c"
 
 [[lean_lib]]
 name = "ListColoring"
+
+# Kirov–Naimi §6's two open questions, stated and asserted with `sorry`. Kept in a library of
+# their own so that `ListColoring/` stays provably free of `sorry` — CI greps that directory —
+# and so that no theorem can depend on an unproved statement: the import runs this way only.
+[[lean_lib]]
+name = "OpenProblems"
