@@ -81,13 +81,21 @@ The nine sections follow the path the book's Part I takes.  Sections that no lon
 still carry the story: §1 introduces the vocabulary the rest is written in, and §6 is prose only,
 pointing at the machinery in the library.  Everything the library proves and this file does not
 claim — Kirov–Naimi's Lemmas 1–6, the three regimes, the explicit threshold `n > 2^{|E|}`, Dirac's
-lemma, the chromatic polynomial of a cycle in closed form, the `2`-choosable generalized theta
-graphs of arbitrary arity (`ListColoring.choosable_two_gtheta_iff`) — is still there, under the
-names given in the section headers below.  The last of those was weighed as an eleventh claim and
-left out on this file's own rule: its statement is written in `ListColoring.ValidArms` and
-`ListColoring.GoodArms`, a *normalization convention* on the list of arm lengths (sorted, at most
-one arm of length one) rather than mathematics, and a keystone should not drag a proof's
-bookkeeping into the certified surface.
+lemma, the chromatic polynomial of a cycle in closed form, §5's Lemmas 7–10 and the `H_{n+1}`
+construction they build (`SimpleGraph.KN5.exists_choosable_not_ecc`), the `2`-choosable generalized
+theta graphs of arbitrary arity (`ListColoring.choosable_two_gtheta_iff`) — is still there, under
+the names given in the section headers below.
+
+Two of those were weighed as an eleventh claim.  `choosable_two_gtheta_iff` is left out on this
+file's own rule: its statement is written in `ListColoring.ValidArms` and `ListColoring.GoodArms`, a
+*normalization convention* on the list of arm lengths (sorted, at most one arm of length one) rather
+than mathematics, and a keystone should not drag a proof's bookkeeping into the certified surface.
+§5's conclusion — `SimpleGraph.KN5.exists_choosable_not_ecc_of_two_le`, *for every `k ≥ 2` there is a
+graph that is `k`-choosable but not enumeratively chromatic-choosable at `k`* — has the opposite
+profile: it is one of the three results the paper's abstract advertises, and it needs **no new
+definitions at all**, being stated purely in `Choosable` and `ECCAt`, which §3 already lists.  It is
+a candidate for claim 11 whenever this file is next revised; it is not claimed here only because
+adding it has not been through the comparator.
 
 Three places where Lean fought the teaching order.  `ListAssignment` and `constList` are declared in
 §1 although they belong to §3, because `col` is defined on a list assignment and the palette count
