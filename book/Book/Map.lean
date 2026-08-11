@@ -154,6 +154,14 @@ Each Lean name below is the exact statement proved; each file link goes to the s
   * §5 building block
   * {name}`SimpleGraph.ERT.not_choosable`
   * [NotChoosable.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/NotChoosable.lean)
+*
+  * *§5: `n`-choosable, not enumeratively chromatic-choosable at `n`*
+  * {name}`SimpleGraph.KN5.exists_choosable_not_ecc_of_two_le`
+  * [Section5.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Section5.lean)
+*
+  * §5 Lemmas 7 and 10, for the paper's $`H_{n+1}`
+  * {name}`SimpleGraph.KN5.exists_choosable_not_ecc`
+  * [Section5.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Section5.lean)
 :::
 
 # The core vocabulary

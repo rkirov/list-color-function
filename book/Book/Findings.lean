@@ -15,12 +15,16 @@ tag := "findings"
 %%%
 
 It is worth separating out what formalizing this paper actually taught us, as distinct from what it
-merely confirmed. *Nothing below is an error in Kirov and Naimi's paper*: none was found, across the
-whole formalization. The findings are of five kinds: hypotheses of theirs that turned out to be
-load-bearing in a specific and identifiable way, hypotheses that turned out to be unnecessary,
-hypotheses of *ours* that turned out to be false, three points in Rubin's forty-year-old exposition
-that do not survive as printed, and pieces of received wisdom about the surrounding literature that
-did not survive checking.
+merely confirmed. The findings are of six kinds: hypotheses of Kirov and Naimi's that turned out to
+be load-bearing in a specific and identifiable way, hypotheses that turned out to be unnecessary,
+hypotheses of *ours* that turned out to be false, *one error in their paper*, three points in
+Rubin's forty-year-old exposition that do not survive as printed, and pieces of received wisdom
+about the surrounding literature that did not survive checking.
+
+The proportions are worth stating plainly, because they are the honest summary: across the whole
+formalization, exactly one mathematical error was found in the paper — a range condition on three
+lemmas of Section 5, which does not touch the theorem those lemmas serve — against four false
+claims of our own. Formalizing a paper is far more likely to catch the formalizer than the author.
 
 # Hypotheses that are exactly load-bearing
 
@@ -157,6 +161,38 @@ classification of generalized thetas at arbitrary arity, forced by $`K_{2,4}`, a
 forced by $`K_{3,3}-e`. {ref "twochoosable"}[The `2`-choosability chapter] tells the whole story,
 with the checks.
 
+# The one error in the paper
+
+Section 5's Lemmas 7 and 10 are stated "for all `n ≥ 1`", and Lemma 9 with no restriction at all.
+All three are false at `n = 1` — that is, at list size `2`, the very bottom of the range the section
+is about.
+
+The construction cannot be built there. The parameter `p` is defined as the least integer with
+$`n^p > x^{n^2}`, which at `n = 1` reads $`1 > x` with $`x = \mathrm{col}(K_{1,1}, L_j) = 2`. No such
+`p` exists, so $`H_2` is not defined. Supply a `p` anyway and the graph is worse than undefined: the
+vertex $`v_1` is joined to *both* ends of the single edge of $`G_{1,1} = K_{1,1}`, so $`H_2` contains
+a triangle. Then $`\mathrm{col}(H_2, 2) = 0 < 2 = \mathrm{col}(H_2, L)`, which is Lemma 7's
+inequality pointing the other way; and $`H_2`, not being `2`-colorable, is not `2`-choosable either,
+so Lemma 10 fails as well. Lemma 9 fails independently and for its own reason: $`K_{1,1}` with both
+lists $`\{0,1\}` has *two* colours whose deletion destroys every colouring, not at most one.
+
+All three failures are machine-checked, as `#guard`s at the foot of
+[Section5.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Section5.lean),
+which is why the formalization carries `2 ≤ n` throughout where the paper carries `1 ≤ n`.
+
+*The theorem the three lemmas serve is unharmed.* Section 5 exists to produce, at every list size,
+a graph that is choosable from lists of that size and still not enumeratively chromatic-choosable at
+it. At list size `2` such a graph exists — it is $`\theta_{2,2,4}`, which is `2`-choosable by Rubin's
+theorem and fails to be enumeratively chromatic-choosable at `2` by Kirov and Naimi's own Figure 2.
+Both halves were already in this development before Section 5 was formalized, from the Theorem 2
+work; {ref "notchoosable"}[the Section 5 chapter] assembles the two ranges into a single statement.
+The defect is in the stated range of three lemmas, not in the result.
+
+There is also a dangling cross-reference in Section 6: "by Theorem 3 every $`P_i` is 2-monophilic",
+in a paper whose theorems are numbered 1 and 2. The intended appeal is to the
+Kostochka–Sidorenko corollary of Section 2, paths being chordal. Typographic rather than
+mathematical, but recorded so that a reader chasing it is not left hunting.
+
 # Three corrections to Rubin's published argument
 
 A separate finding, and the only one in this book about someone else's writing. Rubin's proof
@@ -214,9 +250,9 @@ the list color function has, as far as we can determine, not been formalized any
 
 # What is done, and what is not
 
-Proved here: Lemmas 1 through 6; Kostochka–Sidorenko in its simplicial-elimination-ordering form;
+Proved here: Lemmas 1 through 10; Kostochka–Sidorenko in its simplicial-elimination-ordering form;
 Theorem 1 for every cycle and every `n ≥ 2`; Theorem 2 with no hypothesis but connectivity; Rubin's
-theorem; and the building block of Section 5.
+theorem; and Section 5 in full, at every list size. That is every numbered result in the paper.
 
 One observation about Theorem 1's `n = 2` case is worth recording, because it justifies the paper's
 route. One might hope non-constant assignments simply give more colourings, so that the constant
@@ -243,11 +279,18 @@ None of that mathematics is new. What is new, as far as we can determine, is onl
 now checked a 1980 theorem, and — much more modestly — the three corrections to its exposition
 recorded above.
 
-One thing remains, and it is of a different kind. *Section 5's full construction* — `n²` copies of
-`K_{n,nⁿ}` beneath a complete bipartite graph, with the second parameter chosen by a counting
-argument — is a substantial project of its own and has not been attempted. What is formalized is its
-building block, which already exhibits the colourable-but-not-choosable separation.
+What is *not* formalized is small and of one kind: two remarks the paper makes in passing. Section 3
+notes that for `n = 2` a minimizing assignment on a path need not be of type A or type B, asserting
+it without proof ("examples are easy to construct"). Section 6 notes that $`P_2 \square P_3` is not
+enumeratively chromatic-choosable at `2`, which answers its own Question 1 negatively at `n = 2`;
+that one is a corollary of Theorem 2 rather than a separate argument, and it is stated in Lean,
+unproved, alongside the open questions.
 
 Beyond the paper, the open question it left behind is still open: whether agreement of $`P_\ell` and
-$`P` at one value of `n` forces agreement at `n + 1`. {ref "twoecc"}[The Theorem 2 chapter] says
-what is known about the case $`\chi(G) = 2`.
+$`P` at one value of `n` forces agreement at `n + 1`. That is Section 6's Question 2, and in the
+modern vocabulary it asks whether $`\nu(G) = \tau(G)` for every graph. It and Question 1 are stated
+in Lean in
+[OpenProblems.lean](https://github.com/rkirov/list-color-function/blob/main/OpenProblems.lean) and
+asserted with `sorry` — a separate library, so that nothing in the development can rest on an
+unproved statement and a `sorry` there means *nobody knows* rather than *not done yet*.
+{ref "twoecc"}[The Theorem 2 chapter] says what is known about the case $`\chi(G) = 2`.
