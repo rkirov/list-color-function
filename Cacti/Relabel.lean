@@ -430,4 +430,46 @@ theorem factor_eq_one_iff {B : Finset ℕ} {σ τ : Fin k → ℕ}
 
 end BridgeLemmas
 
+
+section Surgery
+
+/-- **One-position list surgery.** -/
+theorem exists_one_split {α : Type _} : ∀ (l : List α) (j : ℕ) (hj : j < l.length),
+    ∃ (l₂ : List α) (y : α) (l₃ : List α),
+      l = l₂ ++ y :: l₃ ∧ l₂.length = j ∧ y = l.get ⟨j, hj⟩
+  | a :: l, 0, _ => ⟨[], a, l, rfl, rfl, rfl⟩
+  | a :: l, j + 1, hj => by
+      obtain ⟨l₂, y, l₃, heq, hlen, hget⟩ := exists_one_split l j (by
+        rw [List.length_cons] at hj
+        omega)
+      exact ⟨a :: l₂, y, l₃, by rw [List.cons_append, ← heq],
+        by rw [List.length_cons, hlen], hget⟩
+
+/-- **Two-position list surgery**: positions `i < j` split a list into the five-part form the
+thread hypothesis consumes. -/
+theorem exists_two_split {α : Type _} (l : List α) (i j : ℕ) (hij : i < j)
+    (hj : j < l.length) :
+    ∃ (l₁ : List α) (x : α) (l₂ : List α) (y : α) (l₃ : List α),
+      l = l₁ ++ x :: (l₂ ++ y :: l₃) ∧ l₁.length = i ∧ l₁.length + 1 + l₂.length = j ∧
+      x = l.get ⟨i, by omega⟩ ∧ y = l.get ⟨j, hj⟩ := by
+  obtain ⟨l₁, x, rest, he1, hl1, hx⟩ := exists_one_split l i (by omega)
+  subst he1
+  have hrest : j - i - 1 < rest.length := by
+    rw [List.length_append, List.length_cons] at hj
+    omega
+  obtain ⟨l₂, y, l₃, he2, hl2, hy⟩ := exists_one_split rest (j - i - 1) hrest
+  subst he2
+  rw [List.length_append, List.length_cons, List.length_append, List.length_cons] at hj
+  refine ⟨l₁, x, l₂, y, l₃, rfl, hl1, by omega, hx, ?_⟩
+  show y = (l₁ ++ x :: (l₂ ++ y :: l₃))[j]'(by
+    rw [List.length_append, List.length_cons, List.length_append, List.length_cons]
+    omega)
+  rw [List.getElem_append_right (by omega)]
+  simp only [show j - l₁.length = (j - i - 1) + 1 from by omega, List.getElem_cons_succ]
+  exact hy
+
+end Surgery
+
+
+
 end ListColoring
