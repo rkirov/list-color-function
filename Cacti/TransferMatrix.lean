@@ -333,4 +333,54 @@ theorem le_transferProd_two (Ts₁ : List (Finset (Fin k))) (T : Finset (Fin k))
 
 end Expansion
 
+
+section OffPermDiag
+
+open Matrix
+
+variable {k : ℕ}
+
+/-- The diagonal of `X · (J - P)`: the row sum away from `P⁻¹` of the index. -/
+theorem mulOffPerm_diag (X : Matrix (Fin k) (Fin k) ℕ) (P : Equiv.Perm (Fin k)) (c : Fin k) :
+    (X * offPerm P) c c = ∑ b ∈ Finset.univ.erase (P.symm c), X c b := by
+  rw [Matrix.mul_apply]
+  have hterm : ∀ b, X c b * offPerm P b c = if b = P.symm c then 0 else X c b := by
+    intro b
+    show X c b * (if P b = c then 0 else 1) = _
+    by_cases hb : P b = c
+    · rw [if_pos hb, if_pos (by rw [← hb, Equiv.symm_apply_apply]), Nat.mul_zero]
+    · rw [if_neg hb, if_neg (fun h => hb (by rw [h, Equiv.apply_symm_apply])), Nat.mul_one]
+  rw [Finset.sum_congr rfl (fun b _ => hterm b), sum_ite_single, Nat.zero_add]
+
+/-- The base diagonal at a fixed index (`P⁻¹ c = c`): the value `A = (k-1)·β_{n-1}`. -/
+theorem base_diag_fixed {n : ℕ} (hk : 1 ≤ k) (P : Equiv.Perm (Fin k)) {c : Fin k}
+    (hc : P.symm c = c) :
+    ((offDiag k ^ n) * offPerm P) c c = (k - 1) * beta k n := by
+  rw [mulOffPerm_diag, hc]
+  rw [Finset.sum_congr rfl (fun b hb => by
+    rw [offDiag_pow_apply hk n c b, if_neg (fun h => Finset.ne_of_mem_erase hb h.symm)])]
+  rw [Finset.sum_const, Finset.card_erase_of_mem (Finset.mem_univ c), Finset.card_univ,
+    Fintype.card_fin, smul_eq_mul]
+
+/-- The base diagonal at a moved index (`P⁻¹ c ≠ c`): the value `α + (k-2)·β`. -/
+theorem base_diag_moved {n : ℕ} (hk : 1 ≤ k) (P : Equiv.Perm (Fin k)) {c : Fin k}
+    (hc : P.symm c ≠ c) :
+    ((offDiag k ^ n) * offPerm P) c c = alpha k n + (k - 2) * beta k n := by
+  rw [mulOffPerm_diag]
+  have hcmem : c ∈ Finset.univ.erase (P.symm c) :=
+    Finset.mem_erase.mpr ⟨fun h => hc h.symm, Finset.mem_univ c⟩
+  rw [← Finset.add_sum_erase _ _ hcmem]
+  rw [offDiag_pow_apply hk n c c, if_pos rfl]
+  congr 1
+  rw [Finset.sum_congr rfl (fun b hb => by
+    rw [offDiag_pow_apply hk n c b,
+      if_neg (fun h => Finset.ne_of_mem_erase hb h.symm)])]
+  rw [Finset.sum_const, Finset.card_erase_of_mem hcmem,
+    Finset.card_erase_of_mem (Finset.mem_univ _), Finset.card_univ, Fintype.card_fin,
+    smul_eq_mul]
+  have h11 : k - 1 - 1 = k - 2 := by omega
+  rw [h11]
+
+end OffPermDiag
+
 end ListColoring
