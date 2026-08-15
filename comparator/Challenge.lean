@@ -155,30 +155,8 @@ namespace SimpleGraph
 Coning over a clique preserves enumerative chromatic-choosability (Kirov–Naimi's Lemma 1), and a
 finite graph is built from nothing by such attachments exactly when it is **chordal** — Dirac's
 theorem, proved in the library — which is what lets Kostochka–Sidorenko be claimed in its own
-terms.  `coneOn` also builds §7's theta graphs.
+terms.
 -/
-
-/-- Adjacency for the cone: `none` is joined to exactly the vertices of `K`. -/
-def coneAdj {V : Type*} (G : SimpleGraph V) (K : Finset V) : Option V → Option V → Prop
-  | some a, some b => G.Adj a b
-  | none, some b => b ∈ K
-  | some a, none => a ∈ K
-  | none, none => False
-
-/-- **The cone over `K`.** `coneOn G K` is the graph on `Option V` obtained from `G` by adding one
-new vertex `none` joined to precisely the vertices in `K`. -/
-def coneOn {V : Type*} (G : SimpleGraph V) (K : Finset V) : SimpleGraph (Option V) where
-  Adj := coneAdj G K
-  symm := ⟨by
-    rintro (_ | a) (_ | b) h
-    · exact h
-    · exact h
-    · exact h
-    · exact h.symm⟩
-  loopless := ⟨by
-    rintro (_ | a) h
-    · exact h
-    · exact h.ne rfl⟩
 
 /-- **A chordal graph.** Every cycle of length at least `4` has a chord: an edge of the graph
 joining two vertices of the cycle which is not itself an edge of the cycle.  Phrased through
@@ -308,6 +286,38 @@ It is proved in this development and claimed in full, both directions.
 `instDecidableRelPathG` and `instDecidableRelTheta` are listed for this section's sake alone:
 `CoreIs G H` asks for a decidable `H`.
 -/
+
+end ListColoring
+
+namespace SimpleGraph
+
+/-- Adjacency for the cone: `none` is joined to exactly the vertices of `K`. -/
+def coneAdj {V : Type*} (G : SimpleGraph V) (K : Finset V) : Option V → Option V → Prop
+  | some a, some b => G.Adj a b
+  | none, some b => b ∈ K
+  | some a, none => a ∈ K
+  | none, none => False
+
+/-- **The cone over `K`.** `coneOn G K` is the graph on `Option V` obtained from `G` by adding one
+new vertex `none` joined to precisely the vertices in `K`. -/
+def coneOn {V : Type*} (G : SimpleGraph V) (K : Finset V) : SimpleGraph (Option V) where
+  Adj := coneAdj G K
+  symm := ⟨by
+    rintro (_ | a) (_ | b) h
+    · exact h
+    · exact h
+    · exact h
+    · exact h.symm⟩
+  loopless := ⟨by
+    rintro (_ | a) h
+    · exact h
+    · exact h.ne rfl⟩
+
+end SimpleGraph
+
+namespace ListColoring
+
+open SimpleGraph
 
 /-- The vertex type of `θ_{2,2,2m}`. -/
 abbrev ThetaV (m : ℕ) : Type := Option (Option (PathV (2 * m)))
