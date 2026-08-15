@@ -43,13 +43,9 @@ theorem rootedCol_mul_of_cut {A B : Set V} [DecidablePred (· ∈ A)] [Decidable
     (hmeet : ∀ v, v ∈ A → v ∈ B → v = r)
     (hedge : ∀ x y, G.Adj x y → (x ∈ A ∧ y ∈ A) ∨ (x ∈ B ∧ y ∈ B))
     (L : ListAssignment V) (c : ℕ) :
-    letI : DecidableRel (G.induce A).Adj := fun a b => inferInstanceAs (Decidable (G.Adj a b))
-    letI : DecidableRel (G.induce B).Adj := fun a b => inferInstanceAs (Decidable (G.Adj a b))
     rootedCol G L r c =
       rootedCol (G.induce A) (fun v => L v) ⟨r, hrA⟩ c *
         rootedCol (G.induce B) (fun v => L v) ⟨r, hrB⟩ c := by
-  letI : DecidableRel (G.induce A).Adj := fun a b => inferInstanceAs (Decidable (G.Adj a b))
-  letI : DecidableRel (G.induce B).Adj := fun a b => inferInstanceAs (Decidable (G.Adj a b))
   rw [rootedCol, rootedCol, rootedCol, ← Finset.card_product]
   refine Finset.card_bij' (fun f _ => (fun v => f v.val, fun v => f v.val))
     (fun p _ => fun v => if hv : v ∈ A then p.1 ⟨v, hv⟩ else p.2 ⟨v, (hcover v).resolve_left hv⟩)

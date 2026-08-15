@@ -87,14 +87,10 @@ theorem rootedWcol_mul_of_cut {A B : Set V} [DecidablePred (· ∈ A)] [Decidabl
     (hmeet : ∀ v, v ∈ A → v ∈ B → v = r)
     (hedge : ∀ x y, G.Adj x y → (x ∈ A ∧ y ∈ A) ∨ (x ∈ B ∧ y ∈ B))
     (L : ListAssignment V) (w : V → ℕ → ℕ) (c : ℕ) :
-    letI : DecidableRel (G.induce A).Adj := fun a b => inferInstanceAs (Decidable (G.Adj a b))
-    letI : DecidableRel (G.induce B).Adj := fun a b => inferInstanceAs (Decidable (G.Adj a b))
     rootedWcol G L w r c =
       rootedWcol (G.induce A) (fun v => L v) (fun v d => w v.val d) ⟨r, hrA⟩ c *
         rootedWcol (G.induce B) (fun v => L v)
           (fun v d => if v.val = r then 1 else w v.val d) ⟨r, hrB⟩ c := by
-  letI : DecidableRel (G.induce A).Adj := fun a b => inferInstanceAs (Decidable (G.Adj a b))
-  letI : DecidableRel (G.induce B).Adj := fun a b => inferInstanceAs (Decidable (G.Adj a b))
   rw [rootedWcol, rootedWcol, rootedWcol, Finset.sum_mul_sum]
   rw [← Finset.sum_product']
   refine Finset.sum_bij' (fun f _ => (fun v => f v.val, fun v => f v.val))
