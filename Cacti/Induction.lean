@@ -2,6 +2,7 @@
 Copyright (c) 2026. All rights reserved.
 Released under Apache 2.0 license.
 -/
+import Cacti.LeafPeeling
 import Cacti.Absorb
 import Cacti.Uniform
 import Cacti.Bridge
@@ -75,6 +76,61 @@ theorem pendant_weight_dominant {k : ℕ} (hk : 3 ≤ k) {Lx Lu : Finset ℕ}
         ring
 
 
+section PendantPrereqs
+
+variable {V : Type} [Fintype V] [DecidableEq V] {G : SimpleGraph V} [DecidableRel G.Adj]
+
+/-- Deleting a degree-one vertex of a cactus leaves a cactus. -/
+theorem isCactus_induce_of_leaf {x : V} (hG : IsCactus G) (hdeg : G.degree x = 1)
+    (hne : ∃ y : V, y ≠ x) : IsCactus (G.induce {y | y ≠ x}) := by
+  refine ⟨connected_induce_of_degree_eq_one hG.1 hdeg hne, ?_⟩
+  intro u v p q hp hq e hep heq
+  have hp' : (p.map (induceVal G _)).IsCycle :=
+    (Walk.isCycle_map_iff_of_injective induceVal_injective).mpr hp
+  have hq' : (q.map (induceVal G _)).IsCycle :=
+    (Walk.isCycle_map_iff_of_injective induceVal_injective).mpr hq
+  have hep' : Sym2.map (induceVal G _) e ∈ (p.map (induceVal G _)).edges := by
+    rw [Walk.edges_map]
+    exact List.mem_map_of_mem hep
+  have heq' : Sym2.map (induceVal G _) e ∈ (q.map (induceVal G _)).edges := by
+    rw [Walk.edges_map]
+    exact List.mem_map_of_mem heq
+  have heqsets := hG.2 _ _ hp' hq' _ hep' heq'
+  rw [edges_toFinset_map, edges_toFinset_map] at heqsets
+  exact Finset.image_injective (Sym2.map.injective induceVal_injective) heqsets
+
+/-- The uniform side of pendant absorption: the factor is exactly `k - 1`. -/
+theorem rootedCol_pendant_uniform {x u : V} (hxu : G.Adj x u)
+    (huniq : ∀ y, G.Adj x y → y = u) {r : V} (hrx : r ≠ x) {k : ℕ} (hk : 1 ≤ k) (c : ℕ) :
+    rootedCol G (constList V k) r c =
+      (k - 1) * rootedCol (G.induce {y | y ≠ x}) (fun v => constList V k v.val) ⟨r, hrx⟩ c := by
+  have hu : u ∈ {y : V | y ≠ x} := hxu.ne'
+  have h := rootedWcol_pendant (G := G) hxu huniq hrx (constList V k) (fun _ _ => 1) c
+  rw [rootedWcol_one] at h
+  rw [h]
+  calc rootedWcol (G.induce {y | y ≠ x}) (fun v => constList V k v.val)
+        (fun v d => if v.val = u then
+            (fun _ => 1) d * ∑ e ∈ (constList V k x).filter (· ≠ d), (fun _ _ => 1) x e
+          else (fun _ _ => 1) v.val d) ⟨r, hrx⟩ c
+      = rootedWcol (G.induce {y | y ≠ x}) (fun v => constList V k v.val)
+          (fun v _ => if v = (⟨u, hu⟩ : {y : V // y ≠ x}) then k - 1 else 1) ⟨r, hrx⟩ c := by
+        refine rootedWcol_weight_congr (fun v d hd => ?_) _ _
+        by_cases hvu : v.val = u
+        · rw [if_pos hvu, if_pos (Subtype.ext hvu)]
+          simp only [one_mul]
+          rw [Finset.sum_const, smul_eq_mul, mul_one]
+          have hd' : d ∈ Finset.range k := hd
+          rw [show (constList V k x).filter (· ≠ d) = (Finset.range k).erase d from by
+            ext e
+            simp [Finset.mem_erase, Finset.mem_filter, and_comm, constList_apply]]
+          rw [Finset.card_erase_of_mem hd', Finset.card_range]
+        · rw [if_neg hvu, if_neg (fun h => hvu (congrArg Subtype.val h))]
+    _ = (k - 1) * rootedCol (G.induce {y | y ≠ x}) (fun v => constList V k v.val)
+          ⟨r, hrx⟩ c :=
+        rootedWcol_const_at _ _ _ _ _
+
+end PendantPrereqs
+
 section MainInduction
 
 /-- Rooted weighted count of a one-vertex graph: the weight of the root's colour. -/
@@ -140,8 +196,76 @@ theorem cactus_pair_bound :
         rw [Finset.prod_singleton]
       rw [hA, hprod, one_mul]
       exact hdom r c hc d hd hcd
-    · sorry
+    · -- at least two vertices
+      by_cases hpend : ∃ x, x ≠ r ∧ G.degree x = 1
+      · -- a pendant vertex away from the root: absorb it
+        obtain ⟨x, hxr, hdeg⟩ := hpend
+        obtain ⟨u, hxu, huniq⟩ := degree_eq_one_iff_existsUnique_adj.mp hdeg
+        have hux : u ≠ x := hxu.ne'
+        have hrx : r ≠ x := hxr.symm
+        -- the absorbed data on the complement of x
+        have hG' : IsCactus (G.induce {y | y ≠ x}) :=
+          isCactus_induce_of_leaf hG hdeg ⟨u, hux⟩
+        have hL' : IsNListAssignment (fun v : {y : V // y ≠ x} => L v.val) k :=
+          fun v => hL v.val
+        have hdom' : ∀ v : {y : V // y ≠ x}, ∀ c' ∈ L v.val, ∀ d' ∈ L v.val, c' ≠ d' →
+            ((if v.val = u then (k - 1) * W x * W u else W v.val)) ^ 2 ≤
+              (if v.val = u then w u c' * ∑ e ∈ (L x).filter (· ≠ c'), w x e
+                else w v.val c') *
+              (if v.val = u then w u d' * ∑ e ∈ (L x).filter (· ≠ d'), w x e
+                else w v.val d') := by
+          intro v c' hc' d' hd' hcd'
+          by_cases hvu : v.val = u
+          · rw [if_pos hvu, if_pos hvu, if_pos hvu]
+            exact pendant_weight_dominant (by omega) (hL x)
+              (fun a ha b hb hab => hdom x a ha b hb hab)
+              (fun a ha b hb hab => hdom u a ha b hb hab)
+              c' (hvu ▸ hc') d' (hvu ▸ hd') hcd'
+          · rw [if_neg hvu, if_neg hvu, if_neg hvu]
+            exact hdom v.val c' hc' d' hd' hcd'
+        have hcards : Fintype.card {y : V // y ≠ x} + 1 = n := by
+          have hcong := Fintype.card_congr (delOptionEquiv x)
+          rw [Fintype.card_option] at hcong
+          omega
+        have hIH := IH _ (by omega) {y : V // y ≠ x} (G.induce {y | y ≠ x}) rfl hk hG'
+          _ hL' _ _ hdom' ⟨r, hrx⟩ c hc d hd hcd
+        -- rewrite the goal through the pendant absorption
+        rw [rootedWcol_pendant hxu huniq hrx L w c, rootedWcol_pendant hxu huniq hrx L w d,
+          rootedCol_pendant_uniform hxu huniq hrx (by omega) 0]
+        -- align the normalizers
+        have hu' : (⟨u, hux⟩ : {y : V // y ≠ x}) ∈ (Finset.univ : Finset {y : V // y ≠ x}) :=
+          Finset.mem_univ _
+        have hprodV : (∏ v, W v) = W x * ∏ v : {y : V // y ≠ x}, W v.val := by
+          rw [← Fintype.prod_equiv (delOptionEquiv x)
+            (fun o => W ((delOptionEquiv x) o)) W (fun o => rfl)]
+          rw [Fintype.prod_option]
+          rfl
+        have herase : (∏ v ∈ Finset.univ.erase (⟨u, hux⟩ : {y : V // y ≠ x}),
+              (if v.val = u then (k - 1) * W x * W u else W v.val))
+            = ∏ v ∈ Finset.univ.erase (⟨u, hux⟩ : {y : V // y ≠ x}), W v.val :=
+          Finset.prod_congr rfl fun v hv =>
+            if_neg (fun h => Finset.ne_of_mem_erase hv (Subtype.ext h))
+        have hprodW' : (∏ v : {y : V // y ≠ x},
+              (if v.val = u then (k - 1) * W x * W u else W v.val))
+            = (k - 1) * W x * ∏ v : {y : V // y ≠ x}, W v.val := by
+          rw [← Finset.mul_prod_erase Finset.univ _ hu', herase,
+            ← Finset.mul_prod_erase Finset.univ (fun v => W v.val) hu']
+          show (if (u : V) = u then (k - 1) * W x * W u else W u) * _ = _
+          rw [if_pos rfl]
+          ring
+        calc ((k - 1) *
+              rootedCol (G.induce {y | y ≠ x}) (fun v => constList V k v.val) ⟨r, hrx⟩ 0 *
+              ∏ v, W v) ^ 2
+            = (rootedCol (G.induce {y | y ≠ x}) (fun v => constList V k v.val) ⟨r, hrx⟩ 0 *
+                ∏ v : {y : V // y ≠ x},
+                  (if v.val = u then (k - 1) * W x * W u else W v.val)) ^ 2 := by
+              rw [hprodV, hprodW']
+              ring
+          _ ≤ _ := hIH
+      · sorry
 
 end MainInduction
+
+
 
 end ListColoring
