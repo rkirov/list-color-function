@@ -172,11 +172,15 @@ theorem ecc_of_isChordal {V : Type u} [Fintype V] [DecidableEq V] (G : SimpleGra
 /-! ### 5. Theorem 1: every cycle is enumeratively chromatic-choosable at `n`
 
 The paper's main theorem, claimed on Mathlib's `SimpleGraph.cycleGraph` so that the statement
-involves no construction of this development.  The constructions below carry the rest of the
-file: a cycle is a path — `pathG`, built by iterated `addPendant` — with its two ends joined
-(`closePath`), and the same attachment iterated is the **pendant tower**, the reading of a graph
-as its core with degree-one vertices grown back on, which §7 and §8 are stated with.
+involves no construction of this development.  The pendant attachments below build §7's paths,
+cycles and theta graphs: a path is iterated `addPendant`, a cycle is a path with its ends joined
+by `addPendantPair`.
 -/
+
+/-- **Theorem 1 of Kirov–Naimi: every cycle is enumeratively chromatic-choosable at `n`, for
+every `n ≥ 2`.**  `cycleGraph n` is Mathlib's cycle graph on `n` vertices. -/
+theorem ecc_cycleGraph_of_three_le {n m : ℕ} (hn : 3 ≤ n) :
+    (cycleGraph n).ECCAt (m + 2) := sorry
 
 /-- Adjacency for `G` with a new vertex `none` joined to `v` alone. -/
 def addPendantAdj {V : Type*} (G : SimpleGraph V) (v : V) : Option V → Option V → Prop
@@ -203,30 +207,6 @@ def addPendantPair {V : Type*} (G : SimpleGraph V) (u v : V) : SimpleGraph (Opti
   Adj := G.addPendantPairAdj u v
   symm := ⟨by rintro (_ | a) (_ | b) h <;> simp_all [addPendantPairAdj, G.adj_comm]⟩
   loopless := ⟨by rintro (_ | a) h <;> simp_all [addPendantPairAdj]⟩
-
-/-- The vertex type of `G` after `k` successive pendant attachments: `V` with `k` extra points. -/
-def TowerV (V : Type u) : ℕ → Type u
-  | 0 => V
-  | k + 1 => Option (TowerV V k)
-
-/-- The data specifying a tower of `k` pendant attachments: for each step, the already-existing
-vertex at which the new pendant vertex is attached. -/
-def TowerData (V : Type u) : ℕ → Type u
-  | 0 => PUnit
-  | k + 1 => TowerData V k × TowerV V k
-
-/-- **A tower of pendant attachments.** `pendantTower G k d` is the graph obtained from `G` by
-attaching `k` pendant vertices one after another, the `i`-th of them at the vertex recorded in `d`
-(which may itself be one of the earlier new vertices). -/
-def pendantTower {V : Type u} (G : SimpleGraph V) :
-    (k : ℕ) → TowerData V k → SimpleGraph (TowerV V k)
-  | 0, _ => G
-  | k + 1, d => (pendantTower G k d.1).addPendant d.2
-
-/-- **Theorem 1 of Kirov–Naimi: every cycle is enumeratively chromatic-choosable at `n`, for
-every `n ≥ 2`.**  `cycleGraph n` is Mathlib's cycle graph on `n` vertices. -/
-theorem ecc_cycleGraph_of_three_le {n m : ℕ} (hn : 3 ≤ n) :
-    (cycleGraph n).ECCAt (m + 2) := sorry
 
 end SimpleGraph
 
@@ -312,6 +292,25 @@ def coneOn {V : Type*} (G : SimpleGraph V) (K : Finset V) : SimpleGraph (Option 
     rintro (_ | a) h
     · exact h
     · exact h.ne rfl⟩
+
+/-- The vertex type of `G` after `k` successive pendant attachments: `V` with `k` extra points. -/
+def TowerV (V : Type u) : ℕ → Type u
+  | 0 => V
+  | k + 1 => Option (TowerV V k)
+
+/-- The data specifying a tower of `k` pendant attachments: for each step, the already-existing
+vertex at which the new pendant vertex is attached. -/
+def TowerData (V : Type u) : ℕ → Type u
+  | 0 => PUnit
+  | k + 1 => TowerData V k × TowerV V k
+
+/-- **A tower of pendant attachments.** `pendantTower G k d` is the graph obtained from `G` by
+attaching `k` pendant vertices one after another, the `i`-th of them at the vertex recorded in `d`
+(which may itself be one of the earlier new vertices). -/
+def pendantTower {V : Type u} (G : SimpleGraph V) :
+    (k : ℕ) → TowerData V k → SimpleGraph (TowerV V k)
+  | 0, _ => G
+  | k + 1, d => (pendantTower G k d.1).addPendant d.2
 
 end SimpleGraph
 
