@@ -6,7 +6,9 @@ import Cacti.Defs
 import Cacti.Structure
 import Cacti.LeafPeeling
 import Cacti.Rooted
-import Cacti.RootedProfile
+import Cacti.Weighted
+import Cacti.Rooted
+import Cacti.WeightedProfile
 import Cacti.Statements
 
 /-!
