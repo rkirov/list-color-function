@@ -9,8 +9,8 @@ import Cacti.Rooted
 import Cacti.Weighted
 import Cacti.WeightedProfile
 import Cacti.Absorb
+import Cacti.AbsorbProfile
 import Cacti.Uniform
-import Cacti.Absorb
 import Cacti.UniformProfile
 import Cacti.Statements
 
