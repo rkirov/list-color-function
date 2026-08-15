@@ -2,63 +2,20 @@ import Mathlib
 /-!
 # List coloring and enumerative chromatic-choosability — the challenge statements
 
-The *statement surface* of the `graph_coloring` development, a formalization of
+The statement surface of the `graph_coloring` development, a formalization of
 
 > Radoslav Kirov and Ramin Naimi, *List coloring and `n`-monophilic graphs*,
-> Ars Combinatoria (arXiv:1004.5183),
+> Ars Combinatoria (arXiv:1004.5183).
 
-together with the chromatic-polynomial / list-color-function reformulation, Dirac's theorem,
-Rubin's theorem and Donner's theorem.  Every declaration is stated exactly as in the library, with
-placeholder proofs — compiling this file is *expected* to report "declaration uses `sorry`".  The
-comparator checks it against `Submission.lean`, which simply imports `ListColoring`.
-
-## The ten claims
-
-1. `eval_chromaticPolynomial` — the chromatic polynomial evaluates to the colouring count
-2. `ecc_iff_listColorFunction_eq_eval` — `P_ℓ(G, n) = P(G, n)` *is* enumerative
-   chromatic-choosability at `n`
-3. `ERT.not_choosable` and 4. `ERT.colorable` — **Erdős–Rubin–Taylor**: `K_{n,nⁿ}` is
-   `n`-colourable but not `n`-choosable
-5. `KN5.exists_choosable_not_ecc_of_two_le` — **Kirov–Naimi, §5**: for every `k ≥ 2`, a graph
-   that is `k`-choosable but not enumeratively chromatic-choosable at `k`
-6. `ecc_of_isChordal` — **Kostochka–Sidorenko**: chordal graphs are enumeratively
-   chromatic-choosable at every `n`
-7. `ecc_cycleGraph_of_three_le` — **Kirov–Naimi, Theorem 1**: every cycle is enumeratively
-   chromatic-choosable at every `n`, stated on Mathlib's `cycleGraph`
-8. `rubinTheorem` — **Rubin**: the `2`-choosable connected graphs, classified by their core
-9. `ecc_two_iff` — **Kirov–Naimi, Theorem 2**, with no hypothesis beyond connectivity
-10. `exists_ecc_forall_ge` — **Donner**: every graph is enumeratively chromatic-choosable at `n`
-    for large `n`
-
-One claim per named list-colouring result, so the count is derived, not chosen: claims 1–2 pin
-down what the subject is, four literature theorems account for claims 3–4, 6, 8 and 10
-(Erdős–Rubin–Taylor in two statements — the point is the separation), and claims 5, 7, 9 are the
-three results the paper's abstract advertises.  Everything else stays in the library.  Two
-exclusions are rules rather than judgements: Dirac's theorem — proved in the library, and the
-reason claim 6 can say "chordal" — is scaffolding for a statement, not a list-colouring result;
-and `ListColoring.choosable_two_gtheta_iff`'s statement depends on a normalization convention
-(`ValidArms`/`GoodArms`), and a claim's statement may not depend on a proof's bookkeeping.
-
-## Conventions
-
-`definition_names` is computed, not curated: the definitions reachable from the types of the
-claims, plus the notions those are written in terms of.  The six listed instances all serve the
-surface: `instDecidableRelCompleteBipartiteAdj` occurs in the types of claims 3–4, and the other
-five are what §7–§8's core alternatives need to name their graphs — `CoreIs G H` asks for a
-decidable `H`.  Definitions carry their real bodies (the comparator never inspects them) except
-where the body is not a statement: the three structure-instance graph constructions and the
-decidability instances.  Ten placeholders, so the file's twenty `sorry`s are ten theorems and ten
-placeholders.  `instDecidableIsProperColoring` and `decidableRelFromEdgeSetCoe` appear without
-being listed because bodies here need them.
-
-`rubinTheorem`'s type is the bare constant `RubinTheorem`, so **the statement of Rubin's theorem
-is the body of `RubinTheorem`**, reproduced verbatim; the comparator matches it by type (`Prop`),
-and the library is where the body is checked.
-
-The nine sections follow the book's Part I; what is not claimed lives in the library.
+Everything is stated exactly as in the library; proofs, and the few bodies that are not
+statements, are `sorry`, so "declaration uses `sorry`" is expected.  The comparator checks these
+statements against `Submission.lean`, which imports the library; `config.json` lists what is
+claimed.
 -/
 
 open Finset
+
+universe u
 
 namespace SimpleGraph
 
@@ -69,17 +26,11 @@ namespace SimpleGraph
 below is a statement about these two counts.
 -/
 
-section
-
-universe u_2
-
 /-- A **list assignment** for a graph on `V` gives each vertex a finite set of allowed colors. -/
-abbrev ListAssignment (V : Type u_2) : Type u_2 := V → Finset ℕ
+abbrev ListAssignment (V : Type u) : Type u := V → Finset ℕ
 
 /-- The constant list assignment sending every vertex to `{0, 1, …, n-1}`; the paper's `[n]`. -/
-def constList (V : Type u_2) (n : ℕ) : ListAssignment V := fun _ => range n
-
-end
+def constList (V : Type u) (n : ℕ) : ListAssignment V := fun _ => range n
 
 /-- `f` is a proper coloring of `G`: adjacent vertices get distinct colors. -/
 def IsProperColoring {V : Type*} (G : SimpleGraph V) (f : V → ℕ) : Prop :=
@@ -106,8 +57,8 @@ def colConst {V : Type*} [Fintype V] [DecidableEq V] (G : SimpleGraph V) [Decida
 /-! ### 2. The chromatic polynomial
 
 Defined by the Whitney subset expansion `∑_{S ⊆ E(G)} (-1)^{|S|} X^{c(S)}`, where `c(S)` counts
-the connected components of the spanning subgraph with edge set `S`; claim 1 says evaluating it at
-`n` returns `col(G, n)`. -/
+the connected components of the spanning subgraph with edge set `S`; the claim is that evaluating
+it at `n` returns `col(G, n)`. -/
 
 /-- Adjacency in `fromEdgeSet S` is decidable when `S` comes from a `Finset` of edges. -/
 instance decidableRelFromEdgeSetCoe {V : Type*} [DecidableEq V] (S : Finset (Sym2 V)) :
@@ -133,9 +84,9 @@ theorem eval_chromaticPolynomial {V : Type*} [Fintype V] [DecidableEq V] (G : Si
 
 `G` is **`n`-choosable** if every `n`-list assignment admits a colouring, and **enumeratively
 chromatic-choosable at `n`** if the constant assignment *minimizes* the number of colourings — the
-paper's subject; claim 2 identifies that with `P_ℓ(G, n) = P(G, n)`.  Claims 3–5 are the two
-separations: the regime `χ(G) ≤ n < χ_ℓ(G)` is nonempty (Erdős–Rubin–Taylor), and above `χ_ℓ` the
-property still fails for some graph at every `k ≥ 2` (the paper's §5).
+paper's subject, claimed below to be exactly the condition `P_ℓ(G, n) = P(G, n)`.  Two
+separations are claimed after it: the regime `χ(G) ≤ n < χ_ℓ(G)` is nonempty (Erdős–Rubin–Taylor),
+and above `χ_ℓ` the property still fails for some graph at every `k ≥ 2` (the paper's §5).
 -/
 
 /-- An **`n`-list assignment** gives every vertex a list of exactly `n` colors. -/
@@ -218,21 +169,10 @@ Mathlib's `SimpleGraph.Walk.IsChordless`. -/
 def IsChordal {V : Type*} (G : SimpleGraph V) : Prop :=
   ∀ {u : V} (c : G.Walk u u), c.IsCycle → 4 ≤ c.length → ¬ c.IsChordless
 
-section
-
-universe u
-
-/-- The vertex type of `G` after `k` successive pendant attachments: `V` with `k` extra points. -/
-def TowerV (V : Type u) : ℕ → Type u
-  | 0 => V
-  | k + 1 => Option (TowerV V k)
-
 /-- **The Kostochka–Sidorenko theorem.** *Every chordal graph is enumeratively
 chromatic-choosable at `n`, for every `n`.* -/
 theorem ecc_of_isChordal {V : Type u} [Fintype V] [DecidableEq V] (G : SimpleGraph V)
     [DecidableRel G.Adj] (hG : G.IsChordal) (n : ℕ) : G.ECCAt n := sorry
-
-end
 
 /-! ### 5. Theorem 1: every cycle is enumeratively chromatic-choosable at `n`
 
@@ -249,9 +189,10 @@ def addPendant {V : Type*} (G : SimpleGraph V) (v : V) : SimpleGraph (Option V) 
 /-- `G` with one new vertex `none`, joined to both `u` and `v`. -/
 def addPendantPair {V : Type*} (G : SimpleGraph V) (u v : V) : SimpleGraph (Option V) := sorry
 
-section
-
-universe u
+/-- The vertex type of `G` after `k` successive pendant attachments: `V` with `k` extra points. -/
+def TowerV (V : Type u) : ℕ → Type u
+  | 0 => V
+  | k + 1 => Option (TowerV V k)
 
 /-- The data specifying a tower of `k` pendant attachments: for each step, the already-existing
 vertex at which the new pendant vertex is attached. -/
@@ -259,18 +200,10 @@ def TowerData (V : Type u) : ℕ → Type u
   | 0 => PUnit
   | k + 1 => TowerData V k × TowerV V k
 
-end
-
--- Deliberately `Type*`, outside the `universe u` section above: the comparator compares
--- `ConstantVal`s, whose universe parameters are *names*.  The library declares `pendantTower`
--- against `variable {V : Type*}` (auto-bound `u_1`) but `TowerV`/`TowerData` against
--- `universe u`, and that split must be reproduced.  (`ListAssignment`/`constList` are pinned to
--- `u_2` for the same reason.)
-
 /-- **A tower of pendant attachments.** `pendantTower G k d` is the graph obtained from `G` by
 attaching `k` pendant vertices one after another, the `i`-th of them at the vertex recorded in `d`
 (which may itself be one of the earlier new vertices). -/
-def pendantTower {V : Type*} (G : SimpleGraph V) :
+def pendantTower {V : Type u} (G : SimpleGraph V) :
     (k : ℕ) → TowerData V k → SimpleGraph (TowerV V k)
   | 0, _ => G
   | k + 1, d => (pendantTower G k d.1).addPendant d.2
@@ -377,7 +310,7 @@ def CoreIsTheta {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V)
 > `θ_{2,2,2m}` for some `m ≥ 1`.
 
 A. L. Rubin, in Erdős–Rubin–Taylor, *Choosability in graphs*, Congr. Numer. **26** (1980),
-125–157.  This `Prop` *is* the statement of claim 8: the theorem below has it as its bare type. -/
+125–157.  This `Prop` *is* the claimed statement: the theorem below has it as its bare type. -/
 def RubinTheorem : Prop :=
   ∀ {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V) [DecidableRel G.Adj],
     G.Connected → (G.Choosable 2 ↔ (CoreIsVertex G ∨ CoreIsEvenCycle G ∨ CoreIsTheta G))
@@ -425,7 +358,7 @@ def HasOddCycle {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V)
 > contains an odd cycle.
 
 The paper's wording; "2-monophilic" is `SimpleGraph.ECCAt G 2`.  Kirov–Naimi, Ars Combin. **124**
-(2016), 329–340, Theorem 2.  Rubin's theorem, which the paper quotes, is claim 8. -/
+(2016), 329–340, Theorem 2.  Rubin's theorem, which the paper quotes, is claimed above. -/
 theorem ecc_two_iff {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V)
     [DecidableRel G.Adj] (hconn : G.Connected) :
     G.ECCAt 2 ↔ CoreIsVertex G ∨ CoreIsCycle G ∨ CoreIsK23 G ∨ HasOddCycle G := sorry

@@ -320,7 +320,8 @@ def TowerData (V : Type u) : ℕ → Type u
 /-- **A tower of pendant attachments.** `pendantTower G k d` is the graph obtained from `G` by
 attaching `k` pendant vertices one after another, the `i`-th of them at the vertex recorded in `d`
 (which may itself be one of the earlier new vertices). -/
-def pendantTower (G : SimpleGraph V) : (k : ℕ) → TowerData V k → SimpleGraph (TowerV V k)
+def pendantTower {V : Type u} (G : SimpleGraph V) :
+    (k : ℕ) → TowerData V k → SimpleGraph (TowerV V k)
   | 0, _ => G
   | k + 1, d => (pendantTower G k d.1).addPendant d.2
 

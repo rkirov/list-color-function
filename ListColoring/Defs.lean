@@ -68,15 +68,17 @@ namespace SimpleGraph
 
 variable {V : Type*}
 
+universe u
+
 /-- A **list assignment** for a graph on `V` gives each vertex a finite set of allowed colors.
 Colors are natural numbers, following the paper's `L : V → 𝒫(ℕ)`. -/
-abbrev ListAssignment (V : Type*) : Type _ := V → Finset ℕ
+abbrev ListAssignment (V : Type u) : Type u := V → Finset ℕ
 
 /-- An **`n`-list assignment** gives every vertex a list of exactly `n` colors. -/
 def IsNListAssignment (L : ListAssignment V) (n : ℕ) : Prop := ∀ v, (L v).card = n
 
 /-- The constant list assignment sending every vertex to `{0, 1, …, n-1}`; the paper's `[n]`. -/
-def constList (V : Type*) (n : ℕ) : ListAssignment V := fun _ => range n
+def constList (V : Type u) (n : ℕ) : ListAssignment V := fun _ => range n
 
 @[simp] lemma constList_apply (n : ℕ) (v : V) : constList V n v = range n := rfl
 
