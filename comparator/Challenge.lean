@@ -7,10 +7,9 @@ The statement surface of the `graph_coloring` development, a formalization of
 > Radoslav Kirov and Ramin Naimi, *List coloring and `n`-monophilic graphs*,
 > Ars Combinatoria (arXiv:1004.5183).
 
-Everything is stated exactly as in the library; proofs, and the few bodies that are not
-statements, are `sorry`, so "declaration uses `sorry`" is expected.  The comparator checks these
-statements against `Submission.lean`, which imports the library; `config.json` lists what is
-claimed.
+Everything is stated exactly as in the library; proofs and the decidability instances are
+`sorry`, so "declaration uses `sorry`" is expected.  The comparator checks these statements
+against `Submission.lean`, which imports the library; `config.json` lists what is claimed.
 -/
 
 open Finset
@@ -159,9 +158,27 @@ theorem, proved in the library — which is what lets Kostochka–Sidorenko be c
 terms.  `coneOn` also builds §7's theta graphs.
 -/
 
+/-- Adjacency for the cone: `none` is joined to exactly the vertices of `K`. -/
+def coneAdj {V : Type*} (G : SimpleGraph V) (K : Finset V) : Option V → Option V → Prop
+  | some a, some b => G.Adj a b
+  | none, some b => b ∈ K
+  | some a, none => a ∈ K
+  | none, none => False
+
 /-- **The cone over `K`.** `coneOn G K` is the graph on `Option V` obtained from `G` by adding one
 new vertex `none` joined to precisely the vertices in `K`. -/
-def coneOn {V : Type*} (G : SimpleGraph V) (K : Finset V) : SimpleGraph (Option V) := sorry
+def coneOn {V : Type*} (G : SimpleGraph V) (K : Finset V) : SimpleGraph (Option V) where
+  Adj := coneAdj G K
+  symm := ⟨by
+    rintro (_ | a) (_ | b) h
+    · exact h
+    · exact h
+    · exact h
+    · exact h.symm⟩
+  loopless := ⟨by
+    rintro (_ | a) h
+    · exact h
+    · exact h.ne rfl⟩
 
 /-- **A chordal graph.** Every cycle of length at least `4` has a chord: an edge of the graph
 joining two vertices of the cycle which is not itself an edge of the cycle.  Phrased through
@@ -183,11 +200,31 @@ file: a cycle is a path — `pathG`, built by iterated `addPendant` — with its
 as its core with degree-one vertices grown back on, which §7 and §8 are stated with.
 -/
 
+/-- Adjacency for `G` with a new vertex `none` joined to `v` alone. -/
+def addPendantAdj {V : Type*} (G : SimpleGraph V) (v : V) : Option V → Option V → Prop
+  | none, none => False
+  | none, some b => b = v
+  | some a, none => a = v
+  | some a, some b => G.Adj a b
+
 /-- `G` with one new pendant vertex `none`, attached to `v`. -/
-def addPendant {V : Type*} (G : SimpleGraph V) (v : V) : SimpleGraph (Option V) := sorry
+def addPendant {V : Type*} (G : SimpleGraph V) (v : V) : SimpleGraph (Option V) where
+  Adj := G.addPendantAdj v
+  symm := ⟨by rintro (_ | a) (_ | b) h <;> simp_all [addPendantAdj, G.adj_comm]⟩
+  loopless := ⟨by rintro (_ | a) h <;> simp_all [addPendantAdj]⟩
+
+/-- Adjacency for `G` with a new vertex `none` joined to both `u` and `v` (and nothing else). -/
+def addPendantPairAdj {V : Type*} (G : SimpleGraph V) (u v : V) : Option V → Option V → Prop
+  | none, none => False
+  | none, some b => b = u ∨ b = v
+  | some a, none => a = u ∨ a = v
+  | some a, some b => G.Adj a b
 
 /-- `G` with one new vertex `none`, joined to both `u` and `v`. -/
-def addPendantPair {V : Type*} (G : SimpleGraph V) (u v : V) : SimpleGraph (Option V) := sorry
+def addPendantPair {V : Type*} (G : SimpleGraph V) (u v : V) : SimpleGraph (Option V) where
+  Adj := G.addPendantPairAdj u v
+  symm := ⟨by rintro (_ | a) (_ | b) h <;> simp_all [addPendantPairAdj, G.adj_comm]⟩
+  loopless := ⟨by rintro (_ | a) h <;> simp_all [addPendantPairAdj]⟩
 
 /-- The vertex type of `G` after `k` successive pendant attachments: `V` with `k` extra points. -/
 def TowerV (V : Type u) : ℕ → Type u

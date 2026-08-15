@@ -240,13 +240,13 @@ names, and defines nothing. Part II of this book is where those live.
 
 # Conventions
 
-*Placeholders where a body is not a statement.* Every theorem has `sorry` for a proof — that is what
-makes it a challenge file rather than a library. Most *definitions*, by contrast, carry their real
-bodies, so that the file reads as a specification: the comparator never inspects the body of a
-listed definition, so nothing is given away. Placeholders remain only where a body is not a
-statement at all — the graph constructions built as `SimpleGraph` structure instances with
-tactic-proved `symm` and `loopless` fields (`coneOn`, `addPendant`, `addPendantPair`), and the
-decidability instances.
+*Every definition carries its real body.* Every theorem has `sorry` for a proof — that is what
+makes it a challenge file rather than a library. Definitions, by contrast, are given in full, down
+to the tactic-proved `symm` and `loopless` fields of the three graph constructions and the
+adjacency matches (`coneAdj`, `addPendantAdj`, `addPendantPairAdj`) they are built on, so the file
+reads as a complete specification; the comparator never inspects the body of a listed definition,
+so nothing is given away. Only the decidability instances are `sorry`, and a `Decidable` instance
+is a subsingleton: which one is used cannot change any count.
 
 *`config.json` names what is claimed.* Two lists. `theorem_names` is the ten above.
 `definition_names` is not a curated aesthetic choice but a computed one: exactly the definitions
