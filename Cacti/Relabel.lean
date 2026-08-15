@@ -560,8 +560,147 @@ theorem exists_matrix_model {V : Type} [Fintype V] [DecidableEq V] {G : SimpleGr
     sorry
   · -- the thread splits
     intro c hc htw
-    sorry
+    rw [hPsymm c hc] at htw ⊢
+    set E1 : Finset (Fin m) := Finset.univ.filter
+      (fun e => σ e.castSucc c ≠ σ e.succ c) with hE1
+    set E2 : Finset (Fin m) := Finset.univ.filter
+      (fun e => σ e.castSucc (μ c) ≠ σ e.succ (μ c)) with hE2
+    have hconst : ∀ (x : Fin k) (v : ℕ) (hv : v < m + 1),
+        (∀ e : Fin m, e.val < v → σ e.castSucc x = σ e.succ x) →
+        σ ⟨v, hv⟩ x = σ 0 x := by
+      intro x v
+      induction v with
+      | zero =>
+        intro _ _
+        rfl
+      | succ v ihv =>
+        intro hv hagree
+        have hvm : v < m := by omega
+        have h2 := hagree ⟨v, hvm⟩ (by show v < v + 1; omega)
+        have h2' : σ (⟨v + 1, hv⟩ : Fin (m + 1)) x
+            = σ (⟨v, by omega⟩ : Fin (m + 1)) x := h2.symm
+        exact h2'.trans (ihv (by omega) (fun e he => hagree e (by omega)))
+    have hconst' : ∀ (x : Fin k) (d v : ℕ), m - v = d → ∀ (hv : v < m + 1),
+        (∀ e : Fin m, v ≤ e.val → σ e.castSucc x = σ e.succ x) →
+        σ ⟨v, hv⟩ x = σ (Fin.last m) x := by
+      intro x d
+      induction d with
+      | zero =>
+        intro v hd hv _
+        have hvm : v = m := by omega
+        subst hvm
+        rfl
+      | succ d ihd =>
+        intro v hd hv hagree
+        have hvm : v < m := by omega
+        have h2 := hagree ⟨v, hvm⟩ (le_refl v)
+        have h2' : σ (⟨v, hv⟩ : Fin (m + 1)) x
+            = σ (⟨v + 1, by omega⟩ : Fin (m + 1)) x := h2
+        exact h2'.trans (ihd (v + 1) (by omega) (by omega) (fun e he => hagree e (by omega)))
+    have hE1ne : E1.Nonempty := by
+      by_contra hcon
+      rw [Finset.not_nonempty_iff_eq_empty] at hcon
+      have hagree : ∀ e : Fin m, σ e.castSucc c = σ e.succ c := by
+        intro e
+        by_contra hne
+        have hmem : e ∈ E1 := by
+          rw [hE1, Finset.mem_filter]
+          exact ⟨Finset.mem_univ e, hne⟩
+        rw [hcon] at hmem
+        exact absurd hmem (Finset.notMem_empty e)
+      have h1 : σ (⟨m, by omega⟩ : Fin (m + 1)) c = σ 0 c :=
+        hconst c m (by omega) (fun e _ => hagree e)
+      have h2 : σ (Fin.last m) (μ c) = σ 0 c := hμspec c hc
+      exact htw (hσinj (Fin.last m) (h2.trans h1.symm))
+    have hE2ne : E2.Nonempty := by
+      by_contra hcon
+      rw [Finset.not_nonempty_iff_eq_empty] at hcon
+      have hagree : ∀ e : Fin m, σ e.castSucc (μ c) = σ e.succ (μ c) := by
+        intro e
+        by_contra hne
+        have hmem : e ∈ E2 := by
+          rw [hE2, Finset.mem_filter]
+          exact ⟨Finset.mem_univ e, hne⟩
+        rw [hcon] at hmem
+        exact absurd hmem (Finset.notMem_empty e)
+      have h1 : σ (⟨0, by omega⟩ : Fin (m + 1)) (μ c) = σ (Fin.last m) (μ c) :=
+        hconst' (μ c) m 0 (by omega) (by omega) (fun e _ => hagree e)
+      have h2 : σ (Fin.last m) (μ c) = σ 0 c := hμspec c hc
+      refine htw (hσinj 0 ?_)
+      show σ 0 (μ c) = σ 0 c
+      rw [← h2, ← h1]
+      rfl
+    set i := E1.min' hE1ne with hi
+    set j := E2.max' hE2ne with hj
+    have hij : i.val < j.val := by
+      by_contra hcon
+      push Not at hcon
+      have hbelow : ∀ e : Fin m, e.val < j.val → σ e.castSucc c = σ e.succ c := by
+        intro e he
+        by_contra hne
+        have hmem : e ∈ E1 := by
+          rw [hE1, Finset.mem_filter]
+          exact ⟨Finset.mem_univ e, hne⟩
+        have h5 : i.val ≤ e.val := E1.min'_le e hmem
+        omega
+      have habove : ∀ e : Fin m, j.val < e.val →
+          σ e.castSucc (μ c) = σ e.succ (μ c) := by
+        intro e he
+        by_contra hne
+        have hmem : e ∈ E2 := by
+          rw [hE2, Finset.mem_filter]
+          exact ⟨Finset.mem_univ e, hne⟩
+        have h5 : e.val ≤ j.val := E2.le_max' e hmem
+        omega
+      have hjlt : j.val < m + 1 := by
+        have := j.isLt
+        omega
+      have hjlt' : j.val + 1 < m + 1 := by
+        have := j.isLt
+        omega
+      have hχc : σ (⟨j.val, hjlt⟩ : Fin (m + 1)) c = σ 0 c :=
+        hconst c j.val hjlt (fun e he => hbelow e he)
+      have hχμ : σ (⟨j.val + 1, hjlt'⟩ : Fin (m + 1)) (μ c) = σ (Fin.last m) (μ c) :=
+        hconst' (μ c) (m - (j.val + 1)) (j.val + 1) rfl hjlt'
+          (fun e he => habove e (by omega))
+      have hmem2 : σ (⟨j.val, hjlt⟩ : Fin (m + 1)) c
+          ∈ L (w ⟨j.val + 1, hjlt'⟩) := by
+        rw [hχc, ← hμspec c hc, ← hχμ]
+        exact hσmem _ _
+      have hmatch2 := hσmatch ⟨j.val, hjlt⟩ hjlt' c hmem2
+      have hcol : σ (⟨j.val + 1, hjlt'⟩ : Fin (m + 1)) c
+          = σ (⟨j.val + 1, hjlt'⟩ : Fin (m + 1)) (μ c) := by
+        rw [hmatch2, hχc, ← hμspec c hc, ← hχμ]
+      exact absurd (hσinj _ hcol).symm htw
+    obtain ⟨Ts₁, T, Ts₂, T', Ts₃, hsplit, hl1, hl2, hxget, hyget⟩ :=
+      exists_two_split Ts i.val j.val hij (by rw [hTslen]; exact j.isLt)
+    refine ⟨Ts₁, T, Ts₂, T', Ts₃, hsplit, ?_, ?_⟩
+    · rw [hxget]
+      have hbound : i.val < Ts.length := by rw [hTslen]; exact i.isLt
+      rw [List.get_eq_getElem]
+      have hget : Ts[i.val]'hbound
+          = Finset.univ.filter (fun x => σ i.castSucc x ≠ σ i.succ x) := by
+        simp only [hTs, List.getElem_ofFn]
+      rw [hget, Finset.mem_filter]
+      refine ⟨Finset.mem_univ c, ?_⟩
+      have hmm : i ∈ Finset.univ.filter (fun e => σ e.castSucc c ≠ σ e.succ c) :=
+        E1.min'_mem hE1ne
+      rw [Finset.mem_filter] at hmm
+      exact hmm.2
+    · rw [hyget]
+      have hbound : j.val < Ts.length := by rw [hTslen]; exact j.isLt
+      rw [List.get_eq_getElem]
+      have hget : Ts[j.val]'hbound
+          = Finset.univ.filter (fun x => σ j.castSucc x ≠ σ j.succ x) := by
+        simp only [hTs, List.getElem_ofFn]
+      rw [hget, Finset.mem_filter]
+      refine ⟨Finset.mem_univ _, ?_⟩
+      have hmm : j ∈ Finset.univ.filter (fun e => σ e.castSucc (μ c) ≠ σ e.succ (μ c)) :=
+        E2.max'_mem hE2ne
+      rw [Finset.mem_filter] at hmm
+      exact hmm.2
 
 end MatrixModel
+
 
 end ListColoring
