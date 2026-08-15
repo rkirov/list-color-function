@@ -176,4 +176,171 @@ theorem peel_step (L : ListAssignment V) (w : V → ℕ → ℕ) {r u : V} (hru 
           Nat.mul_le_mul (hlow c) (hlow d)
 
 
+
+section Deletion
+
+/-- Splitting a product over all vertices at one vertex. -/
+theorem prod_delOption (F : V → ℕ) (u : V) :
+    (∏ v, F v) = F u * ∏ v : {y : V // y ≠ u}, F v.val := by
+  rw [← Fintype.prod_equiv (delOptionEquiv u)
+    (fun o => F ((delOptionEquiv u) o)) F (fun o => rfl)]
+  rw [Fintype.prod_option]
+  rfl
+
+/-- **Vertex deletion**: with the weight trivial at `u`, the doubly rooted count is the sum
+over colorings of the complement compatible with `a` at `u`. -/
+theorem rootedWcol2_delete {r u : V} (hru : r ≠ u) (L : ListAssignment V) (w : V → ℕ → ℕ)
+    (c a : ℕ) (ha : a ∈ L u) :
+    rootedWcol2 G L (fun v e => if v = u then 1 else w v e) r c u a
+      = ∑ g ∈ ((G.induce {y | y ≠ u}).colorings (fun v => L v.val)).filter
+          (fun g => g ⟨r, hru⟩ = c ∧ ∀ y : {y : V // y ≠ u}, G.Adj u y.val → g y ≠ a),
+          ∏ v : {y : V // y ≠ u}, w v.val (g v) := by
+  rw [rootedWcol2]
+  refine Finset.sum_nbij' (fun f => fun v => f v.val)
+    (fun g => fun v => if hv : v = u then a else g ⟨v, hv⟩) ?_ ?_ ?_ ?_ ?_
+  · -- forward membership
+    intro f hf
+    rw [Finset.mem_filter, SimpleGraph.mem_colorings_iff] at hf
+    obtain ⟨⟨hmem, hprop⟩, hfr, hfu⟩ := hf
+    rw [Finset.mem_filter, SimpleGraph.mem_colorings_iff]
+    exact ⟨⟨fun v => hmem v.val, fun v y hadj => hprop v.val y.val hadj⟩, hfr,
+      fun y hadj h => hprop u y.val hadj (hfu.trans (h.symm : a = f y.val))⟩
+  · -- backward membership
+    intro g hg
+    rw [Finset.mem_filter, SimpleGraph.mem_colorings_iff] at hg
+    obtain ⟨⟨hmem, hprop⟩, hgr, hcompat⟩ := hg
+    rw [Finset.mem_filter, SimpleGraph.mem_colorings_iff]
+    refine ⟨⟨?_, ?_⟩, ?_, ?_⟩
+    · intro v
+      by_cases hv : v = u
+      · rw [dif_pos hv, hv]
+        exact ha
+      · rw [dif_neg hv]
+        exact hmem _
+    · intro v y hadj
+      by_cases hv : v = u
+      · rw [dif_pos hv]
+        by_cases hy : y = u
+        · exact absurd (hv ▸ hy ▸ hadj) (G.irrefl)
+        · rw [dif_neg hy]
+          exact fun h => hcompat ⟨y, hy⟩ (hv ▸ hadj) h.symm
+      · rw [dif_neg hv]
+        by_cases hy : y = u
+        · rw [dif_pos hy]
+          exact fun h => hcompat ⟨v, hv⟩ (hy ▸ hadj.symm) h
+        · rw [dif_neg hy]
+          exact hprop ⟨v, hv⟩ ⟨y, hy⟩ hadj
+    · show (if hv : r = u then a else g ⟨r, hv⟩) = c
+      rw [dif_neg hru]
+      exact hgr
+    · show (if hv : u = u then a else g ⟨u, hv⟩) = a
+      rw [dif_pos rfl]
+  · -- left inverse
+    intro f hf
+    rw [Finset.mem_filter] at hf
+    funext v
+    show (if hv : v = u then a else f v) = f v
+    by_cases hv : v = u
+    · rw [dif_pos hv, ← hf.2.2, hv]
+    · rw [dif_neg hv]
+  · -- right inverse
+    intro g hg
+    funext v
+    show (if hv : (v : V) = u then a else g ⟨v, hv⟩) = g v
+    rw [dif_neg v.property]
+  · -- summand
+    intro f hf
+    rw [Finset.mem_filter] at hf
+    rw [prod_delOption (fun v => if v = u then 1 else w v (f v)) u, if_pos rfl, one_mul]
+    refine Finset.prod_congr rfl fun v _ => ?_
+    rw [if_neg v.property]
+
+end Deletion
+
+section Slack
+
+set_option maxHeartbeats 1600000 in
+/-- **The extension-count slack**: at a vertex with at most two neighbours carrying a `k`-list,
+`k ≥ 4`, every bare slice is dominated by the sum of the others. -/
+theorem slack_of_two_nbrs {r u : V} (hru : r ≠ u) {n₁ n₂ : V}
+    (hnbrs : ∀ y, G.Adj u y → y = n₁ ∨ y = n₂)
+    {k : ℕ} (hk : 4 ≤ k) (L : ListAssignment V) (hLu : (L u).card = k)
+    (w : V → ℕ → ℕ) (c' : ℕ) :
+    ∀ a ∈ L u,
+      rootedWcol2 G L (fun v e => if v = u then 1 else w v e) r c' u a ≤
+        ∑ e ∈ (L u).erase a,
+          rootedWcol2 G L (fun v e => if v = u then 1 else w v e) r c' u e := by
+  intro a ha
+  rw [rootedWcol2_delete hru L w c' a ha]
+  have hrw : ∀ e ∈ (L u).erase a,
+      rootedWcol2 G L (fun v e' => if v = u then 1 else w v e') r c' u e
+        = ∑ g ∈ ((G.induce {y | y ≠ u}).colorings (fun v => L v.val)).filter
+            (fun g => g ⟨r, hru⟩ = c' ∧ ∀ y : {y : V // y ≠ u}, G.Adj u y.val → g y ≠ e),
+            ∏ v : {y : V // y ≠ u}, w v.val (g v) := fun e he =>
+    rootedWcol2_delete hru L w c' e (Finset.mem_of_mem_erase he)
+  rw [Finset.sum_congr rfl hrw]
+  -- rewrite both sides as indicator sums over the root-filtered base set
+  have hsplit : ∀ b : ℕ,
+      (∑ g ∈ ((G.induce {y | y ≠ u}).colorings (fun v => L v.val)).filter
+          (fun g => g ⟨r, hru⟩ = c' ∧ ∀ y : {y : V // y ≠ u}, G.Adj u y.val → g y ≠ b),
+          ∏ v : {y : V // y ≠ u}, w v.val (g v))
+        = ∑ g ∈ ((G.induce {y | y ≠ u}).colorings (fun v => L v.val)).filter
+            (fun g => g ⟨r, hru⟩ = c'),
+            (if (∀ y : {y : V // y ≠ u}, G.Adj u y.val → g y ≠ b) then
+              ∏ v : {y : V // y ≠ u}, w v.val (g v) else 0) := by
+    intro b
+    rw [← Finset.sum_filter, Finset.filter_filter]
+  rw [hsplit a, Finset.sum_congr rfl (fun e he => hsplit e), Finset.sum_comm]
+  refine Finset.sum_le_sum fun g hg => ?_
+  by_cases hcompat : ∀ y : {y : V // y ≠ u}, G.Adj u y.val → g y ≠ a
+  · rw [if_pos hcompat]
+    -- the excluded colour values: the image of `g` on the ≤ 2 neighbours of `u`
+    set D : Finset ℕ :=
+      (Finset.univ.filter (fun y : {y : V // y ≠ u} => G.Adj u y.val)).image g with hD
+    have hDcard : D.card ≤ 2 := by
+      have h1 : (Finset.univ.filter (fun y : {y : V // y ≠ u} => G.Adj u y.val)).card
+          = ((Finset.univ.filter
+              (fun y : {y : V // y ≠ u} => G.Adj u y.val)).image Subtype.val).card :=
+        (Finset.card_image_of_injective _ Subtype.val_injective).symm
+      have h2 : ((Finset.univ.filter
+          (fun y : {y : V // y ≠ u} => G.Adj u y.val)).image Subtype.val)
+          ⊆ ({n₁, n₂} : Finset V) := by
+        intro v hv
+        rw [Finset.mem_image] at hv
+        obtain ⟨y, hy, rfl⟩ := hv
+        rw [Finset.mem_filter] at hy
+        rcases hnbrs y.val hy.2 with h | h
+        · exact Finset.mem_insert.mpr (Or.inl h)
+        · exact Finset.mem_insert.mpr (Or.inr (Finset.mem_singleton.mpr h))
+      calc D.card ≤ (Finset.univ.filter
+            (fun y : {y : V // y ≠ u} => G.Adj u y.val)).card := Finset.card_image_le
+        _ = _ := h1
+        _ ≤ ({n₁, n₂} : Finset V).card := Finset.card_le_card h2
+        _ ≤ 2 := Finset.card_insert_le _ _ |>.trans (by simp)
+    have hT : (((L u).erase a) \ D).Nonempty := by
+      rw [← Finset.card_pos]
+      have := Finset.le_card_sdiff D ((L u).erase a)
+      rw [Finset.card_erase_of_mem ha, hLu] at this
+      omega
+    obtain ⟨e, he⟩ := hT
+    rw [Finset.mem_sdiff] at he
+    obtain ⟨hea, heD⟩ := he
+    have hecompat : ∀ y : {y : V // y ≠ u}, G.Adj u y.val → g y ≠ e := by
+      intro y hy hcon
+      exact heD (Finset.mem_image.mpr ⟨y, Finset.mem_filter.mpr ⟨Finset.mem_univ _, hy⟩, hcon⟩)
+    calc (∏ v : {y : V // y ≠ u}, w v.val (g v))
+        = (if (∀ y : {y : V // y ≠ u}, G.Adj u y.val → g y ≠ e) then
+            ∏ v : {y : V // y ≠ u}, w v.val (g v) else 0) := by rw [if_pos hecompat]
+      _ ≤ ∑ e' ∈ (L u).erase a,
+            (if (∀ y : {y : V // y ≠ u}, G.Adj u y.val → g y ≠ e') then
+              ∏ v : {y : V // y ≠ u}, w v.val (g v) else 0) :=
+          Finset.single_le_sum
+            (f := fun e' => if (∀ y : {y : V // y ≠ u}, G.Adj u y.val → g y ≠ e') then
+              ∏ v : {y : V // y ≠ u}, w v.val (g v) else 0)
+            (fun e' _ => Nat.zero_le _) hea
+  · rw [if_neg hcompat]
+    exact Nat.zero_le _
+
+end Slack
+
 end ListColoring
