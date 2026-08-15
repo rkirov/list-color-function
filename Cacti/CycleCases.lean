@@ -76,6 +76,84 @@ theorem rootCount_fixed (hk : 4 ≤ k) {Ts : List (Finset (Fin k))} {P : Equiv.P
   rw [h1]
   exact matmul_le_matmul (offDiag_pow_le_transferProd Ts) (fun _ _ => le_refl _) c c
 
+
+/-- The moved diagonal value clears `k - 2` for `s ≥ 1`. -/
+theorem moved_val_ge {s : ℕ} (hk : 3 ≤ k) (hs : 1 ≤ s) :
+    k - 2 ≤ alpha k s + (k - 2) * beta k s := by
+  have h := one_le_beta hk s hs
+  have h2 : k - 2 ≤ (k - 2) * beta k s := by
+    calc k - 2 = (k - 2) * 1 := by omega
+      _ ≤ (k - 2) * beta k s := Nat.mul_le_mul_left _ h
+  omega
+
+/-- **Any defined root clears the moved base** (`A - 1`), even cycles. -/
+theorem rootCount_defined_base (hk : 4 ≤ k) {Ts : List (Finset (Fin k))}
+    {P : Equiv.Perm (Fin k)} {dom : Finset (Fin k)} {c : Fin k} (hc : c ∈ dom) {n : ℕ}
+    (hn : 4 ≤ n) (hne : Even n) (hlen : Ts.length = n - 1) :
+    alpha k (n - 1) + (k - 2) * beta k (n - 1) ≤ rootCount Ts P dom c := by
+  have halt : beta k (n - 1) = alpha k (n - 1) + 1 :=
+    (beta_alternation (show 2 ≤ k by omega) (n - 1)).1
+      (Nat.Even.sub_odd (by omega) hne odd_one)
+  rw [rootCount, if_pos hc]
+  by_cases hfix : P.symm c = c
+  · have h1 : ((offDiag k ^ Ts.length) * offPerm P) c c = (k - 1) * beta k (n - 1) := by
+      rw [base_diag_fixed (show 1 ≤ k by omega) P hfix, hlen]
+    have h2 : alpha k (n - 1) + (k - 2) * beta k (n - 1) ≤ (k - 1) * beta k (n - 1) := by
+      have hsplitk : (k - 1) * beta k (n - 1)
+          = beta k (n - 1) + (k - 2) * beta k (n - 1) := by
+        rw [show k - 1 = 1 + (k - 2) from by omega, Nat.add_mul, Nat.one_mul]
+      rw [hsplitk]
+      omega
+    refine le_trans h2 (le_trans (le_of_eq h1.symm) ?_)
+    exact matmul_le_matmul (offDiag_pow_le_transferProd Ts) (fun _ _ => le_refl _) c c
+  · have h1 : ((offDiag k ^ Ts.length) * offPerm P) c c
+        = alpha k (n - 1) + (k - 2) * beta k (n - 1) := by
+      rw [base_diag_moved (show 1 ≤ k by omega) P hfix, hlen]
+    refine le_trans (le_of_eq h1.symm) ?_
+    exact matmul_le_matmul (offDiag_pow_le_transferProd Ts) (fun _ _ => le_refl _) c c
+
+/-- **The twisted master bound**: the moved base plus the leave and entry corrections. -/
+theorem rootCount_twisted (hk : 4 ≤ k) {P : Equiv.Perm (Fin k)}
+    {dom : Finset (Fin k)} {c : Fin k} (hc : c ∈ dom) (htw : P.symm c ≠ c) {n : ℕ}
+    (hn : 4 ≤ n)
+    (Ts₁ : List (Finset (Fin k))) (T : Finset (Fin k)) (Ts₂ : List (Finset (Fin k)))
+    (T' : Finset (Fin k)) (Ts₃ : List (Finset (Fin k)))
+    (hlen : (Ts₁ ++ T :: (Ts₂ ++ T' :: Ts₃)).length = n - 1)
+    (hcT : c ∈ T) (hmT' : P.symm c ∈ T') :
+    (alpha k (n - 1) + (k - 2) * beta k (n - 1))
+      + beta k (Ts₁.length + 1 + Ts₂.length) * ((k - 1) * beta k Ts₃.length)
+      + alpha k Ts₁.length *
+          (alpha k (Ts₂ ++ T' :: Ts₃).length + (k - 2) * beta k (Ts₂ ++ T' :: Ts₃).length)
+      ≤ rootCount (Ts₁ ++ T :: (Ts₂ ++ T' :: Ts₃)) P dom c := by
+  rw [rootCount, if_pos hc]
+  have hmono := matmul_le_matmul (le_transferProd_two Ts₁ T Ts₂ T' Ts₃)
+    (fun (i j : Fin k) => le_refl (offPerm P i j)) c c
+  refine le_trans ?_ hmono
+  rw [Matrix.add_mul, Matrix.add_mul, Matrix.add_apply, Matrix.add_apply]
+  refine Nat.add_le_add (Nat.add_le_add ?_ ?_) ?_
+  · -- the pure base
+    have h := offDiag_pow_mulOffPerm_apply (show 1 ≤ k by omega)
+      ((Ts₁ ++ T :: (Ts₂ ++ T' :: Ts₃)).length) P c c
+    rw [if_neg (fun h' : c = P.symm c => htw h'.symm)] at h
+    rw [← hlen]
+    exact le_of_eq h.symm
+  · -- the entry correction at `T'`
+    have hcg := corr_diag_ge (Ts₁.length + 1 + Ts₂.length) T'
+      ((offDiag k ^ Ts₃.length) * offPerm P) c (P.symm c) hmT'
+    rw [offDiag_pow_apply (show 1 ≤ k by omega),
+      if_neg (fun h' : c = P.symm c => htw h'.symm),
+      offDiag_pow_mulOffPerm_apply (show 1 ≤ k by omega), if_pos rfl] at hcg
+    rw [Matrix.mul_assoc]
+    exact hcg
+  · -- the leave correction at `T`
+    have hcg := corr_diag_ge Ts₁.length T
+      ((offDiag k ^ (Ts₂ ++ T' :: Ts₃).length) * offPerm P) c c hcT
+    rw [offDiag_pow_apply (show 1 ≤ k by omega), if_pos rfl,
+      offDiag_pow_mulOffPerm_apply (show 1 ≤ k by omega),
+      if_neg (fun h' : c = P.symm c => htw h'.symm)] at hcg
+    rw [Matrix.mul_assoc]
+    exact hcg
+
 end SingleRoot
 
 end ListColoring
