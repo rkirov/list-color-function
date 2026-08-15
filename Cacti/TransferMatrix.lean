@@ -208,4 +208,129 @@ theorem offDiag_pow_apply (hk : 1 ≤ k) :
 
 end Matrices
 
+
+section Expansion
+
+open Matrix
+
+variable {k : ℕ}
+
+/-- Entrywise matrix inequality over `ℕ` is preserved by multiplication. -/
+theorem matmul_le_matmul {A A' B B' : Matrix (Fin k) (Fin k) ℕ}
+    (hA : ∀ i j, A i j ≤ A' i j) (hB : ∀ i j, B i j ≤ B' i j) :
+    ∀ i j, (A * B) i j ≤ (A' * B') i j := by
+  intro i j
+  rw [Matrix.mul_apply, Matrix.mul_apply]
+  exact Finset.sum_le_sum fun e _ => Nat.mul_le_mul (hA i e) (hB e j)
+
+/-- The transfer product of a list of index sets. -/
+def transferProd (Ts : List (Finset (Fin k))) : Matrix (Fin k) (Fin k) ℕ :=
+  (Ts.map (fun T => offDiag k + diagInd T)).prod
+
+@[simp] theorem transferProd_nil : transferProd ([] : List (Finset (Fin k))) = 1 := rfl
+
+theorem transferProd_cons (T : Finset (Fin k)) (Ts : List (Finset (Fin k))) :
+    transferProd (T :: Ts) = (offDiag k + diagInd T) * transferProd Ts := by
+  rw [transferProd, List.map_cons, List.prod_cons, transferProd]
+
+theorem transferProd_append (Ts₁ Ts₂ : List (Finset (Fin k))) :
+    transferProd (Ts₁ ++ Ts₂) = transferProd Ts₁ * transferProd Ts₂ := by
+  rw [transferProd, List.map_append, List.prod_append, transferProd, transferProd]
+
+/-- The pure part: `(J-I)^len ≤ transferProd`. -/
+theorem offDiag_pow_le_transferProd (Ts : List (Finset (Fin k))) :
+    ∀ i j, (offDiag k ^ Ts.length) i j ≤ transferProd Ts i j := by
+  induction Ts with
+  | nil => intro i j; simp
+  | cons T Ts ih =>
+    intro i j
+    rw [transferProd_cons, List.length_cons, pow_succ']
+    refine matmul_le_matmul (fun i' j' => ?_) ih i j
+    show offDiag k i' j' ≤ (offDiag k + diagInd T) i' j'
+    exact Nat.le_add_right _ _
+
+/-- **One retained correction**: the pure power plus one diagonal insertion. -/
+theorem le_transferProd_one (Ts₁ : List (Finset (Fin k))) (T : Finset (Fin k))
+    (Ts₂ : List (Finset (Fin k))) :
+    ∀ i j, ((offDiag k ^ (Ts₁ ++ T :: Ts₂).length) +
+        (offDiag k ^ Ts₁.length) * diagInd T * (offDiag k ^ Ts₂.length)) i j ≤
+      transferProd (Ts₁ ++ T :: Ts₂) i j := by
+  intro i j
+  rw [transferProd_append, transferProd_cons]
+  have hexp : transferProd Ts₁ * ((offDiag k + diagInd T) * transferProd Ts₂)
+      = transferProd Ts₁ * (offDiag k * transferProd Ts₂) +
+        transferProd Ts₁ * (diagInd T * transferProd Ts₂) := by
+    rw [Matrix.add_mul, Matrix.mul_add]
+  rw [hexp]
+  rw [Matrix.add_apply, Matrix.add_apply]
+  refine Nat.add_le_add ?_ ?_
+  · have h1 : ∀ i j, (offDiag k ^ (Ts₁ ++ T :: Ts₂).length) i j
+        ≤ (transferProd Ts₁ * (offDiag k * transferProd Ts₂)) i j := by
+      intro i j
+      have hlen : (Ts₁ ++ T :: Ts₂).length = Ts₁.length + (1 + Ts₂.length) := by
+        simp [List.length_append]
+        omega
+      rw [hlen, pow_add, pow_add, pow_one]
+      exact matmul_le_matmul (offDiag_pow_le_transferProd Ts₁)
+        (matmul_le_matmul (fun _ _ => le_refl _) (offDiag_pow_le_transferProd Ts₂)) i j
+    exact h1 i j
+  · have h2 : (offDiag k ^ Ts₁.length) * diagInd T * (offDiag k ^ Ts₂.length)
+        = (offDiag k ^ Ts₁.length) * (diagInd T * (offDiag k ^ Ts₂.length)) := by
+      rw [Matrix.mul_assoc]
+    rw [h2]
+    exact matmul_le_matmul (offDiag_pow_le_transferProd Ts₁)
+      (matmul_le_matmul (fun _ _ => le_refl _) (offDiag_pow_le_transferProd Ts₂)) i j
+
+
+/-- **Two retained corrections**: the pure power plus two diagonal insertions. -/
+theorem le_transferProd_two (Ts₁ : List (Finset (Fin k))) (T : Finset (Fin k))
+    (Ts₂ : List (Finset (Fin k))) (T' : Finset (Fin k)) (Ts₃ : List (Finset (Fin k))) :
+    ∀ i j, ((offDiag k ^ (Ts₁ ++ T :: (Ts₂ ++ T' :: Ts₃)).length)
+        + (offDiag k ^ (Ts₁.length + 1 + Ts₂.length)) * diagInd T' * (offDiag k ^ Ts₃.length)
+        + (offDiag k ^ Ts₁.length) * diagInd T *
+            (offDiag k ^ (Ts₂ ++ T' :: Ts₃).length)) i j ≤
+      transferProd (Ts₁ ++ T :: (Ts₂ ++ T' :: Ts₃)) i j := by
+  intro i j
+  rw [transferProd_append, transferProd_cons]
+  have hexp : transferProd Ts₁ * ((offDiag k + diagInd T) * transferProd (Ts₂ ++ T' :: Ts₃))
+      = transferProd Ts₁ * (offDiag k * transferProd (Ts₂ ++ T' :: Ts₃))
+        + transferProd Ts₁ * (diagInd T * transferProd (Ts₂ ++ T' :: Ts₃)) := by
+    rw [Matrix.add_mul, Matrix.mul_add]
+  rw [hexp, Matrix.add_apply, Matrix.add_apply]
+  refine Nat.add_le_add ?_ ?_
+  · -- the pure part and the second correction ride inside `P₁ · (E · Q)`
+    have hkey : ∀ i' j', ((offDiag k ^ (Ts₁ ++ T :: (Ts₂ ++ T' :: Ts₃)).length)
+          + (offDiag k ^ (Ts₁.length + 1 + Ts₂.length)) * diagInd T' *
+              (offDiag k ^ Ts₃.length)) i' j'
+        ≤ ((offDiag k ^ Ts₁.length) *
+            (offDiag k * ((offDiag k ^ (Ts₂ ++ T' :: Ts₃).length)
+              + (offDiag k ^ Ts₂.length) * diagInd T' * (offDiag k ^ Ts₃.length)))) i' j' := by
+      intro i' j'
+      have hda : (offDiag k ^ Ts₁.length) *
+          (offDiag k * ((offDiag k ^ (Ts₂ ++ T' :: Ts₃).length)
+            + (offDiag k ^ Ts₂.length) * diagInd T' * (offDiag k ^ Ts₃.length)))
+          = (offDiag k ^ (Ts₁ ++ T :: (Ts₂ ++ T' :: Ts₃)).length)
+            + (offDiag k ^ (Ts₁.length + 1 + Ts₂.length)) * diagInd T' *
+                (offDiag k ^ Ts₃.length) := by
+        rw [Matrix.mul_add, Matrix.mul_add]
+        congr 1
+        · have hlen : (Ts₁ ++ T :: (Ts₂ ++ T' :: Ts₃)).length
+              = Ts₁.length + (1 + (Ts₂ ++ T' :: Ts₃).length) := by
+            simp [List.length_append]
+            omega
+          rw [hlen, pow_add, pow_add, pow_one]
+        · rw [show Ts₁.length + 1 + Ts₂.length = Ts₁.length + (1 + Ts₂.length) from by omega,
+            pow_add, pow_add, pow_one]
+          rw [Matrix.mul_assoc, Matrix.mul_assoc, Matrix.mul_assoc, Matrix.mul_assoc]
+      rw [hda]
+    refine le_trans (hkey i j) ?_
+    exact matmul_le_matmul (offDiag_pow_le_transferProd Ts₁)
+      (matmul_le_matmul (fun _ _ => le_refl _) (le_transferProd_one Ts₂ T' Ts₃)) i j
+  · rw [Matrix.mul_assoc]
+    exact matmul_le_matmul (offDiag_pow_le_transferProd Ts₁)
+      (matmul_le_matmul (fun _ _ => le_refl _)
+        (offDiag_pow_le_transferProd (Ts₂ ++ T' :: Ts₃))) i j
+
+end Expansion
+
 end ListColoring
