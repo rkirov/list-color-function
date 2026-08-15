@@ -133,4 +133,97 @@ theorem exists_extendEnum {A B : Finset ℕ} (hA : A.card = k) (hB : B.card = k)
     simp only [hτ]
     rw [dif_pos (by rw [hs, Finset.mem_filter]; exact ⟨Finset.mem_univ i, hiB⟩)]
 
+
+section Chain
+
+variable {k : ℕ}
+
+/-- An arbitrary enumeration of a `k`-list. -/
+theorem exists_enum {A : Finset ℕ} (hA : A.card = k) :
+    ∃ σ : Fin k → ℕ, (∀ i, σ i ∈ A) ∧ Function.Injective σ := by
+  classical
+  obtain ⟨g⟩ : Nonempty ((Finset.univ : Finset (Fin k)) ≃ A) :=
+    ⟨Finset.equivOfCardEq (by rw [Finset.card_univ, Fintype.card_fin, hA])⟩
+  refine ⟨fun i => (g ⟨i, Finset.mem_univ i⟩ : ℕ),
+    fun i => (g ⟨i, Finset.mem_univ i⟩).property, ?_⟩
+  intro a b hab
+  have h2 := g.injective (Subtype.ext hab)
+  have h3 := congrArg Subtype.val h2
+  exact h3
+
+/-- **The equality-extending enumeration chain**: enumerations of a path of `k`-lists, each
+agreeing with the previous on shared colours. -/
+theorem exists_enum_chain {n : ℕ} (hn : 1 ≤ n) (Ls : Fin n → Finset ℕ)
+    (hLs : ∀ i, (Ls i).card = k) :
+    ∃ σ : Fin n → Fin k → ℕ,
+      (∀ i x, σ i x ∈ Ls i) ∧ (∀ i, Function.Injective (σ i)) ∧
+      ∀ (i : Fin n) (h : i.val + 1 < n) (x : Fin k),
+        σ i x ∈ Ls ⟨i.val + 1, h⟩ → σ ⟨i.val + 1, h⟩ x = σ i x := by
+  classical
+  obtain ⟨σ₀, hσ₀mem, hσ₀inj⟩ := exists_enum (hLs ⟨0, by omega⟩)
+  have main : ∀ j, j < n → ∃ σs : Fin n → Fin k → ℕ,
+      (∀ i : Fin n, i.val ≤ j → (∀ x, σs i x ∈ Ls i) ∧ Function.Injective (σs i)) ∧
+      (∀ (i : Fin n) (h : i.val + 1 < n), i.val + 1 ≤ j → ∀ x,
+        σs i x ∈ Ls ⟨i.val + 1, h⟩ → σs ⟨i.val + 1, h⟩ x = σs i x) := by
+    intro j
+    induction j with
+    | zero =>
+      intro _
+      refine ⟨fun _ => σ₀, fun i hi => ?_, fun i h h1 x => absurd h1 (by omega)⟩
+      have hi0 : i = ⟨0, by omega⟩ := by
+        apply Fin.ext
+        show i.val = 0
+        omega
+      rw [hi0]
+      exact ⟨hσ₀mem, hσ₀inj⟩
+    | succ j IHj =>
+      intro hjn
+      obtain ⟨σs, hmem, hmatch⟩ := IHj (by omega)
+      have hj : (⟨j, by omega⟩ : Fin n).val ≤ j := le_refl j
+      obtain ⟨hjm, hji⟩ := hmem ⟨j, by omega⟩ hj
+      obtain ⟨τ, hτmem, hτinj, hτmatch⟩ :=
+        exists_extendEnum (A := Ls ⟨j, by omega⟩) (B := Ls ⟨j + 1, hjn⟩)
+          (hLs _) (hLs _) (σs ⟨j, by omega⟩) hjm hji
+      refine ⟨Function.update σs ⟨j + 1, hjn⟩ τ, ?_, ?_⟩
+      · intro i hi
+        by_cases hij : i = ⟨j + 1, hjn⟩
+        · rw [hij, Function.update_self]
+          exact ⟨hτmem, hτinj⟩
+        · rw [Function.update_of_ne hij]
+          refine hmem i ?_
+          have : i.val ≠ j + 1 := fun h => hij (Fin.ext h)
+          omega
+      · intro i h h1 x
+        by_cases hij : (⟨i.val + 1, h⟩ : Fin n) = ⟨j + 1, hjn⟩
+        · have hival : i.val = j := by
+            have := congrArg Fin.val hij
+            simpa using this
+          have hjlt : j < n := Nat.lt_of_succ_lt hjn
+          have hieq : i = (⟨j, hjlt⟩ : Fin n) := Fin.ext hival
+          subst hieq
+          have hine : (⟨j, by omega⟩ : Fin n) ≠ (⟨j + 1, hjn⟩ : Fin n) := by
+            intro hcon
+            have := congrArg Fin.val hcon
+            simp at this
+          intro hx
+          rw [Function.update_of_ne hine] at hx
+          rw [hij, Function.update_self, Function.update_of_ne hine]
+          exact hτmatch x hx
+        · have h2 : i.val + 1 ≤ j := by
+            have : i.val + 1 ≠ j + 1 := fun hc => hij (Fin.ext hc)
+            omega
+          have hine : i ≠ (⟨j + 1, hjn⟩ : Fin n) := by
+            intro hcon
+            have := congrArg Fin.val hcon
+            simp at this
+            omega
+          rw [Function.update_of_ne hij, Function.update_of_ne hine]
+          exact hmatch i h h2 x
+  obtain ⟨σs, hmem, hmatch⟩ := main (n - 1) (by omega)
+  refine ⟨σs, fun i x => (hmem i (by omega)).1 x, fun i => (hmem i (by omega)).2,
+    fun i h x => hmatch i h (by omega) x⟩
+
+end Chain
+
+
 end ListColoring
