@@ -13,6 +13,7 @@ import Cacti.AbsorbProfile
 import Cacti.Uniform
 import Cacti.Bridge
 import Cacti.Induction
+import Cacti.CyclePair
 import Cacti.UniformProfile
 import Cacti.Statements
 
