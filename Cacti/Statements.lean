@@ -3,6 +3,7 @@ Copyright (c) 2026. All rights reserved.
 Released under Apache 2.0 license.
 -/
 import Cacti.RootedProfile
+import Cacti.LeafPeeling
 
 /-!
 # The cactus classification: target statements
@@ -40,11 +41,18 @@ theorem isCactus_ecc_of_three_le {k : ℕ} (hk : 3 ≤ k) (hG : IsCactus G) : G.
 
 /-- **The exact `k = 2` cactus classification**: a connected cactus is `2`-ECC iff it has at
 most one cycle or contains an odd cycle. Routes through the formalized
-`ListColoring.ecc_two_iff` (Kirov–Naimi Theorem 2 + Rubin); the remaining content is the
-cactus core analysis (handoff §3). -/
+`ListColoring.ecc_two_iff` (Kirov–Naimi Theorem 2 + Rubin) and the cactus core analysis
+(handoff §3): forward by the four-way core case split (`K₂,₃` impossible in a cactus,
+vertex/cycle cores transported by cycle descent), reverse by leaf peeling. -/
 theorem isCactus_ecc_two_iff (hG : IsCactus G) :
     G.ECCAt 2 ↔ HasAtMostOneCycle G ∨ HasOddCycle G := by
-  sorry
+  constructor
+  · exact hasAtMostOneCycle_or_hasOddCycle_of_ecc_two hG
+  · rintro (h | h)
+    · rcases coreIsVertex_or_coreIsCycle (Fintype.card V) V G rfl hG.1 h with hv | hc
+      · exact ecc_of_coreIsVertex hv 2
+      · exact ecc_of_coreIsCycle hc 2
+    · exact ecc_two_of_hasOddCycle h
 
 /-- **The full cactus spectrum** (handoff Theorem A): a connected cactus is ECC at every size
 iff it has at most one cycle or contains an odd cycle. -/

@@ -181,6 +181,151 @@ def addPendantCongr {U U' : Type} {H : SimpleGraph U} {H' : SimpleGraph U'} (f :
 
 end LeafDeletion
 
+section Gluing
+
+variable {V : Type} [DecidableEq V] {G : SimpleGraph V}
+
+/-- **Gluing two internally disjoint, edge-disjoint paths into a cycle.** -/
+theorem isCycle_append_of_isPath {a b : V} {p : G.Walk a b} {q : G.Walk b a}
+    (hp : p.IsPath) (hq : q.IsPath) (hab : a ≠ b)
+    (hint : ∀ x, x ∈ p.support → x ∈ q.support → x = a ∨ x = b)
+    (hedges : ∀ e ∈ p.edges, e ∉ q.edges) : (p.append q).IsCycle := by
+  refine ⟨⟨⟨?_⟩, ?_⟩, ?_⟩
+  · rw [Walk.edges_append]
+    exact List.nodup_append.mpr ⟨hp.isTrail.edges_nodup, hq.isTrail.edges_nodup,
+      fun e he e' he' => fun h => hedges e he (h ▸ he')⟩
+  · intro h
+    have hlen := congrArg Walk.length h
+    rw [Walk.length_append] at hlen
+    have hp1 : 0 < p.length := by
+      rcases Nat.eq_zero_or_pos p.length with h0 | h0
+      · exact absurd (Walk.eq_of_length_eq_zero h0) hab
+      · exact h0
+    simp only [Walk.length_nil] at hlen
+    omega
+  · have hsupp : (p.append q).support = p.support ++ q.support.tail :=
+      Walk.support_append p q
+    have hps : p.support = a :: p.support.tail := p.support_eq_cons
+    have htail : (p.append q).support.tail = p.support.tail ++ q.support.tail := by
+      rw [hsupp, hps]
+      rfl
+    rw [htail]
+    refine List.nodup_append.mpr ⟨(List.tail_sublist _).nodup hp.support_nodup,
+      (List.tail_sublist _).nodup hq.support_nodup, ?_⟩
+    intro x hx y hy hxy
+    subst hxy
+    have hx' : x ∈ p.support := List.mem_of_mem_tail hx
+    have hy' : x ∈ q.support := List.mem_of_mem_tail hy
+    rcases hint x hx' hy' with rfl | rfl
+    · have : x ∉ p.support.tail := by
+        have hnodup := hp.support_nodup
+        rw [hps] at hnodup
+        exact (List.nodup_cons.mp hnodup).1
+      exact this hx
+    · have : x ∉ q.support.tail := by
+        have hnodup := hq.support_nodup
+        rw [q.support_eq_cons] at hnodup
+        exact (List.nodup_cons.mp hnodup).1
+      exact this hy
+
+end Gluing
+
+section Endgame
+
+variable {V : Type} [Fintype V] [DecidableEq V] {G : SimpleGraph V} [DecidableRel G.Adj]
+
+/-- **In a connected graph with at most one cycle and minimum degree two, every edge lies on
+the cycle.** Otherwise Rubin's connecting path plus an arc of the cycle glues into a second
+cycle whose edge set differs. -/
+theorem forall_edge_mem_of_hasAtMostOneCycle (hconn : G.Connected)
+    (hdeg : ∀ v : V, 2 ≤ G.degree v) (h1 : HasAtMostOneCycle G)
+    {v₀ : V} {c : G.Walk v₀ v₀} (hc : c.IsCycle) :
+    ∀ x y, G.Adj x y → s(x, y) ∈ c.edges := by
+  by_contra hcon
+  push_neg at hcon
+  obtain ⟨x, y, hxy, hnot⟩ := hcon
+  have hcycmeet : ∀ (z : V) (d : G.Walk z z), d.IsCycle →
+      ∃ s ∈ d.support, ∃ t ∈ d.support, s ∈ c.support ∧ t ∈ c.support ∧ s ≠ t := by
+    intro z d hd
+    have hne : d.edges ≠ [] := by
+      intro h
+      have h3 := hd.three_le_length
+      have h4 := d.length_edges
+      rw [h] at h4
+      simp at h4
+      omega
+    obtain ⟨e, he⟩ := List.exists_mem_of_ne_nil _ hne
+    have hec : e ∈ c.edges := by
+      have heq := h1 d c hd hc
+      have h4 : e ∈ d.edges.toFinset := List.mem_toFinset.mpr he
+      rw [heq] at h4
+      exact List.mem_toFinset.mp h4
+    revert he hec
+    induction e using Sym2.ind with
+    | _ s t =>
+      intro he hec
+      exact ⟨s, d.fst_mem_support_of_mem_edges he, t, d.snd_mem_support_of_mem_edges he,
+        c.fst_mem_support_of_mem_edges hec, c.snd_mem_support_of_mem_edges hec,
+        (d.adj_of_mem_edges he).ne⟩
+  obtain ⟨a, b, p, hac, hbc, hab, hp, hlen, hint, hpedges⟩ :=
+    exists_connecting_path_of_cycle hconn hdeg ⟨x, y, hxy, hnot⟩ hcycmeet
+  have hamem : a ∈ (c.rotate b hbc).support :=
+    ((c.mem_support_rotate_iff b hbc).mpr hac : _)
+  set arc := (c.rotate b hbc).takeUntil a hamem with harc
+  have harc_path : arc.IsPath := (hc.rotate hbc).isPath_takeUntil hamem
+  have harc_supp : ∀ z, z ∈ arc.support → z ∈ c.support := fun z hz =>
+    (c.mem_support_rotate_iff b hbc).mp
+      ((c.rotate b hbc).support_takeUntil_subset hamem hz)
+  have harc_edges : ∀ e, e ∈ arc.edges → e ∈ c.edges := fun e he =>
+    (c.rotate_edges b hbc).perm.mem_iff.mp
+      ((c.rotate b hbc).edges_takeUntil_subset_edges hamem he)
+  have hglue : (p.append arc).IsCycle := by
+    apply isCycle_append_of_isPath hp harc_path hab
+    · intro z hz hz'
+      by_contra hcontra
+      push_neg at hcontra
+      exact (hint z hz hcontra.1 hcontra.2) (harc_supp z hz')
+    · intro e he he'
+      exact hpedges e he (harc_edges e he')
+  -- the glued cycle contains an off-`c` edge, contradicting at-most-one-cycle
+  have hpne : ¬ p.Nil := Walk.not_nil_of_ne hab
+  have hfirst : s(a, p.snd) ∈ p.edges := by
+    have h2 : (p.firstDart hpne) ∈ p.darts := Walk.firstDart_mem_darts hpne
+    rw [← p.edge_firstDart hpne]
+    exact List.mem_map_of_mem h2
+  have hmem_glue : s(a, p.snd) ∈ (p.append arc).edges := by
+    rw [Walk.edges_append]
+    exact List.mem_append_left _ hfirst
+  have heq := h1 _ c hglue hc
+  have : s(a, p.snd) ∈ c.edges := by
+    have h4 : s(a, p.snd) ∈ (p.append arc).edges.toFinset :=
+      List.mem_toFinset.mpr hmem_glue
+    rw [heq] at h4
+    exact List.mem_toFinset.mp h4
+  exact hpedges _ hfirst this
+
+
+/-- Every vertex lies on the cycle, once every edge does. -/
+theorem forall_mem_support_of_forall_edge_mem (hdeg : ∀ v : V, 2 ≤ G.degree v)
+    {v₀ : V} {c : G.Walk v₀ v₀}
+    (hall : ∀ x y, G.Adj x y → s(x, y) ∈ c.edges) (v : V) : v ∈ c.support := by
+  have hpos : 0 < G.degree v := lt_of_lt_of_le Nat.zero_lt_two (hdeg v)
+  obtain ⟨w, hw⟩ := (G.degree_pos_iff_exists_adj v).mp hpos
+  exact c.fst_mem_support_of_mem_edges (hall v w hw)
+
+/-- **The cycle-core construction**: a connected graph with minimum degree two whose edges and
+vertices all lie on one cycle `c` is isomorphic to `closePath (c.length - 1)`.
+
+The isomorphism indexes vertices along the cycle: `getVert` is injective on `[0, length)`
+(`cycleWalk_injOn`), surjective by the support hypothesis, and maps the cycle adjacency to the
+index adjacency of `ListColoring.closePath_adj_pathVtx_fin`. -/
+theorem coreIsCycle_of_forall_edge_mem (hconn : G.Connected)
+    (hdeg : ∀ v : V, 2 ≤ G.degree v) {v₀ : V} {c : G.Walk v₀ v₀} (hc : c.IsCycle)
+    (hall : ∀ x y, G.Adj x y → s(x, y) ∈ c.edges) : CoreIsCycle G := by
+  sorry
+
+end Endgame
+
 section Peeling
 
 /-- `CoreIs` extends through an added pendant. -/
@@ -234,7 +379,23 @@ theorem coreIsVertex_or_coreIsCycle :
       by_cases hone : Fintype.card V = 1
       · exact Or.inl (coreIsVertex_of_card_eq_one hone)
       · -- no leaves, at least two vertices: minimum degree two, and `G` is its one cycle
-        sorry
+        have hnontriv : Nontrivial V := by
+          have hpos : 0 < Fintype.card V := Fintype.card_pos_iff.mpr hconn.nonempty
+          exact Fintype.one_lt_card_iff_nontrivial.mp (by omega)
+        have hdeg : ∀ v : V, 2 ≤ G.degree v := by
+          intro v
+          obtain ⟨u, hu⟩ := exists_ne v
+          obtain ⟨W⟩ := hconn.preconnected v u
+          have hnil : ¬ W.Nil := Walk.not_nil_of_ne (Ne.symm hu)
+          have hadj : G.Adj v W.snd := W.adj_snd hnil
+          have hpos : 0 < G.degree v := (G.degree_pos_iff_exists_adj v).mpr ⟨_, hadj⟩
+          have hne1 : G.degree v ≠ 1 := hleaf v
+          omega
+        obtain ⟨v₀, c, hc⟩ := exists_isCycle_of_two_le_degree hconn hdeg
+        exact Or.inr (coreIsCycle_of_forall_edge_mem hconn hdeg hc
+          (forall_edge_mem_of_hasAtMostOneCycle hconn hdeg h1 hc))
+
+
 
 end Peeling
 
