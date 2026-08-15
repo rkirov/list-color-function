@@ -2,6 +2,7 @@
 Copyright (c) 2026. All rights reserved.
 Released under Apache 2.0 license.
 -/
+import Mathlib.Data.Matrix.Basic
 import Cacti.Defs
 
 /-!
@@ -132,5 +133,79 @@ theorem beta_add_le {k : ℕ} (hk : 3 ≤ k) {s : ℕ} (hs : 1 ≤ s) :
       _ ≤ (k - 2) * beta k s := Nat.mul_le_mul_left _ h
       _ ≤ _ := Nat.le_add_left _ _
   omega
+
+
+section Matrices
+
+open Matrix
+
+variable {k : ℕ}
+
+/-- The all-ones-off-diagonal matrix `J - I`. -/
+def offDiag (k : ℕ) : Matrix (Fin k) (Fin k) ℕ :=
+  Matrix.of fun i j => if i = j then 0 else 1
+
+/-- The diagonal indicator of a set of indices. -/
+def diagInd (T : Finset (Fin k)) : Matrix (Fin k) (Fin k) ℕ :=
+  Matrix.of fun i j => if i = j ∧ i ∈ T then 1 else 0
+
+/-- `J - P` for a permutation `P`, entrywise. -/
+def offPerm (P : Equiv.Perm (Fin k)) : Matrix (Fin k) (Fin k) ℕ :=
+  Matrix.of fun b c => if P b = c then 0 else 1
+
+/-- Summing an `if · = i` pattern over `Fin k`. -/
+theorem sum_ite_single {i : Fin k} (a : ℕ) (b : Fin k → ℕ) :
+    (∑ e : Fin k, if e = i then a else b e)
+      = a + ∑ e ∈ Finset.univ.erase i, b e := by
+  rw [← Finset.add_sum_erase _ _ (Finset.mem_univ i), if_pos rfl]
+  congr 1
+  exact Finset.sum_congr rfl fun e he => if_neg (Finset.ne_of_mem_erase he)
+
+/-- The entries of `(J-I)^s` are `α` on the diagonal and `β` off it. -/
+theorem offDiag_pow_apply (hk : 1 ≤ k) :
+    ∀ (s : ℕ) (i j : Fin k), (offDiag k ^ s) i j = if i = j then alpha k s else beta k s := by
+  intro s
+  induction s with
+  | zero =>
+    intro i j
+    by_cases hij : i = j
+    · rw [if_pos hij, hij, pow_zero, alpha_zero, Matrix.one_apply_eq]
+    · rw [if_neg hij, pow_zero, beta_zero, Matrix.one_apply_ne hij]
+  | succ s ih =>
+    intro i j
+    rw [pow_succ', Matrix.mul_apply]
+    have hterm : ∀ e : Fin k,
+        (offDiag k) i e * (offDiag k ^ s) e j
+          = (if e = i then 0 else (if e = j then alpha k s else beta k s)) := by
+      intro e
+      rw [ih e j]
+      show (if i = e then 0 else 1) * _ = _
+      by_cases he : e = i
+      · rw [if_pos he.symm, if_pos he, Nat.zero_mul]
+      · rw [if_neg (fun h => he h.symm), if_neg he, Nat.one_mul]
+    rw [Finset.sum_congr rfl (fun e _ => hterm e), sum_ite_single]
+    by_cases hij : i = j
+    · subst hij
+      rw [if_pos rfl, alpha_succ]
+      have hrest : ∀ e ∈ Finset.univ.erase i,
+          (if e = i then alpha k s else beta k s) = beta k s :=
+        fun e he => if_neg (Finset.ne_of_mem_erase he)
+      rw [Finset.sum_congr rfl hrest, Finset.sum_const,
+        Finset.card_erase_of_mem (Finset.mem_univ i), Finset.card_univ, Fintype.card_fin,
+        smul_eq_mul, Nat.zero_add]
+    · rw [if_neg hij, beta_succ]
+      have hji : j ∈ Finset.univ.erase i :=
+        Finset.mem_erase.mpr ⟨fun h => hij h.symm, Finset.mem_univ j⟩
+      rw [← Finset.add_sum_erase _ _ hji, if_pos rfl]
+      have hrest : ∀ e ∈ (Finset.univ.erase i).erase j,
+          (if e = j then alpha k s else beta k s) = beta k s :=
+        fun e he => if_neg (Finset.ne_of_mem_erase he)
+      rw [Finset.sum_congr rfl hrest, Finset.sum_const,
+        Finset.card_erase_of_mem hji, Finset.card_erase_of_mem (Finset.mem_univ i),
+        Finset.card_univ, Fintype.card_fin, smul_eq_mul, Nat.zero_add]
+      have h11 : k - 1 - 1 = k - 2 := by omega
+      rw [h11]
+
+end Matrices
 
 end ListColoring
