@@ -154,6 +154,25 @@ theorem rootCount_twisted (hk : 4 ≤ k) {P : Equiv.Perm (Fin k)}
     rw [Matrix.mul_assoc]
     exact hcg
 
+
+/-- **The donation form**: any defined root's count dominates its base plus the two
+corrections of another root's thread. -/
+theorem rootCount_donation (hk : 4 ≤ k) {P : Equiv.Perm (Fin k)}
+    {dom : Finset (Fin k)} {d : Fin k} (hd : d ∈ dom)
+    (Ts₁ : List (Finset (Fin k))) (T : Finset (Fin k)) (Ts₂ : List (Finset (Fin k)))
+    (T' : Finset (Fin k)) (Ts₃ : List (Finset (Fin k))) :
+    (((offDiag k ^ (Ts₁ ++ T :: (Ts₂ ++ T' :: Ts₃)).length) * offPerm P) d d)
+      + (((offDiag k ^ (Ts₁.length + 1 + Ts₂.length)) * diagInd T' *
+          (offDiag k ^ Ts₃.length)) * offPerm P) d d
+      + (((offDiag k ^ Ts₁.length) * diagInd T *
+          (offDiag k ^ (Ts₂ ++ T' :: Ts₃).length)) * offPerm P) d d
+      ≤ rootCount (Ts₁ ++ T :: (Ts₂ ++ T' :: Ts₃)) P dom d := by
+  rw [rootCount, if_pos hd]
+  have hmono := matmul_le_matmul (le_transferProd_two Ts₁ T Ts₂ T' Ts₃)
+    (fun (i j : Fin k) => le_refl (offPerm P i j)) d d
+  refine le_trans (le_of_eq ?_) hmono
+  rw [Matrix.add_mul, Matrix.add_mul, Matrix.add_apply, Matrix.add_apply]
+
 end SingleRoot
 
 end ListColoring
