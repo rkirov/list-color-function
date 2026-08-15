@@ -54,6 +54,7 @@
     "SimpleGraph.ecc_iff_listColorFunction_eq_eval",
     "SimpleGraph.ERT.not_choosable",
     "SimpleGraph.ERT.colorable",
+    "SimpleGraph.KN5.exists_choosable_not_ecc_of_two_le",
     "SimpleGraph.ecc_of_isChordal",
     "SimpleGraph.isChordal_iff_exists_cliqueTower",
     "ListColoring.ecc_closePath_of_two_le",

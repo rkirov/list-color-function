@@ -363,6 +363,20 @@ example (m : ℕ) (hm : 2 ≤ m) : (theta m).col (thetaWitness m) = 1 :=
   col_theta_witness m hm
 ```
 
-One is less than two, so $`\theta_{2,2,4}` is not enumeratively chromatic-choosable at `2`. The
-intuition that sameness is worst is simply false in general, and the rest of this book is about the
-graphs for which it is nevertheless true.
+One is less than two, so $`\theta_{2,2,4}` is not enumeratively chromatic-choosable at `2`.
+
+Section 5 of the paper turns the example into a theorem at every list size: for each `k ≥ 2` there
+is a graph that is `k`-choosable and still not enumeratively chromatic-choosable at `k`. The
+construction is {ref "notchoosable"}[a Part II chapter]; the statement needs nothing but the two
+definitions above.
+
+```lean
+open SimpleGraph in
+example {k : ℕ} (hk : 2 ≤ k) :
+    ∃ (V : Type) (iF : Fintype V) (iD : DecidableEq V) (G : SimpleGraph V)
+      (iA : DecidableRel G.Adj), @Choosable V iF iD G iA k ∧ ¬ @ECCAt V iF iD G iA k :=
+  KN5.exists_choosable_not_ecc_of_two_le hk
+```
+
+The intuition that sameness is worst is simply false in general, and the rest of this book is about
+the graphs for which it is nevertheless true.

@@ -46,10 +46,10 @@ the library, and this book.
 Compiling `Challenge.lean` on its own is *expected* to report "declaration uses `sorry`". That is
 not a defect; the file exists to state, not to prove.
 
-# The ten claims
+# The eleven claims
 
 `config.json` lists what is claimed under the key `theorem_names`, and it is a short list. Each of
-the ten is displayed below with the library theorem that discharges it, in the file's own order.
+the eleven is displayed below with the library theorem that discharges it, in the file's own order.
 
 *One: the chromatic polynomial evaluates to the colouring count* —
 {ref "polynomial"}[the chromatic polynomial chapter].
@@ -88,7 +88,19 @@ open SimpleGraph SimpleGraph.ERT in
 example (n : ℕ) (hn : 2 ≤ n) : (K n).Colorable n := colorable n hn
 ```
 
-*Five: Kostochka–Sidorenko* — {ref "chordal"}[the chordal chapter].
+*Five: the paper's §5 separation* — for every `k ≥ 2`, a graph that is `k`-choosable but not
+enumeratively chromatic-choosable at `k`. The smallest instance is in {ref "lists"}[the lists
+chapter]; the construction is {ref "notchoosable"}[a Part II chapter].
+
+```lean
+open SimpleGraph in
+example {k : ℕ} (hk : 2 ≤ k) :
+    ∃ (V : Type) (iF : Fintype V) (iD : DecidableEq V) (G : SimpleGraph V)
+      (iA : DecidableRel G.Adj), @Choosable V iF iD G iA k ∧ ¬ @ECCAt V iF iD G iA k :=
+  KN5.exists_choosable_not_ecc_of_two_le hk
+```
+
+*Six: Kostochka–Sidorenko* — {ref "chordal"}[the chordal chapter].
 
 ```lean
 open SimpleGraph in
@@ -98,8 +110,8 @@ example {V : Type} [Fintype V] [DecidableEq V]
   ecc_of_isChordal G hG n
 ```
 
-*Six: Dirac's theorem* {citep dirac}[] — same chapter, and the reason the fifth can be stated in its
-own terms.
+*Seven: Dirac's theorem* {citep dirac}[] — same chapter, and the reason the sixth can be stated in
+its own terms.
 
 ```lean
 open SimpleGraph in
@@ -111,7 +123,7 @@ example {V : Type} [Fintype V] [DecidableEq V]
   isChordal_iff_exists_cliqueTower G
 ```
 
-*Seven: Theorem 1 of Kirov–Naimi* {citep kirovNaimi}[] — {ref "theorem1"}[the cycles chapter].
+*Eight: Theorem 1 of Kirov–Naimi* {citep kirovNaimi}[] — {ref "theorem1"}[the cycles chapter].
 
 ```lean
 open ListColoring in
@@ -119,7 +131,7 @@ example {k m : ℕ} (hk : 2 ≤ k) : (closePath k).ECCAt (m + 2) :=
   ecc_closePath_of_two_le hk
 ```
 
-*Eight: Rubin's theorem* {citep erdosRubinTaylor}[] —
+*Nine: Rubin's theorem* {citep erdosRubinTaylor}[] —
 {ref "twochoosable"}[the `2`-choosability chapter].
 
 ```lean
@@ -129,7 +141,7 @@ example : RubinTheorem := rubinTheorem
 
 That display is unusual, and deliberately so. The claimed theorem's type is the bare constant
 {name ListColoring.RubinTheorem}`RubinTheorem`, so *the statement of Rubin's theorem is the body of
-that definition* — unfolding it is the only way to see what claim eight says:
+that definition* — unfolding it is the only way to see what claim nine says:
 
 ```lean
 open SimpleGraph ListColoring in
@@ -146,7 +158,7 @@ example : RubinTheorem =
 comparator matches `RubinTheorem` by its type, which is only `Prop`, so the library is where the
 statement is really checked.
 
-*Nine: Theorem 2 of Kirov–Naimi* — {ref "twoecc"}[the enumerative chromatic-choosability at `2`
+*Ten: Theorem 2 of Kirov–Naimi* — {ref "twoecc"}[the enumerative chromatic-choosability at `2`
 chapter]. It carries no hypothesis beyond connectivity.
 
 ```lean
@@ -160,15 +172,7 @@ example {V : Type} [Fintype V] [DecidableEq V]
   ecc_two_iff G hconn
 ```
 
-Claims eight and nine replace two weaker ones the file used to carry, and the reason is worth
-recording. While Rubin's theorem was still a loan, claim eight was its ⟸ half — all that was
-provable — and claim nine was Theorem 2 with Rubin as an explicit hypothesis and the core
-alternatives left as abstract propositions. The second of those *understated* what the library
-proves while certifying something *weaker*: abstract `CoreIsVertex` and `CoreIsTheta` propositions
-say nothing at all about cores. Both are gone, and `RubinFamily`, which existed only to state the
-superseded claim, is delisted rather than kept for decoration.
-
-*Ten: Donner's theorem* {citep donner}[] — {ref "threshold"}[the threshold chapter].
+*Eleven: Donner's theorem* {citep donner}[] — {ref "threshold"}[the threshold chapter].
 
 ```lean
 open SimpleGraph in
@@ -207,16 +211,16 @@ example {V : Type} [Fintype V] [DecidableEq V]
   * 1
 *
   * §3 Lists instead of a palette
-  * {ref "lists"}[Lists Instead of a Palette]
-  * 2, 3, 4
+  * {ref "lists"}[Lists Instead of a Palette], {ref "notchoosable"}[Colorable but Not Choosable]
+  * 2, 3, 4, 5
 *
   * §4 Chordal graphs
   * {ref "chordal"}[First Answers: Chordal Graphs]
-  * 5, 6
+  * 6, 7
 *
   * §5 Theorem 1
   * {ref "theorem1"}[Theorem 1: Cycles]
-  * 7
+  * 8
 *
   * §6 The machinery behind Theorem 1
   * {ref "paths"}[Paths], {ref "swapping"}[Swapping], {ref "cycles"}[Cycles]
@@ -224,15 +228,15 @@ example {V : Type} [Fintype V] [DecidableEq V]
 *
   * §7 Rubin's theorem
   * {ref "twochoosable"}[Which Graphs Are 2-Choosable?]
-  * 8
+  * 9
 *
   * §8 Theorem 2
   * {ref "twoecc"}[Which Graphs Are Enumeratively Chromatic-Choosable at 2?]
-  * 9
+  * 10
 *
   * §9 Every graph, eventually
   * {ref "threshold"}[Every Graph, Eventually]
-  * 10
+  * 11
 :::
 
 Two sections carry no claim and are there for continuity. §1 defines the vocabulary every later
@@ -251,9 +255,9 @@ statement at all — the graph constructions built as `SimpleGraph` structure in
 tactic-proved `symm` and `loopless` fields (`coneOn`, `addPendant`, `addPendantPair`), and the
 decidability instances.
 
-*`config.json` names what is claimed.* Two lists. `theorem_names` is the ten above.
+*`config.json` names what is claimed.* Two lists. `theorem_names` is the eleven above.
 `definition_names` is not a curated aesthetic choice but a computed one: exactly the definitions
-reachable from the types of those ten statements, together with the notions those are in turn
+reachable from the types of those eleven statements, together with the notions those are in turn
 written in terms of, so that the file can be read without the library open beside it.
 
 *Instances are in the list because they are in the types.* `(closePath k).ECCAt (m + 2)` does
@@ -289,13 +293,17 @@ first and a narrative second, and that the two coincide less often than one woul
 
 # What is in the library and not in the file
 
-A great deal. The file claims ten theorems; the library proves several hundred. Everything discussed
-in this book that is not one of the ten — Kirov and Naimi's Lemmas 1 through 6, the three regimes,
+A great deal. The file claims eleven theorems; the library proves several hundred. Everything
+discussed in this book that is not one of the eleven — Kirov and Naimi's Lemmas 1 through 6, the
+three regimes,
 the explicit threshold $`n > 2^{|E|}`, the counts $`A_k` and $`B_k` and their closed forms, Dirac's
 lemma, Rubin's easy direction family by family, the classification of `2`-choosable generalized
 theta graphs at every arity, the dumbbell, the six cases of Rubin's steps 5 and 6, the witness
 assignments for the theta graphs — is in the library, under the names given in the section headers
 of `Challenge.lean`.
 
-The ten were chosen as the load-bearing ones: the results a reader would quote. Reading the file is
-reading those ten and the vocabulary they need. Reading this book is everything else.
+The count is derived, not chosen: one claim per named result. Two claims pin down what the subject
+is, six statements are the five named theorems of the literature the development stands on — the
+Erdős–Rubin–Taylor separation being one result in two statements — and three are the results the
+paper's abstract advertises. Reading the file is reading those eleven and the vocabulary they need.
+Reading this book is everything else.

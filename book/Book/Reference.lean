@@ -229,10 +229,10 @@ form a formalization can use directly.
 
 {docstring ListColoring.HasCore}
 
-# The ten claims
+# The eleven claims
 
 These are the theorems `comparator/Challenge.lean` states, in its own order;
-{ref "readingchallenge"}[the guide to that file] explains why these ten.
+{ref "readingchallenge"}[the guide to that file] explains why these eleven.
 
 {docstring SimpleGraph.eval_chromaticPolynomial}
 
@@ -241,6 +241,8 @@ These are the theorems `comparator/Challenge.lean` states, in its own order;
 {docstring SimpleGraph.ERT.not_choosable}
 
 {docstring SimpleGraph.ERT.colorable}
+
+{docstring SimpleGraph.KN5.exists_choosable_not_ecc_of_two_le}
 
 {docstring SimpleGraph.ecc_of_isChordal}
 
@@ -270,8 +272,8 @@ a classification of graphs.
 # Rubin's theorem
 
 Rubin's characterization of the `2`-choosable graphs is a named proposition here as well as a
-theorem, so that the statements which consume it could be written against it before it was
-available. It is not an axiom and it is not a hypothesis tailored to what Theorem 2 needs. The
+theorem, so that the statements which consume it are written against the statement rather than the
+proof. It is not an axiom and it is not a hypothesis tailored to what Theorem 2 needs. The
 theorem itself is {name ListColoring.rubinTheorem}`rubinTheorem`, above; what follows are its
 pieces.
 

@@ -182,7 +182,7 @@ machine-checked witnesses.
 
 This costs the paper nothing, because list size `2` has a witness of its own: $`\theta_{2,2,4}` is
 `2`-choosable by Rubin's theorem, and is not enumeratively chromatic-choosable at `2` by the paper's
-own Figure 2. Both were proved here long before Section 5 was, on the way to Theorem 2 —
+own Figure 2. Both are proved here on the way to Theorem 2 —
 
 ```lean
 open SimpleGraph ListColoring in

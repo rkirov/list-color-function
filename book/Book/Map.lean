@@ -218,5 +218,5 @@ statements in `comparator/Challenge.lean` really are the ones the library proves
 permitted axioms are exactly the three above, and it replays the proofs through two independent
 kernels — `lean4export` in a sandbox, and the `nanoda` kernel. Continuous integration runs it on
 every push, alongside a grep that fails if `sorry`, `admit` or `native_decide` ever appears in the
-library sources. {ref "readingchallenge"}[Reading `Challenge.lean`] is a guide to the ten
+library sources. {ref "readingchallenge"}[Reading `Challenge.lean`] is a guide to the eleven
 statements that check covers.

@@ -128,7 +128,7 @@ example {V : Type} [Fintype V] [DecidableEq V]
 ```
 
 Since only the forward implication is ever used, the hypothesis is a one-way implication rather
-than an equivalence — and the backward half is no longer assumed at all, because it is proved:
+than an equivalence. The backward half is not assumed anywhere — it is proved:
 
 ```lean
 open SimpleGraph ListColoring in
@@ -163,10 +163,7 @@ The version in `ListColoring.Theorem2`, displayed in {ref "twoecc"}[the enumerat
 chromatic-choosability at `2` chapter], goes the other way and pays off the definitions: there the
 four alternatives are spelled out on a concrete notion of core, and the hypothesis is a single named
 proposition {name ListColoring.RubinTheorem}`RubinTheorem` taken as the first explicit argument.
-Both forms are proved, and the term {name ListColoring.rubinTheorem}`rubinTheorem` now discharges
-the hypothesis of the second — which is what makes
-{name ListColoring.ecc_two_iff}`ecc_two_iff` unconditional. The abstract form is kept because it is
-the only place a reader can see, from a signature alone, that nothing beyond Rubin's statement was
-ever used.
-
-What was assumed is legible in the signature. Nothing else was.
+Both forms are proved, and the term {name ListColoring.rubinTheorem}`rubinTheorem` discharges the
+hypothesis of the second — which is what makes
+{name ListColoring.ecc_two_iff}`ecc_two_iff` unconditional. The abstract form is the one place a
+reader can see, from a signature alone, that nothing beyond Rubin's statement is used.

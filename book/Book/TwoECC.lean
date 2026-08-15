@@ -23,10 +23,9 @@ Source: [Core.lean](https://github.com/rkirov/list-color-function/blob/main/List
 [RubinProof.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/RubinProof.lean).
 
 This chapter states the second main theorem of Kirov and Naimi {citep kirovNaimi}[]: a complete
-description of the graphs that are enumeratively chromatic-choosable at `2`. The description rests
-on nothing. Its one borrowed ingredient, Rubin's theorem, is proved in
-{ref "twochoosable"}[the previous chapter], so what follows is unconditional except for
-connectivity.
+description of the graphs that are enumeratively chromatic-choosable at `2`. The one result the
+paper quotes rather than proves — Rubin's theorem — is proved in {ref "twochoosable"}[the previous
+chapter], so what follows is unconditional except for connectivity.
 
 # Narrowing the field
 
@@ -235,10 +234,10 @@ restriction, where Rubin's list says "is an even cycle". That is because *every*
 enumeratively chromatic-choosable at `2`, by Theorem 1, whereas only the even ones are
 `2`-choosable.
 
-## How the loan was arranged, and repaid
+## The factoring through Rubin's statement
 
-For most of this development Rubin's theorem was not available, and Theorem 2 was stated relative to
-it — as a *named proposition* taken as the first explicit argument:
+Theorem 2 is proved by factoring through Rubin's theorem *as a statement* — a named proposition
+taken as the first explicit argument:
 
 ```lean
 open SimpleGraph ListColoring in
@@ -251,11 +250,10 @@ example (rubin : RubinTheorem) {V : Type} [Fintype V]
   ecc_two_iff_of_rubin rubin G hconn
 ```
 
-The arrangement is worth recording, because it is what let the two halves be worked on
-independently and it cost nothing to unwind. {name ListColoring.RubinTheorem}`RubinTheorem` is
-Rubin's theorem itself, not an axiom and not a re-statement tailored to what Theorem 2 happens to
-need — so the size of the loan was legible in the signature. And being the *first explicit
-argument*, discharging it was a one-line change:
+{name ListColoring.RubinTheorem}`RubinTheorem` is Rubin's theorem itself, not an axiom and not a
+re-statement tailored to what Theorem 2 happens to need — so the signature of the conditional form
+records exactly how much of Rubin the classification consumes. The unconditional theorem is its
+one-line discharge:
 
 ```lean
 open SimpleGraph ListColoring in
@@ -268,9 +266,10 @@ example {V : Type} [Fintype V] [DecidableEq V]
   ecc_two_iff_of_rubin rubinTheorem G hconn
 ```
 
-That is literally the definition of {name ListColoring.ecc_two_iff}`ecc_two_iff`. The conditional
-form is kept rather than deleted: it is the statement that says exactly how much of Rubin was ever
-used, and it is proved in a file upstream of everything Rubin's proof is built from.
+That is literally the definition of {name ListColoring.ecc_two_iff}`ecc_two_iff`. And the
+conditional form is proved in a file upstream of everything Rubin's proof is built from, so the two
+halves are independent: a reader who wants to audit Theorem 2 without auditing Rubin's proof can
+stop at {name ListColoring.ecc_two_iff_of_rubin}`ecc_two_iff_of_rubin`.
 
 # The pieces, and what each of them needs
 

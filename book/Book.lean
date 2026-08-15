@@ -50,7 +50,7 @@ This book accompanies a Lean 4 formalization of that paper. Every displayed stat
 elaborated when the book is built, and each is discharged against the corresponding theorem in the
 development — so what you read is what has been checked.
 
-Their characterization at `n = 2` rests on one borrowed result, *Rubin's theorem*
+Their characterization at `n = 2` quotes one prior result, *Rubin's theorem*
 {citep erdosRubinTaylor}[]: a connected graph is `2`-choosable exactly when its core is a
 single vertex, an even cycle, or $`\theta_{2,2,2m}`. It is a theorem of 1980 that appears not to
 have been machine-checked before. It is *proved* in this development
@@ -60,8 +60,8 @@ the only novelty is that a machine has now been through it — which did turn up
 three-page exposition that do not survive as printed.
 
 It is written to be read in one direction, ending at a single file. The development's statement
-surface is `comparator/Challenge.lean`: ten theorems and the vocabulary they need, stated exactly as
-the library states them, with the proofs removed. *Part I* is the path that makes that file readable
+surface is `comparator/Challenge.lean`: eleven theorems and the vocabulary they need, stated
+exactly as the library states them, with the proofs removed. *Part I* is the path that makes that file readable
 top to bottom, for a reader who is mathematically strong but has never met a chromatic polynomial.
 It starts from what a proper colouring is ({ref "colouring"}[Colouring a Graph]) and proceeds
 through the chromatic polynomial ({ref "polynomial"}[The Chromatic Polynomial]), list assignments

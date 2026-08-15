@@ -17,92 +17,77 @@ that is the point.
 
 ## What is claimed
 
-Ten theorems.  They are the load-bearing ones — the named results a reader would quote — and
-nothing else is claimed here:
+Eleven theorems, in the file's order:
 
 1. `eval_chromaticPolynomial` — the chromatic polynomial evaluates to the colouring count
 2. `ecc_iff_listColorFunction_eq_eval` — `P_ℓ(G, n) = P(G, n)` *is* enumerative
    chromatic-choosability at `n`
-3. `ERT.not_choosable` and 4. `ERT.colorable` — `K_{n,nⁿ}` is `n`-colourable but not `n`-choosable,
-   so the middle regime `χ(G) ≤ n < χ_ℓ(G)` is nonempty (Erdős–Rubin–Taylor)
-5. `ecc_of_isChordal` — **Kostochka–Sidorenko**: every chordal graph is enumeratively
+3. `ERT.not_choosable` and 4. `ERT.colorable` — **Erdős–Rubin–Taylor**: `K_{n,nⁿ}` is
+   `n`-colourable but not `n`-choosable, so the middle regime `χ(G) ≤ n < χ_ℓ(G)` is nonempty
+5. `KN5.exists_choosable_not_ecc_of_two_le` — **Kirov–Naimi, §5**: for every `k ≥ 2` there is a
+   graph that is `k`-choosable but not enumeratively chromatic-choosable at `k`
+6. `ecc_of_isChordal` — **Kostochka–Sidorenko**: every chordal graph is enumeratively
    chromatic-choosable at `n`
-6. `isChordal_iff_exists_cliqueTower` — **Dirac**: chordal ⟺ a simplicial elimination ordering
-7. `ecc_closePath_of_two_le` — **Kirov–Naimi, Theorem 1**: every cycle is enumeratively
+7. `isChordal_iff_exists_cliqueTower` — **Dirac**: chordal ⟺ a simplicial elimination ordering
+8. `ecc_closePath_of_two_le` — **Kirov–Naimi, Theorem 1**: every cycle is enumeratively
    chromatic-choosable at `n`
-8. `rubinTheorem` — **Rubin**: the `2`-choosable connected graphs, classified by their core
-9. `ecc_two_iff` — **Kirov–Naimi, Theorem 2**, with no hypothesis beyond connectivity
-10. `exists_ecc_forall_ge` — **Donner**: every graph is enumeratively chromatic-choosable at `n` for
-    large `n`
+9. `rubinTheorem` — **Rubin**: the `2`-choosable connected graphs, classified by their core
+10. `ecc_two_iff` — **Kirov–Naimi, Theorem 2**, with no hypothesis beyond connectivity
+11. `exists_ecc_forall_ge` — **Donner**: every graph is enumeratively chromatic-choosable at `n`
+    for large `n`
 
-`ERT.colorable` is the tenth; on its own `not_choosable` says only that `χ_ℓ > n`, and the point of
-the example is the *separation*.
-
-Claims 8 and 9 replace the two weaker ones this file used to carry.  Rubin's theorem is now proved
-in the library rather than borrowed, so `ListColoring.choosable_two_of_rubinFamily` (its `⟸` half,
-all that was provable before) is subsumed by claim 8, and `SimpleGraph.ecc_two_iff_of_rubin_hard`
-(Theorem 2 with Rubin's `⟹` as a hypothesis and the core alternatives left as abstract `Prop`s) is
-superseded by claim 9: it understated what is proved, and abstract `CoreIsVertex`/`CoreIsTheta`
-variables say nothing about cores, so certifying it certified less than the library has.  Both are
-still in the library, in `ListColoring/Rubin.lean`, as a record of the shape of the loan that was
-outstanding; neither is claimed here.  `RubinFamily`, which this file carried only in order to state
-the first of them, is deleted rather than delisted.
+The count is derived, not chosen: one claim per named result.  Claims 1 and 2 pin down what the
+subject is — that `chromaticPolynomial` is the chromatic polynomial, and that `ECCAt` is the
+condition `P_ℓ = P` of the literature.  Six statements are the five named theorems the development
+stands on (Erdős–Rubin–Taylor, Kostochka–Sidorenko, Dirac, Rubin, Donner — the first being one
+result in two statements, since the point of the example is the separation).  Three are the results
+the paper's abstract advertises.  Lemmas, machinery, and stronger-but-unquotable forms (the
+explicit Donner threshold `n > 2^{|E|}`, the `2`-choosable generalized theta graphs of arbitrary
+arity) stay in the library.  One exclusion is a rule rather than a judgement:
+`ListColoring.choosable_two_gtheta_iff` is not claimed because its statement is written in
+`ValidArms`/`GoodArms`, a *normalization convention* on arm lists rather than mathematics, and a
+claim's statement may not depend on a proof's bookkeeping.
 
 ## What is defined
 
-`definition_names` is exactly what those ten statements need, computed rather than curated: the 22
-definitions reachable from their types, plus the 24 notions those 22 are written in terms of, so
-that the file can be read without the library.  No definition is here for any other reason; in
-particular only six are `Fintype`/`DecidableEq`/`DecidableRel` instances.  Four of the six occur in
-the *type* of a listed theorem — `(closePath k).ECCAt (m + 2)` does not typecheck without them — and
-the other two, `instDecidableRelPathG` and `instDecidableRelTheta`, are what `CoreIsVertex` and
-`CoreIsK23` need in order to name `pathG 0` and `theta 1` as graphs at all.
+`definition_names` is exactly what the eleven statements need, computed rather than curated: the
+definitions reachable from their types, plus the notions those are written in terms of, so that the
+file can be read without the library.  Only six are `Fintype`/`DecidableEq`/`DecidableRel`
+instances.  Four of the six occur in the *type* of a listed theorem — `(closePath k).ECCAt (m + 2)`
+does not typecheck without them — and the other two, `instDecidableRelPathG` and
+`instDecidableRelTheta`, are what `CoreIsVertex` and `CoreIsK23` need in order to name `pathG 0`
+and `theta 1` as graphs at all.
 
 Most definitions carry their **real bodies**, so the file reads as a specification; the comparator
 never inspects the body of a `definition_names` entry.  Placeholders remain only where the body is
 not a statement: the graph constructions built as `SimpleGraph` structure instances with
 tactic-proved `symm`/`loopless` fields (`coneOn`, `addPendant`, `addPendantPair`), and the
 decidability instances — the six listed ones, and `decidableRelFromEdgeSetCoe` below.  Ten
-declarations in all, so this file's twenty `sorry`s are ten theorems and ten placeholders.  Two
-bodies are forced rather than chosen — `ListAssignment`, whose values
-are applied as functions in other statements, and `ThetaV`, whose instances are found by unfolding
-the abbreviation.  Two declarations appear without being listed, because a *body* rather than a
-statement needs them: `instDecidableIsProperColoring` (so `colorings` can be a `Finset.filter`) and
+declarations in all, so this file's twenty-one `sorry`s are eleven theorems and ten placeholders.
+Two bodies are forced rather than chosen — `ListAssignment`, whose values are applied as functions
+in other statements, and `ThetaV`, whose instances are found by unfolding the abbreviation.  Two
+declarations appear without being listed, because a *body* rather than a statement needs them:
+`instDecidableIsProperColoring` (so `colorings` can be a `Finset.filter`) and
 `decidableRelFromEdgeSetCoe` (so `compCount` can count components).
 
 One body is load-bearing in a way no other is.  `rubinTheorem`'s type is the bare constant
-`RubinTheorem`, so **the statement of Rubin's theorem is the body of `RubinTheorem`** — unfolding it
-is the only way to see what claim 8 says.  That body is therefore reproduced verbatim, and the
+`RubinTheorem`, so **the statement of Rubin's theorem is the body of `RubinTheorem`** — unfolding
+it is the only way to see what claim 9 says.  That body is therefore reproduced verbatim, and the
 library is where it is checked: the comparator matches `RubinTheorem` by type, which is `Prop`.
 
 ## How to read it
 
-The nine sections follow the path the book's Part I takes.  Sections that no longer carry a claim
-still carry the story: §1 introduces the vocabulary the rest is written in, and §6 is prose only,
-pointing at the machinery in the library.  Everything the library proves and this file does not
-claim — Kirov–Naimi's Lemmas 1–6, the three regimes, the explicit threshold `n > 2^{|E|}`, Dirac's
-lemma, the chromatic polynomial of a cycle in closed form, §5's Lemmas 7–10 and the `H_{n+1}`
-construction they build (`SimpleGraph.KN5.exists_choosable_not_ecc`), the `2`-choosable generalized
-theta graphs of arbitrary arity (`ListColoring.choosable_two_gtheta_iff`) — is still there, under
-the names given in the section headers below.
+The nine sections follow the path the book's Part I takes; a section that carries no claim still
+carries the story.  Everything the library proves and this file does not claim — Kirov–Naimi's
+Lemmas 1–6, the three regimes, §5's Lemmas 7–10 and the `H_{n+1}` construction, the closed-form
+cycle counts, the generalized theta classification — is in the library, under the names given in
+the section headers below.
 
-Two of those were weighed as an eleventh claim.  `choosable_two_gtheta_iff` is left out on this
-file's own rule: its statement is written in `ListColoring.ValidArms` and `ListColoring.GoodArms`, a
-*normalization convention* on the list of arm lengths (sorted, at most one arm of length one) rather
-than mathematics, and a keystone should not drag a proof's bookkeeping into the certified surface.
-§5's conclusion — `SimpleGraph.KN5.exists_choosable_not_ecc_of_two_le`, *for every `k ≥ 2` there is a
-graph that is `k`-choosable but not enumeratively chromatic-choosable at `k`* — has the opposite
-profile: it is one of the three results the paper's abstract advertises, and it needs **no new
-definitions at all**, being stated purely in `Choosable` and `ECCAt`, which §3 already lists.  It is
-a candidate for claim 11 whenever this file is next revised; it is not claimed here only because
-adding it has not been through the comparator.
-
-Three places where Lean fought the teaching order.  `ListAssignment` and `constList` are declared in
-§1 although they belong to §3, because `col` is defined on a list assignment and the palette count
-`colConst` is its special case.  The chromatic polynomial sits at §2, before lists, which pulls
-`compCount` and the `fromEdgeSet` decidability instance forward with it.  And `TowerData` and
-`pendantTower` — the core reduction that §7 and §8 are stated with — are declared in §5 beside
-`addPendant`, because iterated `addPendant` is all they are.
+Where declaration order fights the teaching order, dependency wins: `ListAssignment` and
+`constList` sit in §1 although they belong to §3, because `col` is defined on a list assignment;
+the chromatic polynomial sits at §2, before lists, because §3's reformulation needs it; and
+`TowerData` and `pendantTower` — the core reduction §7 and §8 are stated with — are declared in §5
+beside `addPendant`, because iterated `addPendant` is all they are.
 -/
 
 open Finset
@@ -196,11 +181,14 @@ constant assignment *minimizes* the number of colourings — the paper's subject
 function `P_ℓ(G, n)` is that minimum, and the second claim is that enumerative
 chromatic-choosability at `n` is exactly `P_ℓ(G, n) = P(G, n)`.
 
-Three regimes: below `χ(G)` enumerative chromatic-choosability holds vacuously, above `χ_ℓ(G)` it is genuine, and in
-between it fails (`ecc_of_not_colorable`, `not_ecc_of_colorable_of_not_choosable` in
-the library).  That the middle regime is nonempty is the Erdős–Rubin–Taylor example, claimed here:
-`K_{n,nⁿ}` is `n`-colourable but not `n`-choosable.  The witness — an explicit list assignment
-`ERT.L₀` admitting no colouring at all, `ERT.col_L₀_eq_zero` — is in the library.
+Three regimes: below `χ(G)` enumerative chromatic-choosability holds vacuously, above `χ_ℓ(G)` it
+is genuine, and in between it fails (`ecc_of_not_colorable`,
+`not_ecc_of_colorable_of_not_choosable` in the library).  Two separations are claimed here.  The
+middle regime is nonempty — the Erdős–Rubin–Taylor example `K_{n,nⁿ}` is `n`-colourable but not
+`n`-choosable, with the witness assignment `ERT.L₀` and its count `ERT.col_L₀_eq_zero` in the
+library.  And the top regime has content — the paper's §5 construction gives, for every `k ≥ 2`, a
+graph that is `k`-choosable and still not enumeratively chromatic-choosable at `k`; the graph
+`H_{n+1}` and the paper's Lemmas 7–10 are in the library, `ListColoring/Section5.lean`.
 -/
 
 /-- An **`n`-list assignment** gives every vertex a list of exactly `n` colors. -/
@@ -252,6 +240,17 @@ Erdős–Rubin–Taylor separation: `χ(K_{n,nⁿ}) ≤ n < χ_ℓ(K_{n,nⁿ})`.
 theorem colorable (n : ℕ) (hn : 2 ≤ n) : (K n).Colorable n := sorry
 
 end SimpleGraph.ERT
+
+namespace SimpleGraph.KN5
+
+/-- **Kirov–Naimi, §5: choosability does not imply enumerative chromatic-choosability, at any list
+size at which the two could disagree.**  For every `k ≥ 2` there is a graph that is `k`-choosable
+but not enumeratively chromatic-choosable at `k`. -/
+theorem exists_choosable_not_ecc_of_two_le {k : ℕ} (hk : 2 ≤ k) :
+    ∃ (V : Type) (iF : Fintype V) (iD : DecidableEq V) (G : SimpleGraph V)
+      (iA : DecidableRel G.Adj), @Choosable V iF iD G iA k ∧ ¬ @ECCAt V iF iD G iA k := sorry
+
+end SimpleGraph.KN5
 
 namespace SimpleGraph
 
@@ -311,12 +310,8 @@ def CliqueTowerData.IsSimplicial {V : Type u} (G : SimpleGraph V) :
       (cliqueTower G k d.1).IsClique ((d.2 : Finset (TowerV V k)) : Set (TowerV V k)) ∧
         CliqueTowerData.IsSimplicial G k d.1
 
-/-- **The Kostochka–Sidorenko theorem, under its own name and unconditionally.** *Every chordal
-graph is enumeratively chromatic-choosable at `n`, for every `n`.*
-
-This is the statement the tower form `SimpleGraph.ecc_cliqueTower_of_isEmpty` could only
-approximate, because "chordal" was undefined there.  The missing link is Dirac's lemma
-(`SimpleGraph.exists_isSimplicialVertex`), now proved, so there is no hypothesis left to borrow. -/
+/-- **The Kostochka–Sidorenko theorem.** *Every chordal graph is enumeratively
+chromatic-choosable at `n`, for every `n`.* -/
 theorem ecc_of_isChordal {V : Type u} [Fintype V] [DecidableEq V] (G : SimpleGraph V)
     [DecidableRel G.Adj] (hG : G.IsChordal) (n : ℕ) : G.ECCAt n := sorry
 
@@ -460,8 +455,8 @@ alternatives `CoreIsVertex`, `CoreIsEvenCycle`, `CoreIsTheta` are the three case
 names.
 
 Rubin's theorem says the `2`-choosable cores are exactly a single vertex, an even cycle, and the
-theta graphs `θ_{2,2,2m}`.  **It is proved in this development**, and claimed here in full: both
-directions, with the cases concrete rather than abstract propositions.  The `⟸` half is assembled
+theta graphs `θ_{2,2,2m}`.  **It is proved in this development**, and claimed here in full, both
+directions.  The `⟸` half is assembled
 from Theorem 1 (`ListColoring.choosable_two_closePath_of_odd`) and
 `ListColoring.choosable_theta`; the `⟹` half runs Rubin's own argument — pass to the core
 (`ListColoring.hasCore`), which has minimum degree at least `2`, and extract from
@@ -517,14 +512,13 @@ def CoreIsTheta {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V)
 
 Due to **A. L. Rubin**, and published in P. Erdős, A. L. Rubin and H. Taylor, *Choosability in
 graphs*, Congr. Numer. **26** (1980), 125–157, pp. 131–134.  This `Prop` *is* the statement of
-claim 8: the theorem below has it as its bare type. -/
+claim 9: the theorem below has it as its bare type. -/
 def RubinTheorem : Prop :=
   ∀ {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V) [DecidableRel G.Adj],
     G.Connected → (G.Choosable 2 ↔ (CoreIsVertex G ∨ CoreIsEvenCycle G ∨ CoreIsTheta G))
 
-/-- **Rubin's theorem, proved.**  Kirov–Naimi cite it; this development proves it, so nothing about
-`2`-choosability is borrowed and Theorem 2 below needs no hypothesis.  Its statement is the body of
-`RubinTheorem` above; there is no other place to read it. -/
+/-- **Rubin's theorem.**  The paper cites it; this development proves it.  Its statement is the
+body of `RubinTheorem` above; there is no other place to read it. -/
 theorem rubinTheorem : RubinTheorem := sorry
 
 /-! ### 8. Enumerative chromatic-choosability at `2`: Theorem 2
@@ -573,8 +567,8 @@ def HasOddCycle {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V)
 
 That is the paper's wording; "2-monophilic" is `SimpleGraph.ECCAt G 2`, *enumeratively
 chromatic-choosable at `2`*.  Kirov–Naimi, Ars Combin. **124** (2016), 329–340
-(arXiv:1004.5183), Theorem 2.  The one result they borrow — Rubin's theorem — is claim 8 above
-rather than a hypothesis, so this is the theorem as they state it. -/
+(arXiv:1004.5183), Theorem 2.  The one result the paper quotes — Rubin's theorem — is claim 9
+above, so this is the theorem as they state it. -/
 theorem ecc_two_iff {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V)
     [DecidableRel G.Adj] (hconn : G.Connected) :
     G.ECCAt 2 ↔ CoreIsVertex G ∨ CoreIsCycle G ∨ CoreIsK23 G ∨ HasOddCycle G := sorry

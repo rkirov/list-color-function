@@ -213,7 +213,7 @@ as a list of vertices with a property. That is a formalization choice with a rea
 # The theorem
 
 Putting the two halves together gives Kostochka and Sidorenko's result under its own name, with no
-hypothesis borrowed and no tower data in the statement:
+tower data in the statement:
 
 ```lean
 open SimpleGraph in
