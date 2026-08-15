@@ -2,92 +2,59 @@ import Mathlib
 /-!
 # List coloring and enumerative chromatic-choosability — the challenge statements
 
-This file is the *statement surface* of the `graph_coloring` development, a formalization of
+The *statement surface* of the `graph_coloring` development, a formalization of
 
 > Radoslav Kirov and Ramin Naimi, *List coloring and `n`-monophilic graphs*,
 > Ars Combinatoria (arXiv:1004.5183),
 
 together with the chromatic-polynomial / list-color-function reformulation, Dirac's theorem,
-Rubin's theorem and Donner's theorem.  Every declaration below is stated exactly as in the library;
-the theorems are left with a placeholder proof, so that the comparator can check a submission's
-statements against these.  Compiling this file is *expected* to report "declaration uses `sorry`" —
-that is the point.
+Rubin's theorem and Donner's theorem.  Every declaration is stated exactly as in the library, with
+placeholder proofs — compiling this file is *expected* to report "declaration uses `sorry`".  The
+comparator checks it against `Submission.lean`, which simply imports `ListColoring`.
 
-`Submission.lean` supplies the real definitions and proofs by importing `ListColoring`.
-
-## What is claimed
-
-Eleven theorems, in the file's order:
+## The eleven claims
 
 1. `eval_chromaticPolynomial` — the chromatic polynomial evaluates to the colouring count
 2. `ecc_iff_listColorFunction_eq_eval` — `P_ℓ(G, n) = P(G, n)` *is* enumerative
    chromatic-choosability at `n`
 3. `ERT.not_choosable` and 4. `ERT.colorable` — **Erdős–Rubin–Taylor**: `K_{n,nⁿ}` is
-   `n`-colourable but not `n`-choosable, so the middle regime `χ(G) ≤ n < χ_ℓ(G)` is nonempty
-5. `KN5.exists_choosable_not_ecc_of_two_le` — **Kirov–Naimi, §5**: for every `k ≥ 2` there is a
-   graph that is `k`-choosable but not enumeratively chromatic-choosable at `k`
-6. `ecc_of_isChordal` — **Kostochka–Sidorenko**: every chordal graph is enumeratively
-   chromatic-choosable at `n`
+   `n`-colourable but not `n`-choosable
+5. `KN5.exists_choosable_not_ecc_of_two_le` — **Kirov–Naimi, §5**: for every `k ≥ 2`, a graph
+   that is `k`-choosable but not enumeratively chromatic-choosable at `k`
+6. `ecc_of_isChordal` — **Kostochka–Sidorenko**: chordal graphs are enumeratively
+   chromatic-choosable at every `n`
 7. `isChordal_iff_exists_cliqueTower` — **Dirac**: chordal ⟺ a simplicial elimination ordering
 8. `ecc_closePath_of_two_le` — **Kirov–Naimi, Theorem 1**: every cycle is enumeratively
-   chromatic-choosable at `n`
+   chromatic-choosable at every `n`
 9. `rubinTheorem` — **Rubin**: the `2`-choosable connected graphs, classified by their core
 10. `ecc_two_iff` — **Kirov–Naimi, Theorem 2**, with no hypothesis beyond connectivity
 11. `exists_ecc_forall_ge` — **Donner**: every graph is enumeratively chromatic-choosable at `n`
     for large `n`
 
-The count is derived, not chosen: one claim per named result.  Claims 1 and 2 pin down what the
-subject is — that `chromaticPolynomial` is the chromatic polynomial, and that `ECCAt` is the
-condition `P_ℓ = P` of the literature.  Six statements are the five named theorems the development
-stands on (Erdős–Rubin–Taylor, Kostochka–Sidorenko, Dirac, Rubin, Donner — the first being one
-result in two statements, since the point of the example is the separation).  Three are the results
-the paper's abstract advertises.  Lemmas, machinery, and stronger-but-unquotable forms (the
-explicit Donner threshold `n > 2^{|E|}`, the `2`-choosable generalized theta graphs of arbitrary
-arity) stay in the library.  One exclusion is a rule rather than a judgement:
-`ListColoring.choosable_two_gtheta_iff` is not claimed because its statement is written in
-`ValidArms`/`GoodArms`, a *normalization convention* on arm lists rather than mathematics, and a
-claim's statement may not depend on a proof's bookkeeping.
+One claim per named result, so the count is derived, not chosen: claims 1–2 pin down what the
+subject is, five literature theorems account for claims 3–4, 6–7, 9 and 11 (Erdős–Rubin–Taylor in
+two statements — the point is the separation), and claims 5, 8, 10 are the three results the
+paper's abstract advertises.  Everything else stays in the library.  The one exclusion by rule is
+`ListColoring.choosable_two_gtheta_iff`: its statement depends on a normalization convention
+(`ValidArms`/`GoodArms`), and a claim's statement may not depend on a proof's bookkeeping.
 
-## What is defined
+## Conventions
 
-`definition_names` is exactly what the eleven statements need, computed rather than curated: the
-definitions reachable from their types, plus the notions those are written in terms of, so that the
-file can be read without the library.  Only six are `Fintype`/`DecidableEq`/`DecidableRel`
-instances.  Four of the six occur in the *type* of a listed theorem — `(closePath k).ECCAt (m + 2)`
-does not typecheck without them — and the other two, `instDecidableRelPathG` and
-`instDecidableRelTheta`, are what `CoreIsVertex` and `CoreIsK23` need in order to name `pathG 0`
-and `theta 1` as graphs at all.
+`definition_names` is computed, not curated: the definitions reachable from the types of the
+claims, plus the notions those are written in terms of.  The six listed instances all serve the
+types — four occur in them directly, and `instDecidableRelPathG`/`instDecidableRelTheta` are what
+`CoreIsVertex` and `CoreIsK23` need to name their graphs.  Definitions carry their real bodies
+(the comparator never inspects them) except where the body is not a statement: the three
+structure-instance graph constructions and the decidability instances.  Ten placeholders, so the
+file's twenty-one `sorry`s are eleven theorems and ten placeholders.
+`instDecidableIsProperColoring` and `decidableRelFromEdgeSetCoe` appear without being listed
+because bodies here need them.
 
-Most definitions carry their **real bodies**, so the file reads as a specification; the comparator
-never inspects the body of a `definition_names` entry.  Placeholders remain only where the body is
-not a statement: the graph constructions built as `SimpleGraph` structure instances with
-tactic-proved `symm`/`loopless` fields (`coneOn`, `addPendant`, `addPendantPair`), and the
-decidability instances — the six listed ones, and `decidableRelFromEdgeSetCoe` below.  Ten
-declarations in all, so this file's twenty-one `sorry`s are eleven theorems and ten placeholders.
-Two bodies are forced rather than chosen — `ListAssignment`, whose values are applied as functions
-in other statements, and `ThetaV`, whose instances are found by unfolding the abbreviation.  Two
-declarations appear without being listed, because a *body* rather than a statement needs them:
-`instDecidableIsProperColoring` (so `colorings` can be a `Finset.filter`) and
-`decidableRelFromEdgeSetCoe` (so `compCount` can count components).
+`rubinTheorem`'s type is the bare constant `RubinTheorem`, so **the statement of Rubin's theorem
+is the body of `RubinTheorem`**, reproduced verbatim; the comparator matches it by type (`Prop`),
+and the library is where the body is checked.
 
-One body is load-bearing in a way no other is.  `rubinTheorem`'s type is the bare constant
-`RubinTheorem`, so **the statement of Rubin's theorem is the body of `RubinTheorem`** — unfolding
-it is the only way to see what claim 9 says.  That body is therefore reproduced verbatim, and the
-library is where it is checked: the comparator matches `RubinTheorem` by type, which is `Prop`.
-
-## How to read it
-
-The nine sections follow the path the book's Part I takes; a section that carries no claim still
-carries the story.  Everything the library proves and this file does not claim — Kirov–Naimi's
-Lemmas 1–6, the three regimes, §5's Lemmas 7–10 and the `H_{n+1}` construction, the closed-form
-cycle counts, the generalized theta classification — is in the library, under the names given in
-the section headers below.
-
-Where declaration order fights the teaching order, dependency wins: `ListAssignment` and
-`constList` sit in §1 although they belong to §3, because `col` is defined on a list assignment;
-the chromatic polynomial sits at §2, before lists, because §3's reformulation needs it; and
-`TowerData` and `pendantTower` — the core reduction §7 and §8 are stated with — are declared in §5
-beside `addPendant`, because iterated `addPendant` is all they are.
+The nine sections follow the book's Part I; what is not claimed lives in the library.
 -/
 
 open Finset
@@ -96,16 +63,9 @@ namespace SimpleGraph
 
 /-! ### 1. Colouring a graph
 
-A **proper colouring** gives adjacent vertices different colours.  `col(G, L)` counts the proper
-colourings that draw each vertex's colour from a prescribed finite list `L v`, and `col(G, n)` is
-the special case where every vertex may use the whole palette `{0, …, n-1}`.  Every claim in this
-file is ultimately a statement about those two counts.
-
-The library proves the basic identities here — colour renaming (`col_image_of_injOn`), the bridge
-to Mathlib's `Colorable` (`colConst_pos_iff_colorable`), the deletion recursion
-(`col_eq_sum_delNone`, `colFix_none_eq_col_delNone`, with `colFix`, `delNone` and `inducedList`),
-and multiplicativity over disjoint unions (`col_sum`).  None of them is claimed here; this section
-exists to define the vocabulary the ten theorems are written in.
+`col(G, L)` counts the proper colourings that draw each vertex's colour from its own finite list
+`L v`; `col(G, n)` is the special case where every list is the palette `{0, …, n-1}`.  Every claim
+below is a statement about these two counts.
 -/
 
 section
@@ -124,8 +84,7 @@ end
 def IsProperColoring {V : Type*} (G : SimpleGraph V) (f : V → ℕ) : Prop :=
   ∀ ⦃v w⦄, G.Adj v w → f v ≠ f w
 
-/-- Not part of the specification: the decidability of `IsProperColoring`, needed only so that
-`colorings` can be written as a `Finset.filter`.  Not listed in `config.json`. -/
+/-- Unlisted: only so that `colorings` can be written as a `Finset.filter`. -/
 instance instDecidableIsProperColoring {V : Type*} [DecidableEq V] (G : SimpleGraph V)
     [DecidableRel G.Adj] [Fintype V] (f : V → ℕ) : Decidable (G.IsProperColoring f) := by
   unfold IsProperColoring; infer_instance
@@ -145,13 +104,9 @@ def colConst {V : Type*} [Fintype V] [DecidableEq V] (G : SimpleGraph V) [Decida
 
 /-! ### 2. The chromatic polynomial
 
-`col(G, n)` is a polynomial in `n`.  It is built here by the Whitney subset expansion
-`∑_{S ⊆ E(G)} (-1)^{|S|} X^{c(S)}`, where `c(S)` counts the connected components of the spanning
-subgraph with edge set `S`, and the first claim is that evaluating it at `n` returns `col(G, n)`.
-
-It sits before lists are introduced because it is a statement about the palette count alone — and
-because §3's reformulation of enumerative chromatic-choosability needs it.
-`SimpleGraph.chromaticPolynomial_bot` (`P(⊥, X) = X^{|V|}`) is in the library. -/
+Defined by the Whitney subset expansion `∑_{S ⊆ E(G)} (-1)^{|S|} X^{c(S)}`, where `c(S)` counts
+the connected components of the spanning subgraph with edge set `S`; claim 1 says evaluating it at
+`n` returns `col(G, n)`. -/
 
 /-- Adjacency in `fromEdgeSet S` is decidable when `S` comes from a `Finset` of edges. -/
 instance decidableRelFromEdgeSetCoe {V : Type*} [DecidableEq V] (S : Finset (Sym2 V)) :
@@ -175,20 +130,11 @@ theorem eval_chromaticPolynomial {V : Type*} [Fintype V] [DecidableEq V] (G : Si
 
 /-! ### 3. Lists instead of a palette
 
-Now let each vertex carry its own list of `n` allowed colours. `G` is **`n`-choosable** if every
-such assignment admits a colouring at all, and **enumeratively chromatic-choosable at `n`** if the
-constant assignment *minimizes* the number of colourings — the paper's subject. The list colour
-function `P_ℓ(G, n)` is that minimum, and the second claim is that enumerative
-chromatic-choosability at `n` is exactly `P_ℓ(G, n) = P(G, n)`.
-
-Three regimes: below `χ(G)` enumerative chromatic-choosability holds vacuously, above `χ_ℓ(G)` it
-is genuine, and in between it fails (`ecc_of_not_colorable`,
-`not_ecc_of_colorable_of_not_choosable` in the library).  Two separations are claimed here.  The
-middle regime is nonempty — the Erdős–Rubin–Taylor example `K_{n,nⁿ}` is `n`-colourable but not
-`n`-choosable, with the witness assignment `ERT.L₀` and its count `ERT.col_L₀_eq_zero` in the
-library.  And the top regime has content — the paper's §5 construction gives, for every `k ≥ 2`, a
-graph that is `k`-choosable and still not enumeratively chromatic-choosable at `k`; the graph
-`H_{n+1}` and the paper's Lemmas 7–10 are in the library, `ListColoring/Section5.lean`.
+`G` is **`n`-choosable** if every `n`-list assignment admits a colouring, and **enumeratively
+chromatic-choosable at `n`** if the constant assignment *minimizes* the number of colourings — the
+paper's subject; claim 2 identifies that with `P_ℓ(G, n) = P(G, n)`.  Claims 3–5 are the two
+separations: the regime `χ(G) ≤ n < χ_ℓ(G)` is nonempty (Erdős–Rubin–Taylor), and above `χ_ℓ` the
+property still fails for some graph at every `k ≥ 2` (the paper's §5).
 -/
 
 /-- An **`n`-list assignment** gives every vertex a list of exactly `n` colors. -/
@@ -243,9 +189,8 @@ end SimpleGraph.ERT
 
 namespace SimpleGraph.KN5
 
-/-- **Kirov–Naimi, §5: choosability does not imply enumerative chromatic-choosability, at any list
-size at which the two could disagree.**  For every `k ≥ 2` there is a graph that is `k`-choosable
-but not enumeratively chromatic-choosable at `k`. -/
+/-- **Kirov–Naimi, §5.**  For every `k ≥ 2` there is a graph that is `k`-choosable but not
+enumeratively chromatic-choosable at `k`. -/
 theorem exists_choosable_not_ecc_of_two_le {k : ℕ} (hk : 2 ≤ k) :
     ∃ (V : Type) (iF : Fintype V) (iD : DecidableEq V) (G : SimpleGraph V)
       (iA : DecidableRel G.Adj), @Choosable V iF iD G iA k ∧ ¬ @ECCAt V iF iD G iA k := sorry
@@ -256,16 +201,10 @@ namespace SimpleGraph
 
 /-! ### 4. Chordal graphs and Kostochka–Sidorenko
 
-The first positive result. Adding a vertex joined to a *clique* preserves enumerative
-chromatic-choosability at `n` (Kirov–Naimi's Lemma 1, `SimpleGraph.ECCAt.coneOn`), so any graph
-built from nothing by repeated such attachments — a *simplicial elimination ordering*, read
-backwards as a `cliqueTower` — is enumeratively chromatic-choosable at `n` for every `n`.
-
-Dirac's theorem identifies those graphs as exactly the **chordal** ones, every cycle of length at
-least `4` having a chord.  It is proved rather than assumed, so the Kostochka–Sidorenko theorem can
-be claimed here in its own terms, with no tower data in the statement.  Dirac's lemma — a chordal
-graph on a nonempty finite vertex type has a simplicial vertex, `exists_isSimplicialVertex` — is the
-engine, and is in the library.
+Coning over a clique preserves enumerative chromatic-choosability (Kirov–Naimi's Lemma 1), so a
+graph with a simplicial elimination ordering — a `cliqueTower` over the empty graph, read
+backwards — is enumeratively chromatic-choosable at every `n`.  Dirac's theorem identifies those
+graphs as the **chordal** ones, which is what lets Kostochka–Sidorenko be stated in its own terms.
 -/
 
 /-- **The cone over `K`.** `coneOn G K` is the graph on `Option V` obtained from `G` by adding one
@@ -328,23 +267,11 @@ end
 
 /-! ### 5. Theorem 1: every cycle is enumeratively chromatic-choosable at `n`
 
-The paper's main theorem.  A path is built by repeatedly attaching a pendant vertex; a cycle is a
-path with its two ends joined, which is what `closePath` does.
-
-The library has the count that drives the proof — `col(C, n) = n · A_{k-1}` for the mutually
-recursive `A_k`, `B_k` of `ListColoring.pathA`/`pathB` (`colConst_closePath`), the two shapes of
-`(n, n-1)`-list assignment on a path and their counts (`col_pathAssign`), the `n = 2` case by
-rotation (`rotIso`, `ecc_closePath_two`), and the closed form
-`(n-1)^v + (-1)^v (n-1)` for the cycle on `v` vertices (`colConst_closePath_chromatic`,
-`listColorFunction_closePath_chromatic`).  Only the theorem itself is claimed.
-
-The *same* attachment, iterated, is the **pendant tower**: the reading of a graph as its core with
-degree-one vertices grown back on, which §7 and §8 are stated with.  `TowerData` and `pendantTower`
-are declared here, next to `addPendant`, because that is all they are made of; Kirov–Naimi's
-**Lemma 5** (`SimpleGraph.ecc_pendantTower_iff`) and its choosability analogue
-(`SimpleGraph.choosable_pendantTower_iff`) are the two facts about them, and are in the library.
-The vertex type they run over is §4's `TowerV`, shared with the cone towers: `Option` iterated `k`
-times, whatever the new vertices are attached to.
+The paper's main theorem.  A cycle is a path — `pathG`, built by iterated `addPendant` — with its
+two ends joined, which is `closePath`.  The same attachment, iterated, is the **pendant tower**:
+the reading of a graph as its core with degree-one vertices grown back on.  `TowerData` and
+`pendantTower` are declared here because that is all they are made of; §7 and §8 are stated with
+them.
 -/
 
 /-- `G` with one new pendant vertex `none`, attached to `v`. -/
@@ -365,14 +292,11 @@ def TowerData (V : Type u) : ℕ → Type u
 
 end
 
--- `pendantTower` is deliberately stated with `Type*`, and so is deliberately NOT inside the
--- `universe u` section above.  The comparator compares `ConstantVal`s, and a `ConstantVal`
--- carries `levelParams` as a list of *names*: alpha-equivalence is not enough, the universe
--- parameter has to end up with the same name here as in the library.  `ListColoring/Core.lean`
--- writes `TowerV` and `TowerData` as `(V : Type u)` against an explicit `universe u`, but
--- declares `pendantTower` against `variable {V : Type*}`, which auto-binds the universe as
--- `u_1`.  Reproducing that split is the only reason this one definition sits on its own.
--- (`ListAssignment` and `constList` above are pinned to `u_2` for the same reason.)
+-- Deliberately `Type*`, outside the `universe u` section above: the comparator compares
+-- `ConstantVal`s, whose universe parameters are *names*.  The library declares `pendantTower`
+-- against `variable {V : Type*}` (auto-bound `u_1`) but `TowerV`/`TowerData` against
+-- `universe u`, and that split must be reproduced.  (`ListAssignment`/`constList` are pinned to
+-- `u_2` for the same reason.)
 
 /-- **A tower of pendant attachments.** `pendantTower G k d` is the graph obtained from `G` by
 attaching `k` pendant vertices one after another, the `i`-th of them at the vertex recorded in `d`
@@ -429,45 +353,21 @@ theorem ecc_closePath_of_two_le {k m : ℕ} (hk : 2 ≤ k) :
 
 /-! ### 6. The machinery behind Theorem 1
 
-Nothing is defined or claimed in this section; it is here so that the path still reads end to end.
-
-Three technical steps carry Theorem 1, all in the library.  **Lemma 2**
-(`SimpleGraph.exists_nested_of_bridge`): cutting a graph along a **bridge** and swapping colours on
-one side does not increase the count, so the lists at the two ends of the bridge may be assumed
-nested — the apparatus is `SimpleGraph.bridge`, `colAvoid`, `swapRight`, `col_bridge`,
-`col_swapRight_add`.  **Lemma 4** (`ListColoring.col_lt_col_of_ssubset`): on a path, enlarging the
-lists *strictly* increases the count.  **Lemma 3(b)(c)**
-(`ListColoring.min_pathA_pathB_le_col`, `ListColoring.isPathShape_parity_of_minimizing`): every
-`(n, n-1)`-assignment on a path admits at least `min(A_k, B_k)` colourings, and a *minimizing* one
-has the shape dictated by the parity of `k` — with the predicates `ListColoring.IsNNAssign`,
-`ListColoring.IsPathShape` and `SimpleGraph.Minimizing`, and the path splitting isomorphism
-`ListColoring.pathSplitIso`.
+Nothing is defined or claimed here.  Theorem 1 rests on three steps, all in the library: Lemma 2,
+swapping across a bridge makes the end lists nested; Lemma 4, enlarging lists on a path strictly
+increases the count; Lemma 3(b)(c), the `min(A_k, B_k)` lower bound and the parity shape of a
+minimizing assignment.
 -/
 
 /-! ### 7. `2`-choosability: Rubin's theorem
 
-Which graphs are `2`-choosable? Choosability is inherited by subgraphs
-(`SimpleGraph.Choosable.mono`, `.comap`) and — the key reduction — is unchanged by attaching or
-removing pendant vertices (`SimpleGraph.choosable_pendantTower_iff`), so a connected graph may be
-replaced by its **core**: what is left after deleting degree-one vertices until none remain, or,
-read backwards, the graph of which `G` is a `pendantTower`.  `CoreIs` spells that out, and the
-alternatives `CoreIsVertex`, `CoreIsEvenCycle`, `CoreIsTheta` are the three cases Rubin's theorem
-names.
+Choosability is unchanged by attaching or removing pendant vertices, so a connected graph may be
+replaced by its **core**: the graph of which it is a `pendantTower`.  `CoreIs` spells that out,
+and `CoreIsVertex`, `CoreIsEvenCycle`, `CoreIsTheta` are the three cases Rubin's theorem names.
+It is proved in this development and claimed in full, both directions.
 
-Rubin's theorem says the `2`-choosable cores are exactly a single vertex, an even cycle, and the
-theta graphs `θ_{2,2,2m}`.  **It is proved in this development**, and claimed here in full, both
-directions.  The `⟸` half is assembled
-from Theorem 1 (`ListColoring.choosable_two_closePath_of_odd`) and
-`ListColoring.choosable_theta`; the `⟹` half runs Rubin's own argument — pass to the core
-(`ListColoring.hasCore`), which has minimum degree at least `2`, and extract from
-`ListColoring.rubin_structure` either a spanning even cycle or a labelled `θ_{2,2,2m}`
-(`ListColoring.exists_iso_closePath_of_two_regular`,
-`ListColoring.exists_iso_theta_of_thetaData`).  The arity-general input to that argument is
-`ListColoring.choosable_two_gtheta_iff`, in the library.
-
-`instDecidableRelPathG` and `instDecidableRelTheta` are in the list for this section's sake alone:
-`CoreIs G H` asks for a decidable `H`, and `pathG 0` and `theta m` are the `H`s that `CoreIsVertex`,
-`CoreIsTheta` and §8's `CoreIsK23` name.
+`instDecidableRelPathG` and `instDecidableRelTheta` are listed for this section's sake alone:
+`CoreIs G H` asks for a decidable `H`.
 -/
 
 /-- The vertex type of `θ_{2,2,2m}`. -/
@@ -480,12 +380,9 @@ def theta (m : ℕ) : SimpleGraph (ThetaV m) :=
 
 instance instDecidableRelTheta : (m : ℕ) → DecidableRel (theta m).Adj := sorry
 
-/-- **The core of `G` is `H`**: `G` is `H` with a finite tower of pendant vertices attached.
-
-Kirov–Naimi's core is obtained from `G` by deleting vertices of degree one until none remain. Read
-in reverse, that says `G` is built from its core by attaching pendant vertices one at a time, each
-one at an arbitrary vertex of the graph built so far — which is `SimpleGraph.pendantTower`. The
-statement is up to isomorphism because the tower lives on its own vertex type. -/
+/-- **The core of `G` is `H`**: `G` is `H` with a finite tower of pendant vertices attached — the
+reverse reading of "delete degree-one vertices until none remain".  Up to isomorphism, because the
+tower lives on its own vertex type. -/
 def CoreIs {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
     (G : SimpleGraph V) [DecidableRel G.Adj] (H : SimpleGraph W) [DecidableRel H.Adj] : Prop :=
   ∃ (k : ℕ) (d : TowerData W k), Nonempty (G ≃g pendantTower H k d)
@@ -510,9 +407,8 @@ def CoreIsTheta {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V)
 > A connected graph is `2`-choosable iff its core is a single vertex, an even cycle, or
 > `θ_{2,2,2m}` for some `m ≥ 1`.
 
-Due to **A. L. Rubin**, and published in P. Erdős, A. L. Rubin and H. Taylor, *Choosability in
-graphs*, Congr. Numer. **26** (1980), 125–157, pp. 131–134.  This `Prop` *is* the statement of
-claim 9: the theorem below has it as its bare type. -/
+A. L. Rubin, in Erdős–Rubin–Taylor, *Choosability in graphs*, Congr. Numer. **26** (1980),
+125–157.  This `Prop` *is* the statement of claim 9: the theorem below has it as its bare type. -/
 def RubinTheorem : Prop :=
   ∀ {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V) [DecidableRel G.Adj],
     G.Connected → (G.Choosable 2 ↔ (CoreIsVertex G ∨ CoreIsEvenCycle G ∨ CoreIsTheta G))
@@ -523,17 +419,11 @@ theorem rubinTheorem : RubinTheorem := sorry
 
 /-! ### 8. Enumerative chromatic-choosability at `2`: Theorem 2
 
-The classification, and the end of the paper. `K₂,₃ = θ_{2,2,2}` is enumeratively
-chromatic-choosable at `2` (Kirov–Naimi's Lemma 6, `SimpleGraph.ecc_K23`) while `θ_{2,2,2m}` is not
-for `m ≥ 2` (`ListColoring.not_ecc_theta`); those two facts, plus §5's cycles and §4's chordal
-graphs and the core reduction (Lemma 5, `SimpleGraph.ecc_pendantTower_iff`), turn §7's list of the
-`2`-choosable graphs into a list of the enumeratively chromatic-choosable ones.
-
-Where Rubin's theorem says "even cycle", Theorem 2 says "cycle": *every* cycle is enumeratively
-chromatic-choosable at `2`, and the odd ones get there by not being `2`-colourable at all.  That is
-the fourth alternative, `HasOddCycle`, and the bridge to it — a graph is `2`-colourable iff it
-contains no odd cycle — is `ListColoring.hasOddCycle_of_not_colorable_two`, proved from scratch
-here because Mathlib records the bipartite characterization as an open `TODO`.
+`K₂,₃ = θ_{2,2,2}` is enumeratively chromatic-choosable at `2` (Kirov–Naimi's Lemma 6) and
+`θ_{2,2,2m}` with `m ≥ 2` is not; with §5's cycles, §4's chordal graphs and the core reduction
+(Lemma 5), that turns §7's list into Theorem 2's.  Where Rubin says "even cycle", Theorem 2 says
+"cycle": odd cycles qualify by not being `2`-colourable at all, which is the fourth alternative,
+`HasOddCycle`.
 -/
 
 /-- **The core of `G` is a cycle.** `closePath k` is the cycle on `k + 1` vertices, and `2 ≤ k`
@@ -565,10 +455,8 @@ def HasOddCycle {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V)
 > A connected graph is 2-monophilic iff its core is a single vertex, is a cycle, is `K₂,₃`, or
 > contains an odd cycle.
 
-That is the paper's wording; "2-monophilic" is `SimpleGraph.ECCAt G 2`, *enumeratively
-chromatic-choosable at `2`*.  Kirov–Naimi, Ars Combin. **124** (2016), 329–340
-(arXiv:1004.5183), Theorem 2.  The one result the paper quotes — Rubin's theorem — is claim 9
-above, so this is the theorem as they state it. -/
+The paper's wording; "2-monophilic" is `SimpleGraph.ECCAt G 2`.  Kirov–Naimi, Ars Combin. **124**
+(2016), 329–340, Theorem 2.  Rubin's theorem, which the paper quotes, is claim 9. -/
 theorem ecc_two_iff {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V)
     [DecidableRel G.Adj] (hconn : G.Connected) :
     G.ECCAt 2 ↔ CoreIsVertex G ∨ CoreIsCycle G ∨ CoreIsK23 G ∨ HasOddCycle G := sorry
@@ -579,10 +467,8 @@ namespace SimpleGraph
 
 /-! ### 9. Every graph, eventually
 
-Donner's theorem: *every* graph is enumeratively chromatic-choosable at `n` once `n` is large
-enough. The proof runs the Whitney expansion of §2 for an arbitrary list assignment rather than a
-single palette (`SimpleGraph.listCount`, `col_eq_sum_powerset`), and yields more than the statement
-claimed here — an explicit threshold, `SimpleGraph.ecc_of_two_pow_lt`: `n > 2^{|E(G)|}` suffices. -/
+Donner's theorem.  The library proves more than is claimed: the explicit threshold
+`n > 2^{|E(G)|}` suffices (`SimpleGraph.ecc_of_two_pow_lt`). -/
 
 /-- **Donner's theorem (1992).** Every graph is enumeratively chromatic-choosable at `k` for all
 sufficiently large `k`. -/
