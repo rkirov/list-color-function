@@ -7,8 +7,8 @@ import Cacti.Structure
 import Cacti.LeafPeeling
 import Cacti.Rooted
 import Cacti.Weighted
+import Cacti.WeightedProfile
 import Cacti.Absorb
-import Cacti.Weighted
 import Cacti.AbsorbProfile
 import Cacti.Statements
 
