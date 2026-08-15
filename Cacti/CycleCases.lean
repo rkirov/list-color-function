@@ -173,6 +173,93 @@ theorem rootCount_donation (hk : 4 ≤ k) {P : Equiv.Perm (Fin k)}
   refine le_trans (le_of_eq ?_) hmono
   rw [Matrix.add_mul, Matrix.add_mul, Matrix.add_apply, Matrix.add_apply]
 
+
+/-- **Donated counts**: when `c`'s thread is rigid (prefix length one, empty tail), every other
+defined root `d` clears its exact base plus `2·(k-2)` from `c`'s two slots. -/
+theorem rootCount_donated (hk : 4 ≤ k) {P : Equiv.Perm (Fin k)} {dom : Finset (Fin k)}
+    {c d : Fin k} (hd : d ∈ dom) (hdc : d ≠ c) (hPc : P (P.symm c) = c) {n : ℕ}
+    (hn : 4 ≤ n) (hne : Even n)
+    (T₁ T : Finset (Fin k)) (Ts₂ : List (Finset (Fin k))) (T' : Finset (Fin k))
+    (hlen : (([T₁] : List (Finset (Fin k))) ++ T :: (Ts₂ ++ T' :: [])).length = n - 1)
+    (hcT : c ∈ T) (hmT' : P.symm c ∈ T') :
+    (if P.symm d = d then uniformA k n
+      else alpha k (n - 1) + (k - 2) * beta k (n - 1)) + (k - 2) + (k - 2)
+      ≤ rootCount ([T₁] ++ T :: (Ts₂ ++ T' :: [])) P dom d := by
+  have hlen2 : Ts₂.length = n - 4 := by
+    simp [List.length_append] at hlen
+    omega
+  refine le_trans ?_ (rootCount_donation hk hd [T₁] T Ts₂ T' [])
+  refine Nat.add_le_add (Nat.add_le_add ?_ ?_) ?_
+  · -- the exact base at `d`
+    by_cases hfix : P.symm d = d
+    · rw [if_pos hfix]
+      refine le_of_eq ?_
+      rw [base_diag_fixed (show 1 ≤ k by omega) P hfix, hlen, uniformA]
+    · rw [if_neg hfix]
+      refine le_of_eq ?_
+      rw [base_diag_moved (show 1 ≤ k by omega) P hfix, hlen]
+  · -- the entry donation: prefix length `n - 2`, empty tail
+    have hpre : ([T₁] : List (Finset (Fin k))).length + 1 + Ts₂.length = n - 2 := by
+      simp [hlen2]
+      omega
+    have hE0 : ((offDiag k ^ ([] : List (Finset (Fin k))).length) * offPerm P) = offPerm P := by
+      rw [List.length_nil, pow_zero, Matrix.one_mul]
+    have hcg := corr_diag_ge (([T₁] : List (Finset (Fin k))).length + 1 + Ts₂.length) T'
+      ((offDiag k ^ ([] : List (Finset (Fin k))).length) * offPerm P) d (P.symm c) hmT'
+    rw [hE0] at hcg
+    have hval1 : k - 2 ≤ (offDiag k ^ (([T₁] : List (Finset (Fin k))).length + 1 + Ts₂.length))
+        d (P.symm c) := by
+      rw [offDiag_pow_apply (show 1 ≤ k by omega), hpre]
+      by_cases hdm : d = P.symm c
+      · rw [if_pos hdm]
+        exact alpha_ge (show 3 ≤ k by omega) (by omega)
+      · rw [if_neg hdm]
+        exact beta_ge (show 3 ≤ k by omega) (by omega)
+    have hval2 : offPerm P (P.symm c) d = 1 := by
+      show (if P (P.symm c) = d then 0 else 1) = 1
+      rw [if_neg (fun h => hdc (hPc.symm.trans h).symm)]
+    calc k - 2 = (k - 2) * 1 := by omega
+      _ ≤ (offDiag k ^ (([T₁] : List (Finset (Fin k))).length + 1 + Ts₂.length)) d (P.symm c)
+            * offPerm P (P.symm c) d := by
+          rw [hval2]
+          exact Nat.mul_le_mul_right _ hval1
+      _ ≤ _ := by
+          rw [List.length_nil, pow_zero, Matrix.mul_one]
+          exact hcg
+  · -- the leave donation: prefix length one, suffix `n - 3`
+    have hrest : (Ts₂ ++ T' :: ([] : List (Finset (Fin k)))).length = n - 3 := by
+      simp [hlen2]
+      omega
+    have hcg := corr_diag_ge (([T₁] : List (Finset (Fin k))).length) T
+      ((offDiag k ^ (Ts₂ ++ T' :: ([] : List (Finset (Fin k)))).length) * offPerm P) d c hcT
+    have hval1 : (offDiag k ^ ([T₁] : List (Finset (Fin k))).length) d c = 1 := by
+      rw [offDiag_pow_apply (show 1 ≤ k by omega)]
+      rw [if_neg hdc]
+      simp
+    have hval2 : k - 2 ≤ ((offDiag k ^ (Ts₂ ++ T' :: ([] : List (Finset (Fin k)))).length)
+        * offPerm P) c d := by
+      rw [offDiag_pow_mulOffPerm_apply (show 1 ≤ k by omega), hrest]
+      by_cases hcm : c = P.symm d
+      · rw [if_pos hcm]
+        have hb := one_le_beta (show 3 ≤ k by omega) (n - 3) (by omega)
+        calc k - 2 ≤ (k - 1) * 1 := by omega
+          _ ≤ (k - 1) * beta k (n - 3) := Nat.mul_le_mul_left _ hb
+      · rw [if_neg hcm]
+        exact moved_val_ge (show 3 ≤ k by omega) (by omega)
+    calc k - 2 = 1 * (k - 2) := by omega
+      _ ≤ (offDiag k ^ ([T₁] : List (Finset (Fin k))).length) d c *
+            (((offDiag k ^ (Ts₂ ++ T' :: ([] : List (Finset (Fin k)))).length)
+              * offPerm P) c d) := by
+          rw [hval1]
+          exact Nat.mul_le_mul_left _ hval2
+      _ ≤ _ := by
+          rw [show ((offDiag k ^ ([T₁] : List (Finset (Fin k))).length) * diagInd T *
+              (offDiag k ^ (Ts₂ ++ T' :: ([] : List (Finset (Fin k)))).length)) * offPerm P
+            = (offDiag k ^ ([T₁] : List (Finset (Fin k))).length) * diagInd T *
+              ((offDiag k ^ (Ts₂ ++ T' :: ([] : List (Finset (Fin k)))).length) * offPerm P)
+            from by rw [Matrix.mul_assoc]]
+          exact hcg
+
 end SingleRoot
 
 end ListColoring
