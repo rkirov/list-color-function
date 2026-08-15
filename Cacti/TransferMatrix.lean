@@ -383,4 +383,83 @@ theorem base_diag_moved {n : ℕ} (hk : 1 ≤ k) (P : Equiv.Perm (Fin k)) {c : F
 
 end OffPermDiag
 
+
+section CorrectionValues
+
+open Matrix
+
+variable {k : ℕ}
+
+/-- The general off-permutation entry: `(X · (J-P)) z c` is the `z`-row sum away from
+`P⁻¹ c`. -/
+theorem mulOffPerm_apply (X : Matrix (Fin k) (Fin k) ℕ) (P : Equiv.Perm (Fin k))
+    (z c : Fin k) :
+    (X * offPerm P) z c = ∑ b ∈ Finset.univ.erase (P.symm c), X z b := by
+  rw [Matrix.mul_apply]
+  have hterm : ∀ b, X z b * offPerm P b c = if b = P.symm c then 0 else X z b := by
+    intro b
+    show X z b * (if P b = c then 0 else 1) = _
+    by_cases hb : P b = c
+    · rw [if_pos hb, if_pos (by rw [← hb, Equiv.symm_apply_apply]), Nat.mul_zero]
+    · rw [if_neg hb, if_neg (fun h => hb (by rw [h, Equiv.apply_symm_apply])), Nat.mul_one]
+  rw [Finset.sum_congr rfl (fun b _ => hterm b), sum_ite_single, Nat.zero_add]
+
+/-- The two values of `((J-I)^s · (J-P)) z c`. -/
+theorem offDiag_pow_mulOffPerm_apply (hk : 1 ≤ k) (s : ℕ) (P : Equiv.Perm (Fin k))
+    (z c : Fin k) :
+    ((offDiag k ^ s) * offPerm P) z c =
+      if z = P.symm c then (k - 1) * beta k s else alpha k s + (k - 2) * beta k s := by
+  rw [mulOffPerm_apply]
+  by_cases hz : z = P.symm c
+  · rw [if_pos hz, hz]
+    rw [Finset.sum_congr rfl (fun b hb => by
+      rw [offDiag_pow_apply hk s _ b, if_neg (fun h => Finset.ne_of_mem_erase hb h.symm)])]
+    rw [Finset.sum_const, Finset.card_erase_of_mem (Finset.mem_univ _), Finset.card_univ,
+      Fintype.card_fin, smul_eq_mul]
+  · rw [if_neg hz]
+    have hzmem : z ∈ Finset.univ.erase (P.symm c) :=
+      Finset.mem_erase.mpr ⟨hz, Finset.mem_univ z⟩
+    rw [← Finset.add_sum_erase _ _ hzmem, offDiag_pow_apply hk s z z, if_pos rfl]
+    congr 1
+    rw [Finset.sum_congr rfl (fun b hb => by
+      rw [offDiag_pow_apply hk s z b,
+        if_neg (fun h => Finset.ne_of_mem_erase hb h.symm)])]
+    rw [Finset.sum_const, Finset.card_erase_of_mem hzmem,
+      Finset.card_erase_of_mem (Finset.mem_univ _), Finset.card_univ, Fintype.card_fin,
+      smul_eq_mul]
+    have h11 : k - 1 - 1 = k - 2 := by omega
+    rw [h11]
+
+/-- Left-multiplication by a diagonal indicator gates the row. -/
+theorem diagInd_mul_apply (T : Finset (Fin k)) (X : Matrix (Fin k) (Fin k) ℕ) (z c : Fin k) :
+    (diagInd T * X) z c = if z ∈ T then X z c else 0 := by
+  rw [Matrix.mul_apply]
+  have hterm : ∀ b, diagInd T z b * X b c = if b = z ∧ z ∈ T then X b c else 0 := by
+    intro b
+    show (if z = b ∧ z ∈ T then 1 else 0) * X b c = _
+    by_cases h : z = b ∧ z ∈ T
+    · rw [if_pos h, if_pos ⟨h.1.symm, h.2⟩, Nat.one_mul]
+    · rw [if_neg h, if_neg (fun hh => h ⟨hh.1.symm, hh.2⟩), Nat.zero_mul]
+  rw [Finset.sum_congr rfl (fun b _ => hterm b)]
+  by_cases hzT : z ∈ T
+  · simp only [hzT, and_true, if_true]
+    rw [Finset.sum_ite_eq' Finset.univ z (fun b => X b c), if_pos (Finset.mem_univ z)]
+  · simp only [hzT, and_false, if_false]
+    exact Finset.sum_const_zero
+
+/-- **One retained slot of a correction**: keep a single index of the diagonal insertion. -/
+theorem corr_diag_ge (i₁ : ℕ) (T : Finset (Fin k)) (X : Matrix (Fin k) (Fin k) ℕ)
+    (c z : Fin k) (hz : z ∈ T) :
+    (offDiag k ^ i₁) c z * X z c ≤ ((offDiag k ^ i₁) * diagInd T * X) c c := by
+  rw [Matrix.mul_assoc, Matrix.mul_apply]
+  have hval : (diagInd T * X) z c = X z c := by
+    rw [diagInd_mul_apply, if_pos hz]
+  calc (offDiag k ^ i₁) c z * X z c
+      = (offDiag k ^ i₁) c z * (diagInd T * X) z c := by rw [hval]
+    _ ≤ ∑ b, (offDiag k ^ i₁) c b * (diagInd T * X) b c :=
+        Finset.single_le_sum (f := fun b => (offDiag k ^ i₁) c b * (diagInd T * X) b c)
+          (fun b _ => Nat.zero_le _) (Finset.mem_univ z)
+
+end CorrectionValues
+
 end ListColoring
