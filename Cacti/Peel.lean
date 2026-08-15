@@ -343,4 +343,123 @@ theorem slack_of_two_nbrs {r u : V} (hru : r ≠ u) {n₁ n₂ : V}
 
 end Slack
 
+
+section PeelInduction
+
+/-- Extracting the root's weight. -/
+theorem rootedWcol_root_weight (L : ListAssignment V) (wr : ℕ → ℕ) (r : V) (c : ℕ) :
+    rootedWcol G L (fun v e => if v = r then wr e else 1) r c = wr c * rootedCol G L r c := by
+  rw [rootedWcol, rootedCol, Finset.card_eq_sum_ones, Finset.mul_sum]
+  refine Finset.sum_congr rfl fun f hf => ?_
+  rw [Finset.mem_filter] at hf
+  rw [prod_delOption (fun v => if v = r then wr (f v) else 1) r, if_pos rfl, hf.2,
+    Finset.prod_congr rfl (fun v _ => if_neg v.property), Finset.prod_const_one, mul_one]
+
+/-- **The peel induction**: peeling every vertex of `T` (away from the root) extracts the
+square of its normalizer product, leaving the weight trivial off the root. -/
+theorem peel_all {r : V} {k : ℕ} (hk : 4 ≤ k) (L : ListAssignment V)
+    (hLcard : ∀ v, (L v).card = k)
+    (hnbr : ∀ u, u ≠ r → ∃ n₁ n₂, ∀ y, G.Adj u y → y = n₁ ∨ y = n₂)
+    (W : V → ℕ) {c d : ℕ} :
+    ∀ (T : Finset V), r ∉ T → ∀ (w : V → ℕ → ℕ),
+      (∀ v ∈ T, ∀ c' ∈ L v, ∀ d' ∈ L v, c' ≠ d' → (W v) ^ 2 ≤ w v c' * w v d') →
+      (∀ v, v ∉ T → v ≠ r → ∀ e, w v e = 1) →
+      (∏ v ∈ T, W v) ^ 2 *
+          (rootedWcol G L (fun v e => if v = r then w r e else 1) r c *
+            rootedWcol G L (fun v e => if v = r then w r e else 1) r d) ≤
+        rootedWcol G L w r c * rootedWcol G L w r d := by
+  intro T
+  induction T using Finset.induction_on with
+  | empty =>
+    intro _ w _ htriv
+    have hcong : ∀ c', rootedWcol G L w r c'
+        = rootedWcol G L (fun v e => if v = r then w r e else 1) r c' := by
+      intro c'
+      refine rootedWcol_weight_congr (fun v e _ => ?_) _ _
+      by_cases hv : v = r
+      · rw [if_pos hv, hv]
+      · rw [if_neg hv, htriv v (Finset.notMem_empty v) hv]
+    rw [← hcong c, ← hcong d]
+    simp
+  | @insert u T huT IH =>
+    intro hrT w hdomT htriv
+    have hur : u ≠ r := fun h => hrT (by rw [← h]; exact Finset.mem_insert_self u T)
+    have hrT' : r ∉ T := fun h => hrT (Finset.mem_insert_of_mem h)
+    -- peel `u` first
+    obtain ⟨n₁, n₂, hn⟩ := hnbr u hur
+    have hstep := peel_step (G := G) L w (Ne.symm hur) hk (hLcard u)
+      (hdomT u (Finset.mem_insert_self u T)) (c := c) (d := d)
+      (fun a ha c' _ => slack_of_two_nbrs (Ne.symm hur) hn hk L (hLcard u) w c' a ha)
+    -- then the smaller set, on the `u`-trivialized weight
+    have hIH := IH hrT' (fun v e => if v = u then 1 else w v e)
+      (fun v hv c' hc' d' hd' hcd' => by
+        simp only [if_neg (fun h : v = u => huT (h ▸ hv))]
+        exact hdomT v (Finset.mem_insert_of_mem hv) c' hc' d' hd' hcd')
+      (fun v hv hvr e => by
+        by_cases hvu : v = u
+        · rw [if_pos hvu]
+        · rw [if_neg hvu]
+          exact htriv v (fun h => (Finset.mem_insert.mp h).elim hvu hv) hvr e)
+    have hroot : (fun v e => if v = r then
+        (fun v' e' => if v' = u then 1 else w v' e') r e else 1)
+        = (fun v e => if v = r then w r e else 1) := by
+      funext v e
+      by_cases hv : v = r
+      · rw [if_pos hv, if_pos hv]
+        show (if r = u then 1 else w r e) = w r e
+        rw [if_neg (fun h : r = u => hur h.symm)]
+      · rw [if_neg hv, if_neg hv]
+    rw [hroot] at hIH
+    calc (∏ v ∈ insert u T, W v) ^ 2 *
+          (rootedWcol G L (fun v e => if v = r then w r e else 1) r c *
+            rootedWcol G L (fun v e => if v = r then w r e else 1) r d)
+        = (W u) ^ 2 * ((∏ v ∈ T, W v) ^ 2 *
+            (rootedWcol G L (fun v e => if v = r then w r e else 1) r c *
+              rootedWcol G L (fun v e => if v = r then w r e else 1) r d)) := by
+          rw [Finset.prod_insert huT]
+          ring
+      _ ≤ (W u) ^ 2 * (rootedWcol G L (fun v e => if v = u then 1 else w v e) r c *
+            rootedWcol G L (fun v e => if v = u then 1 else w v e) r d) :=
+          Nat.mul_le_mul_left _ hIH
+      _ ≤ rootedWcol G L w r c * rootedWcol G L w r d := hstep
+
+
+/-- **UM-107 packaged**: on a graph whose non-root vertices have at most two neighbours, the
+weighted pair bound reduces to the bare one. -/
+theorem pair_bound_of_bare {r : V} {k : ℕ} (hk : 4 ≤ k) (L : ListAssignment V)
+    (hLcard : ∀ v, (L v).card = k)
+    (hnbr : ∀ u, u ≠ r → ∃ n₁ n₂, ∀ y, G.Adj u y → y = n₁ ∨ y = n₂)
+    (w : V → ℕ → ℕ) (W : V → ℕ)
+    (hdom : ∀ v, ∀ c ∈ L v, ∀ d ∈ L v, c ≠ d → (W v) ^ 2 ≤ w v c * w v d)
+    (hbare : ∀ c ∈ L r, ∀ d ∈ L r, c ≠ d →
+      (rootedCol G (constList V k) r 0) ^ 2 ≤ rootedCol G L r c * rootedCol G L r d) :
+    ∀ c ∈ L r, ∀ d ∈ L r, c ≠ d →
+      (rootedCol G (constList V k) r 0 * ∏ v, W v) ^ 2 ≤
+        rootedWcol G L w r c * rootedWcol G L w r d := by
+  intro c hc d hd hcd
+  have hpeel := peel_all (G := G) hk L hLcard hnbr W (c := c) (d := d)
+    (Finset.univ.erase r) (Finset.notMem_erase r _) w
+    (fun v hv => hdom v)
+    (fun v hv hvr => absurd (Finset.mem_erase.mpr ⟨hvr, Finset.mem_univ v⟩) hv)
+  rw [rootedWcol_root_weight, rootedWcol_root_weight] at hpeel
+  have hprod : (∏ v, W v) = W r * ∏ v ∈ Finset.univ.erase r, W v :=
+    (Finset.mul_prod_erase Finset.univ W (Finset.mem_univ r)).symm
+  calc (rootedCol G (constList V k) r 0 * ∏ v, W v) ^ 2
+      = (∏ v ∈ Finset.univ.erase r, W v) ^ 2 *
+          ((W r) ^ 2 * (rootedCol G (constList V k) r 0) ^ 2) := by
+        rw [hprod]
+        ring
+    _ ≤ (∏ v ∈ Finset.univ.erase r, W v) ^ 2 *
+          ((w r c * w r d) * (rootedCol G L r c * rootedCol G L r d)) := by
+        refine Nat.mul_le_mul_left _ (Nat.mul_le_mul ?_ ?_)
+        · exact hdom r c hc d hd hcd
+        · exact hbare c hc d hd hcd
+    _ = (∏ v ∈ Finset.univ.erase r, W v) ^ 2 *
+          ((w r c * rootedCol G L r c) * (w r d * rootedCol G L r d)) := by
+        ring
+    _ ≤ rootedWcol G L w r c * rootedWcol G L w r d := hpeel
+
+
+end PeelInduction
+
 end ListColoring
