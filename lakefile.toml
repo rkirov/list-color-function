@@ -1,7 +1,7 @@
 name = "graph_coloring"
 version = "0.1.0"
 keywords = ["math", "graph theory", "list coloring"]
-defaultTargets = ["ListColoring", "OpenProblems"]
+defaultTargets = ["ListColoring", "OpenProblems", "Cacti"]
 
 [leanOptions]
 pp.unicode.fun = true
@@ -21,3 +21,10 @@ name = "ListColoring"
 # and so that no theorem can depend on an unproved statement: the import runs this way only.
 [[lean_lib]]
 name = "OpenProblems"
+
+# The cactus ECC classification (the 2026-08 AI research collaboration; see
+# ai_research_notes/FINAL_CACTI_ECC_HANDOFF.md). Separate from the Kirov-Naimi formalization:
+# imports ListColoring, never imported by it. Statements.lean carries `sorry`s that mean
+# "proved on paper, formalization in progress" -- see its module docstring.
+[[lean_lib]]
+name = "Cacti"
