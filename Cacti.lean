@@ -16,6 +16,7 @@ import Cacti.Induction
 import Cacti.Peel
 import Cacti.TransferMatrix
 import Cacti.CycleCases
+import Cacti.Relabel
 import Cacti.CyclePair
 import Cacti.UniformProfile
 import Cacti.Statements
