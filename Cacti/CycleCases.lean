@@ -262,4 +262,156 @@ theorem rootCount_donated (hk : 4 ≤ k) {P : Equiv.Perm (Fin k)} {dom : Finset 
 
 end SingleRoot
 
+section PairTheorem
+
+/-- The rigid data of a twisted root: the thread split with prefix one and empty tail. -/
+def RigidData (Ts : List (Finset (Fin k))) (P : Equiv.Perm (Fin k)) (dom : Finset (Fin k))
+    (e : Fin k) : Prop :=
+  e ∈ dom ∧ P.symm e ≠ e ∧ ∃ (T₁ T : Finset (Fin k)) (Ts₂ : List (Finset (Fin k)))
+    (T' : Finset (Fin k)), Ts = [T₁] ++ T :: (Ts₂ ++ T' :: []) ∧ e ∈ T ∧ P.symm e ∈ T'
+
+/-- The ℕ-arithmetic of the rigid pairings: `(A-1)·(A+2) ≥ A²` for `A ≥ 2`. -/
+theorem pair_arith_rigid {A x y : ℕ} (h2 : 2 ≤ A) (hx : A ≤ x + 1) (hy : A + 2 ≤ y) :
+    A ^ 2 ≤ x * y := by
+  zify at *
+  nlinarith
+
+/-- **Classification**: every root either clears the normalizer or carries rigid data. -/
+theorem rootCount_classify (hk : 4 ≤ k) {n : ℕ} (hn : 4 ≤ n) (hne : Even n)
+    {Ts : List (Finset (Fin k))} (hlen : Ts.length = n - 1)
+    {P : Equiv.Perm (Fin k)} {dom : Finset (Fin k)}
+    (hthread : ∀ e ∈ dom, P.symm e ≠ e →
+      ∃ (Ts₁ : List (Finset (Fin k))) (T : Finset (Fin k)) (Ts₂ : List (Finset (Fin k)))
+        (T' : Finset (Fin k)) (Ts₃ : List (Finset (Fin k))),
+        Ts = Ts₁ ++ T :: (Ts₂ ++ T' :: Ts₃) ∧ e ∈ T ∧ P.symm e ∈ T')
+    (e : Fin k) :
+    uniformA k n ≤ rootCount Ts P dom e ∨ RigidData Ts P dom e := by
+  by_cases hedom : e ∈ dom
+  · by_cases hfix : P.symm e = e
+    · exact Or.inl (rootCount_fixed hk hedom hfix hn hlen)
+    · obtain ⟨Ts₁, T, Ts₂, T', Ts₃, hsplit, heT, hmT'⟩ := hthread e hedom hfix
+      have halt : beta k (n - 1) = alpha k (n - 1) + 1 :=
+        (beta_alternation (show 2 ≤ k by omega) (n - 1)).1
+          (Nat.Even.sub_odd (by omega) hne odd_one)
+      have hA : uniformA k n = (alpha k (n - 1) + (k - 2) * beta k (n - 1)) + 1 := by
+        rw [uniformA, halt]
+        have hsp : k - 1 = 1 + (k - 2) := by omega
+        rw [hsp]
+        ring
+      by_cases hrig : Ts₁.length = 1 ∧ Ts₃.length = 0
+      · obtain ⟨h1, h3⟩ := hrig
+        obtain ⟨T₁, rfl⟩ : ∃ T₁, Ts₁ = [T₁] := by
+          match Ts₁, h1 with
+          | [a], _ => exact ⟨a, rfl⟩
+        obtain rfl : Ts₃ = [] := List.length_eq_zero_iff.mp h3
+        exact Or.inr ⟨hedom, hfix, T₁, T, Ts₂, T', hsplit, heT, hmT'⟩
+      · -- nonrigid: at least one correction clears 2
+        refine Or.inl ?_
+        subst hsplit
+        have hmaster := rootCount_twisted hk hedom hfix hn Ts₁ T Ts₂ T' Ts₃ hlen heT hmT'
+        have hcorr : 2 ≤ beta k (Ts₁.length + 1 + Ts₂.length) *
+              ((k - 1) * beta k Ts₃.length)
+            + alpha k Ts₁.length * (alpha k (Ts₂ ++ T' :: Ts₃).length +
+              (k - 2) * beta k (Ts₂ ++ T' :: Ts₃).length) := by
+          rcases Decidable.not_and_iff_or_not.mp hrig with h1 | h3
+          · -- the leave correction clears 2
+            have ha : 1 ≤ alpha k Ts₁.length := by
+              match Ts₁, h1 with
+              | [], _ => rw [List.length_nil, alpha_zero]
+              | a :: b :: t, _ =>
+                have h2 : 2 ≤ (a :: b :: t).length := by
+                  rw [List.length_cons, List.length_cons]
+                  omega
+                have h3 := alpha_ge (show 3 ≤ k by omega) h2
+                omega
+            have hm : k - 2 ≤ alpha k (Ts₂ ++ T' :: Ts₃).length +
+                (k - 2) * beta k (Ts₂ ++ T' :: Ts₃).length :=
+              moved_val_ge (show 3 ≤ k by omega) (by simp; omega)
+            have : 2 ≤ alpha k Ts₁.length * (alpha k (Ts₂ ++ T' :: Ts₃).length +
+                (k - 2) * beta k (Ts₂ ++ T' :: Ts₃).length) := by
+              calc 2 ≤ 1 * (k - 2) := by omega
+                _ ≤ _ := Nat.mul_le_mul ha hm
+            omega
+          · -- the entry correction clears 2
+            have hb1 : 1 ≤ beta k (Ts₁.length + 1 + Ts₂.length) :=
+              one_le_beta (show 3 ≤ k by omega) _ (by omega)
+            have hb3 : 1 ≤ beta k Ts₃.length :=
+              one_le_beta (show 3 ≤ k by omega) _ (by omega)
+            have : 2 ≤ beta k (Ts₁.length + 1 + Ts₂.length) *
+                ((k - 1) * beta k Ts₃.length) := by
+              calc 2 ≤ 1 * ((k - 1) * 1) := by omega
+                _ ≤ _ := Nat.mul_le_mul hb1 (Nat.mul_le_mul (le_refl _) hb3)
+            omega
+        omega
+  · refine Or.inl (le_trans ?_ (rootCount_undef hk hedom hn hlen))
+    omega
+
+
+/-- **UM-106 in the matrix model**: the bare cycle pair bound. -/
+theorem cycle_cases_pair (hk : 4 ≤ k) {n : ℕ} (hn : 4 ≤ n) (hne : Even n)
+    {Ts : List (Finset (Fin k))} (hlen : Ts.length = n - 1)
+    {P : Equiv.Perm (Fin k)} {dom : Finset (Fin k)}
+    (hthread : ∀ e ∈ dom, P.symm e ≠ e →
+      ∃ (Ts₁ : List (Finset (Fin k))) (T : Finset (Fin k)) (Ts₂ : List (Finset (Fin k)))
+        (T' : Finset (Fin k)) (Ts₃ : List (Finset (Fin k))),
+        Ts = Ts₁ ++ T :: (Ts₂ ++ T' :: Ts₃) ∧ e ∈ T ∧ P.symm e ∈ T')
+    {c d : Fin k} (hcd : c ≠ d) :
+    uniformA k n ^ 2 ≤ rootCount Ts P dom c * rootCount Ts P dom d := by
+  have hA2 : 2 ≤ uniformA k n := by
+    rw [uniformA]
+    have hb := one_le_beta (show 3 ≤ k by omega) (n - 1) (by omega)
+    calc 2 ≤ (k - 1) * 1 := by omega
+      _ ≤ _ := Nat.mul_le_mul_left _ hb
+  have halt : beta k (n - 1) = alpha k (n - 1) + 1 :=
+    (beta_alternation (show 2 ≤ k by omega) (n - 1)).1
+      (Nat.Even.sub_odd (by omega) hne odd_one)
+  have hAeq : uniformA k n = (alpha k (n - 1) + (k - 2) * beta k (n - 1)) + 1 := by
+    rw [uniformA, halt, show k - 1 = 1 + (k - 2) from by omega]
+    ring
+  -- a rigid root's defined partners clear `A + 2`
+  have hdonate : ∀ e f, RigidData Ts P dom e → f ∈ dom → f ≠ e →
+      uniformA k n + 2 ≤ rootCount Ts P dom f := by
+    rintro e f ⟨hedom, hetw, T₁, T, Ts₂, T', hsplit, heT, hmT'⟩ hf hfe
+    subst hsplit
+    have hdon := rootCount_donated hk hf hfe (Equiv.apply_symm_apply P e) hn hne
+      T₁ T Ts₂ T' hlen heT hmT'
+    by_cases hfixf : P.symm f = f
+    · rw [if_pos hfixf] at hdon
+      omega
+    · rw [if_neg hfixf] at hdon
+      omega
+  -- every defined root clears `A - 1`, in additive form
+  have hbase : ∀ e ∈ dom, uniformA k n ≤ rootCount Ts P dom e + 1 := by
+    intro e he
+    have := rootCount_defined_base (P := P) hk he hn hne hlen
+    omega
+  rcases rootCount_classify hk hn hne hlen hthread c with hc | hc <;>
+    rcases rootCount_classify hk hn hne hlen hthread d with hd | hd
+  · rw [pow_two]
+    exact Nat.mul_le_mul hc hd
+  · -- `d` rigid
+    by_cases hcdom : c ∈ dom
+    · have hxc := hdonate d c hd hcdom hcd
+      rw [Nat.mul_comm]
+      exact pair_arith_rigid hA2 (hbase d hd.1) hxc
+    · have hxc : uniformA k n + 2 ≤ rootCount Ts P dom c := by
+        have := rootCount_undef (P := P) hk hcdom hn hlen
+        omega
+      rw [Nat.mul_comm]
+      exact pair_arith_rigid hA2 (hbase d hd.1) hxc
+  · -- `c` rigid
+    by_cases hddom : d ∈ dom
+    · have hxd := hdonate c d hc hddom (fun h => hcd h.symm)
+      exact pair_arith_rigid hA2 (hbase c hc.1) hxd
+    · have hxd : uniformA k n + 2 ≤ rootCount Ts P dom d := by
+        have := rootCount_undef (P := P) hk hddom hn hlen
+        omega
+      exact pair_arith_rigid hA2 (hbase c hc.1) hxd
+  · -- both rigid: `c`'s thread donates to `d`
+    have hxd := hdonate c d hc hd.1 (fun h => hcd h.symm)
+    exact pair_arith_rigid hA2 (hbase c hc.1) hxd
+
+end PairTheorem
+
+
 end ListColoring
