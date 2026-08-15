@@ -226,4 +226,153 @@ theorem exists_enum_chain {n : ℕ} (hn : 1 ≤ n) (Ls : Fin n → Finset ℕ)
 end Chain
 
 
+
+section TransferCount
+
+open Matrix
+
+variable {k : ℕ}
+
+/-- The factor entries, explicitly. -/
+theorem factor_apply (T : Finset (Fin k)) (a x : Fin k) :
+    (offDiag k + diagInd T) a x = if a = x then (if a ∈ T then 1 else 0) else 1 := by
+  rw [Matrix.add_apply]
+  show (if a = x then 0 else 1) + (if a = x ∧ a ∈ T then 1 else 0) = _
+  by_cases hax : a = x
+  · rw [if_pos hax, if_pos hax]
+    by_cases haT : a ∈ T
+    · rw [if_pos ⟨hax, haT⟩, if_pos haT]
+    · rw [if_neg (fun h => haT h.2), if_neg haT]
+  · rw [if_neg hax, if_neg (fun h => hax h.1), if_neg hax]
+
+/-- The index-path count along a list of factors. -/
+def pathCount (Ts : List (Finset (Fin k))) (a b : Fin k) : ℕ :=
+  ((Finset.univ : Finset (Fin (Ts.length + 1) → Fin k)).filter
+    (fun g => g 0 = a ∧ g (Fin.last _) = b ∧
+      ∀ i : Fin Ts.length, (offDiag k + diagInd (Ts.get i)) (g i.castSucc) (g i.succ) = 1)).card
+
+/-- **The transfer product counts index paths.** -/
+theorem transferProd_apply_eq_pathCount (Ts : List (Finset (Fin k))) (a b : Fin k) :
+    transferProd Ts a b = pathCount Ts a b := by
+  induction Ts generalizing a with
+  | nil =>
+    rw [transferProd_nil, pathCount]
+    by_cases hab : a = b
+    · subst hab
+      rw [Matrix.one_apply_eq]
+      refine (Finset.card_eq_one.mpr ⟨fun _ => a, ?_⟩).symm
+      ext g
+      simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_singleton]
+      constructor
+      · rintro ⟨h0, -, -⟩
+        funext i
+        have hi : i = 0 := by
+          apply Fin.ext
+          show i.val = 0
+          have := i.isLt
+          simp only [List.length_nil] at this
+          omega
+        rw [hi, h0]
+      · rintro rfl
+        refine ⟨rfl, rfl, fun i => ?_⟩
+        have h2 := i.isLt
+        simp only [List.length_nil] at h2
+        exact absurd h2 (Nat.not_lt_zero _)
+    · rw [Matrix.one_apply_ne hab]
+      refine (Finset.card_eq_zero.mpr ?_).symm
+      ext g
+      simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.notMem_empty,
+        iff_false, not_and]
+      intro h0 hlast
+      have h01 : (0 : Fin (([] : List (Finset (Fin k))).length + 1)) = Fin.last _ := by
+        apply Fin.ext
+        simp [Fin.last]
+      exact fun _ => absurd (h0.symm.trans ((congrArg g h01).trans hlast)) hab
+  | cons T Ts ih =>
+    rw [transferProd_cons, Matrix.mul_apply]
+    rw [Finset.sum_congr rfl (fun x _ => by rw [ih x])]
+    -- partition the path count by the second vertex
+    rw [pathCount, Finset.card_eq_sum_card_fiberwise
+      (f := fun g => g 1) (t := Finset.univ) (fun g _ => Finset.mem_univ _)]
+    refine (Finset.sum_congr rfl fun x _ => ?_).symm
+    -- per fibre: the head factor times the tail count
+    by_cases hfac : (offDiag k + diagInd T) a x = 1
+    · rw [hfac, Nat.one_mul, pathCount]
+      refine Finset.card_nbij' (fun g => fun i => g i.succ)
+        (fun h => Fin.cons a h) ?_ ?_ ?_ ?_
+      · -- forward membership
+        intro g hg
+        simp only [Finset.coe_filter, Set.mem_setOf_eq, Finset.mem_filter,
+          Finset.mem_univ, true_and] at hg ⊢
+        obtain ⟨⟨h0, hlast, hcomp⟩, h1⟩ := hg
+        refine ⟨h1, ?_, ?_⟩
+        · rw [← hlast]
+          congr 1
+        · intro i
+          exact hcomp i.succ
+      · -- backward membership
+        intro h hh
+        simp only [Finset.coe_filter, Set.mem_setOf_eq, Finset.mem_filter,
+          Finset.mem_univ, true_and] at hh ⊢
+        obtain ⟨h0, hlast, hcomp⟩ := hh
+        refine ⟨⟨rfl, ?_, ?_⟩, ?_⟩
+        · rw [show (Fin.last (T :: Ts).length) = Fin.succ (Fin.last Ts.length) from
+            (Fin.succ_last _).symm]
+          rw [Fin.cons_succ]
+          exact hlast
+        · intro i
+          refine Fin.cases ?_ ?_ i
+          · rw [show ((0 : Fin (T :: Ts).length).castSucc) = 0 from rfl]
+            rw [show ((0 : Fin (T :: Ts).length).succ) = Fin.succ 0 from rfl]
+            rw [Fin.cons_zero, Fin.cons_succ]
+            rw [show (T :: Ts).get 0 = T from rfl]
+            rw [h0]
+            exact hfac
+          · intro j
+            exact hcomp j
+        · rw [show ((1 : Fin ((T :: Ts).length + 1))) = Fin.succ 0 from rfl,
+            Fin.cons_succ]
+          exact h0
+      · -- left inverse
+        intro g hg
+        simp only [Finset.coe_filter, Set.mem_setOf_eq, Finset.mem_filter,
+          Finset.mem_univ, true_and] at hg
+        funext i
+        refine Fin.cases ?_ ?_ i
+        · show a = g 0
+          exact hg.1.1.symm
+        · intro j
+          rfl
+      · -- right inverse
+        intro h hh
+        funext i
+        rfl
+    · -- the head factor is zero: the fibre is empty
+      have hfac0 : (offDiag k + diagInd T) a x = 0 := by
+        rw [factor_apply] at hfac ⊢
+        by_cases hax : a = x
+        · rw [if_pos hax] at hfac ⊢
+          by_cases haT : a ∈ T
+          · rw [if_pos haT] at hfac
+            exact absurd rfl hfac
+          · rw [if_neg haT]
+        · rw [if_neg hax] at hfac
+          exact absurd rfl hfac
+      rw [hfac0, Nat.zero_mul]
+      refine Finset.card_eq_zero.mpr ?_
+      ext g
+      simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.notMem_empty,
+        iff_false, not_and]
+      intro hbig h1
+      obtain ⟨h0, -, hcomp⟩ := hbig
+      have := hcomp 0
+      rw [show ((0 : Fin (T :: Ts).length).castSucc) = 0 from rfl,
+        show ((0 : Fin (T :: Ts).length).succ) = 1 from rfl,
+        show (T :: Ts).get 0 = T from rfl, h0, h1] at this
+      rw [this] at hfac0
+      exact absurd hfac0 one_ne_zero
+
+end TransferCount
+
+
 end ListColoring
