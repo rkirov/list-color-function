@@ -313,6 +313,28 @@ theorem forall_mem_support_of_forall_edge_mem (hdeg : ∀ v : V, 2 ≤ G.degree 
   obtain ⟨w, hw⟩ := (G.degree_pos_iff_exists_adj v).mp hpos
   exact c.fst_mem_support_of_mem_edges (hall v w hw)
 
+/-- Edge membership in a walk is consecutiveness of `getVert`s. -/
+theorem mem_edges_iff_exists_getVert {V : Type} {G : SimpleGraph V} {u v : V} {p : G.Walk u v}
+    {e : Sym2 V} :
+    e ∈ p.edges ↔ ∃ t, t < p.length ∧ e = s(p.getVert t, p.getVert (t + 1)) := by
+  induction p with
+  | nil => simp
+  | @cons a b w hadj q ih =>
+    rw [Walk.edges_cons, List.mem_cons]
+    constructor
+    · rintro (rfl | he)
+      · exact ⟨0, by simp, by simp⟩
+      · obtain ⟨t, ht, rfl⟩ := ih.mp he
+        refine ⟨t + 1, by simp; omega, ?_⟩
+        simp [Walk.getVert_cons_succ]
+    · rintro ⟨t, ht, rfl⟩
+      cases t with
+      | zero => exact Or.inl (by simp)
+      | succ t =>
+        refine Or.inr (ih.mpr ⟨t, ?_, ?_⟩)
+        · simp at ht; omega
+        · simp [Walk.getVert_cons_succ]
+
 /-- **The cycle-core construction**: a connected graph with minimum degree two whose edges and
 vertices all lie on one cycle `c` is isomorphic to `closePath (c.length - 1)`.
 
@@ -322,7 +344,101 @@ index adjacency of `ListColoring.closePath_adj_pathVtx_fin`. -/
 theorem coreIsCycle_of_forall_edge_mem (hconn : G.Connected)
     (hdeg : ∀ v : V, 2 ≤ G.degree v) {v₀ : V} {c : G.Walk v₀ v₀} (hc : c.IsCycle)
     (hall : ∀ x y, G.Adj x y → s(x, y) ∈ c.edges) : CoreIsCycle G := by
-  sorry
+  have h3 := hc.three_le_length
+  set m := c.length - 1 with hm
+  have hm1 : 1 ≤ m := by omega
+  have hmlen : m + 1 = c.length := by omega
+  set F : Fin (m + 1) → V := fun i => c.getVert i.val with hF
+  have hFinj : Function.Injective F := by
+    intro i j hij
+    have := cycleWalk_injOn hc (Set.mem_Iic.mpr (by omega : i.val ≤ c.length - 1))
+      (Set.mem_Iic.mpr (by omega : j.val ≤ c.length - 1)) hij
+    exact Fin.ext this
+  have hFsurj : Function.Surjective F := by
+    intro v
+    have hv : v ∈ c.support := forall_mem_support_of_forall_edge_mem hdeg hall v
+    obtain ⟨t, hgv, ht⟩ := Walk.mem_support_iff_exists_getVert.mp hv
+    by_cases hteq : t = c.length
+    · refine ⟨⟨0, by omega⟩, ?_⟩
+      show c.getVert 0 = v
+      rw [c.getVert_zero, ← c.getVert_length, ← hteq, hgv]
+    · exact ⟨⟨t, by omega⟩, hgv⟩
+  have hFbij : Function.Bijective F := ⟨hFinj, hFsurj⟩
+  have hidx : ∀ (a : Fin (m + 1)) (s : ℕ), s ≤ c.length - 1 →
+      c.getVert a.val = c.getVert s → a.val = s := fun a s hs h =>
+    cycleWalk_injOn hc (Set.mem_Iic.mpr (by omega : a.val ≤ c.length - 1))
+      (Set.mem_Iic.mpr hs) h
+  have hadj_iff : ∀ i j : Fin (m + 1), G.Adj (F i) (F j) ↔ (i + 1 = j ∨ j + 1 = i) := by
+    intro i j
+    constructor
+    · intro hadj
+      obtain ⟨t, ht, hst⟩ := mem_edges_iff_exists_getVert.mp (hall _ _ hadj)
+      rcases Sym2.eq_iff.mp hst with ⟨h1, h2⟩ | ⟨h1, h2⟩
+      · have hit : i.val = t := hidx i t (by omega) h1
+        left
+        apply Fin.ext
+        rw [val_add_one hm1]
+        by_cases hteq : t + 1 = c.length
+        · have hj0 : j.val = 0 := by
+            apply hidx j 0 (by omega)
+            have h2' : c.getVert j.val = c.getVert (t + 1) := h2
+            rw [h2', hteq, c.getVert_length, c.getVert_zero]
+          have hiv : i.val + 1 = m + 1 := by omega
+          rw [hiv, Nat.mod_self, hj0]
+        · have hjt : j.val = t + 1 := hidx j (t + 1) (by omega) h2
+          rw [Nat.mod_eq_of_lt (by omega)]
+          omega
+      · have hjt : j.val = t := hidx j t (by omega) h2
+        right
+        apply Fin.ext
+        rw [val_add_one hm1]
+        by_cases hteq : t + 1 = c.length
+        · have hi0 : i.val = 0 := by
+            apply hidx i 0 (by omega)
+            have h1' : c.getVert i.val = c.getVert (t + 1) := h1
+            rw [h1', hteq, c.getVert_length, c.getVert_zero]
+          have hjv : j.val + 1 = m + 1 := by omega
+          rw [hjv, Nat.mod_self, hi0]
+        · have hit : i.val = t + 1 := hidx i (t + 1) (by omega) h1
+          rw [Nat.mod_eq_of_lt (by omega)]
+          omega
+    · intro hij
+      rcases hij with hij | hij
+      · by_cases hi : i.val < m
+        · have hj : j.val = i.val + 1 := by
+            rw [← hij, val_add_one hm1, Nat.mod_eq_of_lt (by omega)]
+          show G.Adj (c.getVert i.val) (c.getVert j.val)
+          rw [hj]
+          exact cycleWalk_adj c (by omega)
+        · have hi' : i.val = m := by omega
+          have hj : j.val = 0 := by
+            rw [← hij, val_add_one hm1, hi', Nat.mod_self]
+          show G.Adj (c.getVert i.val) (c.getVert j.val)
+          rw [hi', hj, hm]
+          exact cycleWalk_closes hc
+      · by_cases hj : j.val < m
+        · have hi : i.val = j.val + 1 := by
+            rw [← hij, val_add_one hm1, Nat.mod_eq_of_lt (by omega)]
+          show G.Adj (c.getVert i.val) (c.getVert j.val)
+          rw [hi]
+          exact (cycleWalk_adj c (by omega)).symm
+        · have hj' : j.val = m := by omega
+          have hi : i.val = 0 := by
+            rw [← hij, val_add_one hm1, hj', Nat.mod_self]
+          show G.Adj (c.getVert i.val) (c.getVert j.val)
+          rw [hi, hj', hm]
+          exact (cycleWalk_closes hc).symm
+  refine ⟨m, by omega, 0, PUnit.unit, ⟨?_⟩⟩
+  refine ⟨((Equiv.ofBijective F hFbij).symm.trans (pathVtxEquiv m)), ?_⟩
+  intro a b
+  set i := (Equiv.ofBijective F hFbij).symm a with hi
+  set j := (Equiv.ofBijective F hFbij).symm b with hj
+  have ha : a = F i := ((Equiv.ofBijective F hFbij).apply_symm_apply a).symm
+  have hb : b = F j := ((Equiv.ofBijective F hFbij).apply_symm_apply b).symm
+  show (closePath m).Adj (pathVtxEquiv m i) (pathVtxEquiv m j) ↔ G.Adj a b
+  rw [pathVtxEquiv_apply, pathVtxEquiv_apply,
+    closePath_adj_pathVtx_fin hm1 i j, ha, hb]
+  exact (hadj_iff i j).symm
 
 end Endgame
 
