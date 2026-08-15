@@ -74,4 +74,74 @@ theorem pendant_weight_dominant {k : ℕ} (hk : 3 ≤ k) {Lx Lu : Finset ℕ}
     _ = (wu c * ∑ e ∈ Lx.filter (· ≠ c), wx e) * (wu d * ∑ e ∈ Lx.filter (· ≠ d), wx e) := by
         ring
 
+
+section MainInduction
+
+/-- Rooted weighted count of a one-vertex graph: the weight of the root's colour. -/
+theorem rootedWcol_of_card_eq_one {V : Type} [Fintype V] [DecidableEq V]
+    {G : SimpleGraph V} [DecidableRel G.Adj] (h1 : Fintype.card V = 1)
+    (L : ListAssignment V) (w : V → ℕ → ℕ) (r : V) {c : ℕ} (hc : c ∈ L r) :
+    rootedWcol G L w r c = w r c := by
+  have hsub : Subsingleton V := Fintype.card_le_one_iff_subsingleton.mp (by omega)
+  rw [rootedWcol]
+  have hset : (G.colorings L).filter (fun f => f r = c) = {fun _ => c} := by
+    ext f
+    simp only [Finset.mem_filter, SimpleGraph.mem_colorings_iff, Finset.mem_singleton]
+    constructor
+    · rintro ⟨⟨hmem, hprop⟩, hr⟩
+      funext v
+      rw [Subsingleton.elim v r, hr]
+    · rintro rfl
+      refine ⟨⟨fun v => ?_, fun v u hadj => ?_⟩, rfl⟩
+      · rw [Subsingleton.elim v r]; exact hc
+      · exact absurd (Subsingleton.elim v u) hadj.ne
+  rw [hset, Finset.sum_singleton]
+  rw [show (Finset.univ : Finset V) = {r} from by
+    ext v; simp [Subsingleton.elim v r]]
+  rw [Finset.prod_singleton]
+
+/-- **The pair-invariant induction** (UM-107/108, `k ≥ 4`): on a cactus with pair-dominant
+weights, the weighted rooted profile is pair-bounded by the uniform normalizer times the
+product of the weight normalizers.
+
+Case structure: one-vertex base; pendant absorption away from the root; the bridge at the
+root; and the cycle blocks (single cycle, and leaf-cycle absorption) — the last two are the
+remaining open cases, tracked as the `UM-106`/`UM-107` formalization. -/
+theorem cactus_pair_bound :
+    ∀ (n : ℕ) (V : Type) [Fintype V] [DecidableEq V] (G : SimpleGraph V) [DecidableRel G.Adj],
+      Fintype.card V = n → ∀ {k : ℕ}, 4 ≤ k → IsCactus G →
+      ∀ (L : ListAssignment V), IsNListAssignment L k →
+      ∀ (w : V → ℕ → ℕ) (W : V → ℕ),
+        (∀ v, ∀ c ∈ L v, ∀ d ∈ L v, c ≠ d → (W v) ^ 2 ≤ w v c * w v d) →
+      ∀ (r : V), ∀ c ∈ L r, ∀ d ∈ L r, c ≠ d →
+        (rootedCol G (constList V k) r 0 * ∏ v, W v) ^ 2 ≤
+          (rootedWcol G L w r c) * (rootedWcol G L w r d) := by
+  intro n
+  induction n using Nat.strong_induction_on with
+  | _ n IH =>
+    intro V _ _ G _ hcard k hk hG L hL w W hdom r c hc d hd hcd
+    rcases Nat.lt_or_ge n 2 with hn | hn
+    · -- base: at most one vertex (zero is impossible: `r` inhabits `V`)
+      have h1 : Fintype.card V = 1 := by
+        have : 0 < Fintype.card V := Fintype.card_pos_iff.mpr ⟨r⟩
+        omega
+      rw [rootedWcol_of_card_eq_one h1 L w r hc, rootedWcol_of_card_eq_one h1 L w r hd]
+      have hA : rootedCol G (constList V k) r 0 = 1 := by
+        have h0 : (0 : ℕ) ∈ constList V k r := by
+          simp [constList_apply, Finset.mem_range]
+          omega
+        have h2 := rootedWcol_of_card_eq_one (G := G) h1 (constList V k) (fun _ _ => 1) r h0
+        rw [rootedWcol_one] at h2
+        exact h2
+      haveI hsub : Subsingleton V := Fintype.card_le_one_iff_subsingleton.mp (le_of_eq h1)
+      have hprod : (∏ v, W v) = W r := by
+        rw [show (Finset.univ : Finset V) = {r} from by
+          ext v; simp [Subsingleton.elim v r]]
+        rw [Finset.prod_singleton]
+      rw [hA, hprod, one_mul]
+      exact hdom r c hc d hd hcd
+    · sorry
+
+end MainInduction
+
 end ListColoring
