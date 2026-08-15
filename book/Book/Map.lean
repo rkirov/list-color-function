@@ -124,8 +124,8 @@ Each Lean name below is the exact statement proved; each file link goes to the s
   * [PathColorable.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/PathColorable.lean)
 *
   * *Theorem 1*
-  * {name}`ListColoring.ecc_closePath_of_two_le`
-  * [CycleRotate.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/CycleRotate.lean)
+  * {name}`SimpleGraph.ecc_cycleGraph_of_three_le`
+  * [CycleGraph.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/CycleGraph.lean)
 *
   * Lemma 5
   * {name}`SimpleGraph.ecc_pendantTower_iff`
@@ -218,5 +218,5 @@ statements in `comparator/Challenge.lean` really are the ones the library proves
 permitted axioms are exactly the three above, and it replays the proofs through two independent
 kernels — `lean4export` in a sandbox, and the `nanoda` kernel. Continuous integration runs it on
 every push, alongside a grep that fails if `sorry`, `admit` or `native_decide` ever appears in the
-library sources. {ref "readingchallenge"}[Reading `Challenge.lean`] is a guide to the eleven
+library sources. {ref "readingchallenge"}[Reading `Challenge.lean`] is a guide to the ten
 statements that check covers.

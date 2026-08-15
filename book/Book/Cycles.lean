@@ -201,4 +201,13 @@ example {k m : ℕ} (hk : 2 ≤ k) : (closePath k).ECCAt (m + 2) :=
   ecc_closePath_of_two_le hk
 ```
 
+and, transported along `ListColoring.cycleGraphIsoClosePath`, on Mathlib's cycle graph — the form
+`Challenge.lean` claims:
+
+```lean
+open SimpleGraph in
+example {n m : ℕ} (hn : 3 ≤ n) : (cycleGraph n).ECCAt (m + 2) :=
+  ecc_cycleGraph_of_three_le hn
+```
+
 Every cycle, every `n ≥ 2`.

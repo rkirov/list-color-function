@@ -46,10 +46,10 @@ the library, and this book.
 Compiling `Challenge.lean` on its own is *expected* to report "declaration uses `sorry`". That is
 not a defect; the file exists to state, not to prove.
 
-# The eleven claims
+# The ten claims
 
 `config.json` lists what is claimed under the key `theorem_names`, and it is a short list. Each of
-the eleven is displayed below with the library theorem that discharges it, in the file's own order.
+the ten is displayed below with the library theorem that discharges it, in the file's own order.
 
 *One: the chromatic polynomial evaluates to the colouring count* —
 {ref "polynomial"}[the chromatic polynomial chapter].
@@ -100,7 +100,10 @@ example {k : ℕ} (hk : 2 ≤ k) :
   KN5.exists_choosable_not_ecc_of_two_le hk
 ```
 
-*Six: Kostochka–Sidorenko* — {ref "chordal"}[the chordal chapter].
+*Six: Kostochka–Sidorenko* — {ref "chordal"}[the chordal chapter]. Dirac's theorem {citep dirac}[]
+— chordal ⟺ a simplicial elimination ordering, the reason this claim can say "chordal" — is
+proved in the library and displayed in that chapter, but it is scaffolding for a statement rather
+than a list-colouring result, so it is not claimed.
 
 ```lean
 open SimpleGraph in
@@ -110,28 +113,18 @@ example {V : Type} [Fintype V] [DecidableEq V]
   ecc_of_isChordal G hG n
 ```
 
-*Seven: Dirac's theorem* {citep dirac}[] — same chapter, and the reason the sixth can be stated in
-its own terms.
+*Seven: Theorem 1 of Kirov–Naimi* {citep kirovNaimi}[] — {ref "theorem1"}[the cycles chapter].
+Stated on Mathlib's `SimpleGraph.cycleGraph`, so the claim involves no graph construction of this
+development; the form on the development's own `closePath`, which the proof machinery runs on, is
+{name ListColoring.ecc_closePath_of_two_le}`ecc_closePath_of_two_le`.
 
 ```lean
 open SimpleGraph in
-example {V : Type} [Fintype V] [DecidableEq V]
-    (G : SimpleGraph V) [DecidableRel G.Adj] :
-    G.IsChordal ↔ ∃ (k : ℕ) (d : CliqueTowerData (Fin 0) k),
-      CliqueTowerData.IsSimplicial (⊥ : SimpleGraph (Fin 0)) k d ∧
-        Nonempty (G ≃g cliqueTower (⊥ : SimpleGraph (Fin 0)) k d) :=
-  isChordal_iff_exists_cliqueTower G
+example {n m : ℕ} (hn : 3 ≤ n) : (cycleGraph n).ECCAt (m + 2) :=
+  ecc_cycleGraph_of_three_le hn
 ```
 
-*Eight: Theorem 1 of Kirov–Naimi* {citep kirovNaimi}[] — {ref "theorem1"}[the cycles chapter].
-
-```lean
-open ListColoring in
-example {k m : ℕ} (hk : 2 ≤ k) : (closePath k).ECCAt (m + 2) :=
-  ecc_closePath_of_two_le hk
-```
-
-*Nine: Rubin's theorem* {citep erdosRubinTaylor}[] —
+*Eight: Rubin's theorem* {citep erdosRubinTaylor}[] —
 {ref "twochoosable"}[the `2`-choosability chapter].
 
 ```lean
@@ -141,7 +134,7 @@ example : RubinTheorem := rubinTheorem
 
 That display is unusual, and deliberately so. The claimed theorem's type is the bare constant
 {name ListColoring.RubinTheorem}`RubinTheorem`, so *the statement of Rubin's theorem is the body of
-that definition* — unfolding it is the only way to see what claim nine says:
+that definition* — unfolding it is the only way to see what claim eight says:
 
 ```lean
 open SimpleGraph ListColoring in
@@ -158,7 +151,7 @@ example : RubinTheorem =
 comparator matches `RubinTheorem` by its type, which is only `Prop`, so the library is where the
 statement is really checked.
 
-*Ten: Theorem 2 of Kirov–Naimi* — {ref "twoecc"}[the enumerative chromatic-choosability at `2`
+*Nine: Theorem 2 of Kirov–Naimi* — {ref "twoecc"}[the enumerative chromatic-choosability at `2`
 chapter]. It carries no hypothesis beyond connectivity.
 
 ```lean
@@ -172,7 +165,7 @@ example {V : Type} [Fintype V] [DecidableEq V]
   ecc_two_iff G hconn
 ```
 
-*Eleven: Donner's theorem* {citep donner}[] — {ref "threshold"}[the threshold chapter].
+*Ten: Donner's theorem* {citep donner}[] — {ref "threshold"}[the threshold chapter].
 
 ```lean
 open SimpleGraph in
@@ -216,11 +209,11 @@ example {V : Type} [Fintype V] [DecidableEq V]
 *
   * §4 Chordal graphs
   * {ref "chordal"}[First Answers: Chordal Graphs]
-  * 6, 7
+  * 6
 *
   * §5 Theorem 1
   * {ref "theorem1"}[Theorem 1: Cycles]
-  * 8
+  * 7
 *
   * §6 The machinery behind Theorem 1
   * {ref "paths"}[Paths], {ref "swapping"}[Swapping], {ref "cycles"}[Cycles]
@@ -228,15 +221,15 @@ example {V : Type} [Fintype V] [DecidableEq V]
 *
   * §7 Rubin's theorem
   * {ref "twochoosable"}[Which Graphs Are 2-Choosable?]
-  * 9
+  * 8
 *
   * §8 Theorem 2
   * {ref "twoecc"}[Which Graphs Are Enumeratively Chromatic-Choosable at 2?]
-  * 10
+  * 9
 *
   * §9 Every graph, eventually
   * {ref "threshold"}[Every Graph, Eventually]
-  * 11
+  * 10
 :::
 
 Two sections carry no claim and are there for continuity. §1 defines the vocabulary every later
@@ -255,17 +248,18 @@ statement at all — the graph constructions built as `SimpleGraph` structure in
 tactic-proved `symm` and `loopless` fields (`coneOn`, `addPendant`, `addPendantPair`), and the
 decidability instances.
 
-*`config.json` names what is claimed.* Two lists. `theorem_names` is the eleven above.
+*`config.json` names what is claimed.* Two lists. `theorem_names` is the ten above.
 `definition_names` is not a curated aesthetic choice but a computed one: exactly the definitions
-reachable from the types of those eleven statements, together with the notions those are in turn
+reachable from the types of those ten statements, together with the notions those are in turn
 written in terms of, so that the file can be read without the library open beside it.
 
-*Instances are in the list because they are in the types.* `(closePath k).ECCAt (m + 2)` does
-not typecheck without a `DecidableRel` for the adjacency of `closePath k`, a `Fintype` and a
-`DecidableEq` for `PathV k`. Those instances therefore occur in the *type* of a listed theorem, and
-the comparator's traversal demands that every constant reachable from a listed type be either a
-listed definition or bit-identical between challenge and submission — which a placeholder body is
-not. So they are listed, and they are the only instances that are.
+*Instances are in the list because the surface needs them.* The Erdős–Rubin–Taylor claims' types
+need decidable adjacency for `K n`, and the core alternatives of Rubin's theorem and Theorem 2
+name `pathG 0`, `closePath k` and `theta m` through `CoreIs`, which asks for decidable adjacency
+and finite, decidable vertex types. The comparator's traversal demands that every constant
+reachable from the listed statements be either a listed definition or bit-identical between
+challenge and submission — which a placeholder body is not. So those six instances are listed, and
+they are the only instances that are.
 
 *Two declarations appear without being listed*, because a *body* rather than a statement needs them:
 the decidability of `IsProperColoring`, so that `colorings` can be written as a `Finset.filter`, and
@@ -293,17 +287,17 @@ first and a narrative second, and that the two coincide less often than one woul
 
 # What is in the library and not in the file
 
-A great deal. The file claims eleven theorems; the library proves several hundred. Everything
-discussed in this book that is not one of the eleven — Kirov and Naimi's Lemmas 1 through 6, the
+A great deal. The file claims ten theorems; the library proves several hundred. Everything
+discussed in this book that is not one of the ten — Kirov and Naimi's Lemmas 1 through 6, the
 three regimes,
-the explicit threshold $`n > 2^{|E|}`, the counts $`A_k` and $`B_k` and their closed forms, Dirac's
-lemma, Rubin's easy direction family by family, the classification of `2`-choosable generalized
-theta graphs at every arity, the dumbbell, the six cases of Rubin's steps 5 and 6, the witness
-assignments for the theta graphs — is in the library, under the names given in the section headers
-of `Challenge.lean`.
+the explicit threshold $`n > 2^{|E|}`, the counts $`A_k` and $`B_k` and their closed forms,
+Dirac's theorem and Dirac's lemma, Theorem 1 on the development's own `closePath`, Rubin's easy
+direction family by family, the classification of `2`-choosable generalized theta graphs at every
+arity, the dumbbell, the six cases of Rubin's steps 5 and 6, the witness assignments for the theta
+graphs — is in the library.
 
-The count is derived, not chosen: one claim per named result. Two claims pin down what the subject
-is, six statements are the five named theorems of the literature the development stands on — the
-Erdős–Rubin–Taylor separation being one result in two statements — and three are the results the
-paper's abstract advertises. Reading the file is reading those eleven and the vocabulary they need.
-Reading this book is everything else.
+The count is derived, not chosen: one claim per named list-colouring result. Two claims pin down
+what the subject is, five statements are the four named theorems of the literature the development
+stands on — the Erdős–Rubin–Taylor separation being one result in two statements — and three are
+the results the paper's abstract advertises. Reading the file is reading those ten and the
+vocabulary they need. Reading this book is everything else.

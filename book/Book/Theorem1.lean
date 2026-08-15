@@ -38,6 +38,15 @@ example {k m : ℕ} (hk : 2 ≤ k) : (closePath k).ECCAt (m + 2) :=
   ecc_closePath_of_two_le hk
 ```
 
+`Challenge.lean` claims the same theorem on Mathlib's own cycle graph, so that the certified
+statement involves no construction of this development:
+
+```lean
+open SimpleGraph in
+example {n m : ℕ} (hn : 3 ≤ n) : (cycleGraph n).ECCAt (m + 2) :=
+  ecc_cycleGraph_of_three_le hn
+```
+
 The `m + 2` is how `n ≥ 2` is written without a side condition. The cases `n = 0` and `n = 1` are
 true for a different and duller reason — with at most one colour available and at least one edge
 present there are no colourings at all — so the theorem also holds with no hypothesis on `n`

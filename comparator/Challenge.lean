@@ -12,7 +12,7 @@ Rubin's theorem and Donner's theorem.  Every declaration is stated exactly as in
 placeholder proofs — compiling this file is *expected* to report "declaration uses `sorry`".  The
 comparator checks it against `Submission.lean`, which simply imports `ListColoring`.
 
-## The eleven claims
+## The ten claims
 
 1. `eval_chromaticPolynomial` — the chromatic polynomial evaluates to the colouring count
 2. `ecc_iff_listColorFunction_eq_eval` — `P_ℓ(G, n) = P(G, n)` *is* enumerative
@@ -23,32 +23,33 @@ comparator checks it against `Submission.lean`, which simply imports `ListColori
    that is `k`-choosable but not enumeratively chromatic-choosable at `k`
 6. `ecc_of_isChordal` — **Kostochka–Sidorenko**: chordal graphs are enumeratively
    chromatic-choosable at every `n`
-7. `isChordal_iff_exists_cliqueTower` — **Dirac**: chordal ⟺ a simplicial elimination ordering
-8. `ecc_closePath_of_two_le` — **Kirov–Naimi, Theorem 1**: every cycle is enumeratively
-   chromatic-choosable at every `n`
-9. `rubinTheorem` — **Rubin**: the `2`-choosable connected graphs, classified by their core
-10. `ecc_two_iff` — **Kirov–Naimi, Theorem 2**, with no hypothesis beyond connectivity
-11. `exists_ecc_forall_ge` — **Donner**: every graph is enumeratively chromatic-choosable at `n`
+7. `ecc_cycleGraph_of_three_le` — **Kirov–Naimi, Theorem 1**: every cycle is enumeratively
+   chromatic-choosable at every `n`, stated on Mathlib's `cycleGraph`
+8. `rubinTheorem` — **Rubin**: the `2`-choosable connected graphs, classified by their core
+9. `ecc_two_iff` — **Kirov–Naimi, Theorem 2**, with no hypothesis beyond connectivity
+10. `exists_ecc_forall_ge` — **Donner**: every graph is enumeratively chromatic-choosable at `n`
     for large `n`
 
-One claim per named result, so the count is derived, not chosen: claims 1–2 pin down what the
-subject is, five literature theorems account for claims 3–4, 6–7, 9 and 11 (Erdős–Rubin–Taylor in
-two statements — the point is the separation), and claims 5, 8, 10 are the three results the
-paper's abstract advertises.  Everything else stays in the library.  The one exclusion by rule is
-`ListColoring.choosable_two_gtheta_iff`: its statement depends on a normalization convention
+One claim per named list-colouring result, so the count is derived, not chosen: claims 1–2 pin
+down what the subject is, four literature theorems account for claims 3–4, 6, 8 and 10
+(Erdős–Rubin–Taylor in two statements — the point is the separation), and claims 5, 7, 9 are the
+three results the paper's abstract advertises.  Everything else stays in the library.  Two
+exclusions are rules rather than judgements: Dirac's theorem — proved in the library, and the
+reason claim 6 can say "chordal" — is scaffolding for a statement, not a list-colouring result;
+and `ListColoring.choosable_two_gtheta_iff`'s statement depends on a normalization convention
 (`ValidArms`/`GoodArms`), and a claim's statement may not depend on a proof's bookkeeping.
 
 ## Conventions
 
 `definition_names` is computed, not curated: the definitions reachable from the types of the
 claims, plus the notions those are written in terms of.  The six listed instances all serve the
-types — four occur in them directly, and `instDecidableRelPathG`/`instDecidableRelTheta` are what
-`CoreIsVertex` and `CoreIsK23` need to name their graphs.  Definitions carry their real bodies
-(the comparator never inspects them) except where the body is not a statement: the three
-structure-instance graph constructions and the decidability instances.  Ten placeholders, so the
-file's twenty-one `sorry`s are eleven theorems and ten placeholders.
-`instDecidableIsProperColoring` and `decidableRelFromEdgeSetCoe` appear without being listed
-because bodies here need them.
+surface: `instDecidableRelCompleteBipartiteAdj` occurs in the types of claims 3–4, and the other
+five are what §7–§8's core alternatives need to name their graphs — `CoreIs G H` asks for a
+decidable `H`.  Definitions carry their real bodies (the comparator never inspects them) except
+where the body is not a statement: the three structure-instance graph constructions and the
+decidability instances.  Ten placeholders, so the file's twenty `sorry`s are ten theorems and ten
+placeholders.  `instDecidableIsProperColoring` and `decidableRelFromEdgeSetCoe` appear without
+being listed because bodies here need them.
 
 `rubinTheorem`'s type is the bare constant `RubinTheorem`, so **the statement of Rubin's theorem
 is the body of `RubinTheorem`**, reproduced verbatim; the comparator matches it by type (`Prop`),
@@ -201,10 +202,10 @@ namespace SimpleGraph
 
 /-! ### 4. Chordal graphs and Kostochka–Sidorenko
 
-Coning over a clique preserves enumerative chromatic-choosability (Kirov–Naimi's Lemma 1), so a
-graph with a simplicial elimination ordering — a `cliqueTower` over the empty graph, read
-backwards — is enumeratively chromatic-choosable at every `n`.  Dirac's theorem identifies those
-graphs as the **chordal** ones, which is what lets Kostochka–Sidorenko be stated in its own terms.
+Coning over a clique preserves enumerative chromatic-choosability (Kirov–Naimi's Lemma 1), and a
+finite graph is built from nothing by such attachments exactly when it is **chordal** — Dirac's
+theorem, proved in the library — which is what lets Kostochka–Sidorenko be claimed in its own
+terms.  `coneOn` also builds §7's theta graphs.
 -/
 
 /-- **The cone over `K`.** `coneOn G K` is the graph on `Option V` obtained from `G` by adding one
@@ -226,52 +227,20 @@ def TowerV (V : Type u) : ℕ → Type u
   | 0 => V
   | k + 1 => Option (TowerV V k)
 
-/-- The data specifying a tower of `k` cone attachments over `V`: at each stage, the finset of
-already-existing vertices that the new vertex is joined to. -/
-def CliqueTowerData (V : Type u) : ℕ → Type u
-  | 0 => PUnit
-  | k + 1 => CliqueTowerData V k × Finset (TowerV V k)
-
-/-- **A tower of cone attachments.** `cliqueTower G k d` is the graph obtained from `G` by adding
-`k` new vertices one after another, the `i`-th of them joined to the set recorded in `d`. -/
-def cliqueTower {V : Type u} (G : SimpleGraph V) :
-    (k : ℕ) → CliqueTowerData V k → SimpleGraph (TowerV V k)
-  | 0, _ => G
-  | k + 1, d => coneOn (cliqueTower G k d.1) d.2
-
-/-- **The simplicial condition.** `d.IsSimplicial` says that at every stage of the tower the set of
-old vertices to which the new vertex is attached is a clique *of the graph existing at that
-stage*. -/
-def CliqueTowerData.IsSimplicial {V : Type u} (G : SimpleGraph V) :
-    (k : ℕ) → CliqueTowerData V k → Prop
-  | 0, _ => True
-  | k + 1, d =>
-      (cliqueTower G k d.1).IsClique ((d.2 : Finset (TowerV V k)) : Set (TowerV V k)) ∧
-        CliqueTowerData.IsSimplicial G k d.1
-
 /-- **The Kostochka–Sidorenko theorem.** *Every chordal graph is enumeratively
 chromatic-choosable at `n`, for every `n`.* -/
 theorem ecc_of_isChordal {V : Type u} [Fintype V] [DecidableEq V] (G : SimpleGraph V)
     [DecidableRel G.Adj] (hG : G.IsChordal) (n : ℕ) : G.ECCAt n := sorry
 
-/-- **Dirac's theorem.** *A finite graph is chordal if and only if it has a simplicial elimination
-ordering*, presented backwards and constructively as a `SimpleGraph.cliqueTower` over the empty
-graph. -/
-theorem isChordal_iff_exists_cliqueTower {V : Type u} [Fintype V] [DecidableEq V]
-    (G : SimpleGraph V) [DecidableRel G.Adj] :
-    G.IsChordal ↔ ∃ (k : ℕ) (d : CliqueTowerData (Fin 0) k),
-      CliqueTowerData.IsSimplicial (⊥ : SimpleGraph (Fin 0)) k d ∧
-        Nonempty (G ≃g cliqueTower (⊥ : SimpleGraph (Fin 0)) k d) := sorry
-
 end
 
 /-! ### 5. Theorem 1: every cycle is enumeratively chromatic-choosable at `n`
 
-The paper's main theorem.  A cycle is a path — `pathG`, built by iterated `addPendant` — with its
-two ends joined, which is `closePath`.  The same attachment, iterated, is the **pendant tower**:
-the reading of a graph as its core with degree-one vertices grown back on.  `TowerData` and
-`pendantTower` are declared here because that is all they are made of; §7 and §8 are stated with
-them.
+The paper's main theorem, claimed on Mathlib's `SimpleGraph.cycleGraph` so that the statement
+involves no construction of this development.  The constructions below carry the rest of the
+file: a cycle is a path — `pathG`, built by iterated `addPendant` — with its two ends joined
+(`closePath`), and the same attachment iterated is the **pendant tower**, the reading of a graph
+as its core with degree-one vertices grown back on, which §7 and §8 are stated with.
 -/
 
 /-- `G` with one new pendant vertex `none`, attached to `v`. -/
@@ -305,6 +274,11 @@ def pendantTower {V : Type*} (G : SimpleGraph V) :
     (k : ℕ) → TowerData V k → SimpleGraph (TowerV V k)
   | 0, _ => G
   | k + 1, d => (pendantTower G k d.1).addPendant d.2
+
+/-- **Theorem 1 of Kirov–Naimi: every cycle is enumeratively chromatic-choosable at `n`, for
+every `n ≥ 2`.**  `cycleGraph n` is Mathlib's cycle graph on `n` vertices. -/
+theorem ecc_cycleGraph_of_three_le {n m : ℕ} (hn : 3 ≤ n) :
+    (cycleGraph n).ECCAt (m + 2) := sorry
 
 end SimpleGraph
 
@@ -345,11 +319,6 @@ def closePath : (k : ℕ) → SimpleGraph (PathV k)
   | k + 1 => (pathG k).addPendantPair (pathEnd k) (pathStart k)
 
 instance instDecidableRelClosePath : (k : ℕ) → DecidableRel (closePath k).Adj := sorry
-
-/-- **Theorem 1 of Kirov–Naimi in full: every cycle is enumeratively chromatic-choosable at `n`,
-for every `n ≥ 2`.** -/
-theorem ecc_closePath_of_two_le {k m : ℕ} (hk : 2 ≤ k) :
-    (closePath k).ECCAt (m + 2) := sorry
 
 /-! ### 6. The machinery behind Theorem 1
 
@@ -408,7 +377,7 @@ def CoreIsTheta {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V)
 > `θ_{2,2,2m}` for some `m ≥ 1`.
 
 A. L. Rubin, in Erdős–Rubin–Taylor, *Choosability in graphs*, Congr. Numer. **26** (1980),
-125–157.  This `Prop` *is* the statement of claim 9: the theorem below has it as its bare type. -/
+125–157.  This `Prop` *is* the statement of claim 8: the theorem below has it as its bare type. -/
 def RubinTheorem : Prop :=
   ∀ {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V) [DecidableRel G.Adj],
     G.Connected → (G.Choosable 2 ↔ (CoreIsVertex G ∨ CoreIsEvenCycle G ∨ CoreIsTheta G))
@@ -456,7 +425,7 @@ def HasOddCycle {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V)
 > contains an odd cycle.
 
 The paper's wording; "2-monophilic" is `SimpleGraph.ECCAt G 2`.  Kirov–Naimi, Ars Combin. **124**
-(2016), 329–340, Theorem 2.  Rubin's theorem, which the paper quotes, is claim 9. -/
+(2016), 329–340, Theorem 2.  Rubin's theorem, which the paper quotes, is claim 8. -/
 theorem ecc_two_iff {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V)
     [DecidableRel G.Adj] (hconn : G.Connected) :
     G.ECCAt 2 ↔ CoreIsVertex G ∨ CoreIsCycle G ∨ CoreIsK23 G ∨ HasOddCycle G := sorry

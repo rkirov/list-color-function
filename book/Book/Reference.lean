@@ -229,10 +229,10 @@ form a formalization can use directly.
 
 {docstring ListColoring.HasCore}
 
-# The eleven claims
+# The ten claims
 
 These are the theorems `comparator/Challenge.lean` states, in its own order;
-{ref "readingchallenge"}[the guide to that file] explains why these eleven.
+{ref "readingchallenge"}[the guide to that file] explains why these ten.
 
 {docstring SimpleGraph.eval_chromaticPolynomial}
 
@@ -246,9 +246,7 @@ These are the theorems `comparator/Challenge.lean` states, in its own order;
 
 {docstring SimpleGraph.ecc_of_isChordal}
 
-{docstring SimpleGraph.isChordal_iff_exists_cliqueTower}
-
-{docstring ListColoring.ecc_closePath_of_two_le}
+{docstring SimpleGraph.ecc_cycleGraph_of_three_le}
 
 {docstring ListColoring.rubinTheorem}
 
