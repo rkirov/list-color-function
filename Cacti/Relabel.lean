@@ -375,4 +375,59 @@ theorem transferProd_apply_eq_pathCount (Ts : List (Finset (Fin k))) (a b : Fin 
 end TransferCount
 
 
+
+section BridgeLemmas
+
+variable {k : ℕ}
+
+/-- An injective enumeration of a `k`-list is onto it. -/
+theorem enum_image {A : Finset ℕ} (hA : A.card = k) {σ : Fin k → ℕ}
+    (hmem : ∀ i, σ i ∈ A) (hinj : Function.Injective σ) :
+    Finset.univ.image σ = A := by
+  refine Finset.eq_of_subset_of_card_le ?_ ?_
+  · intro y hy
+    rw [Finset.mem_image] at hy
+    obtain ⟨i, -, rfl⟩ := hy
+    exact hmem i
+  · rw [Finset.card_image_of_injective _ hinj, Finset.card_univ, Fintype.card_fin, hA]
+
+/-- Surjectivity of an enumeration onto its list. -/
+theorem enum_surj {A : Finset ℕ} (hA : A.card = k) {σ : Fin k → ℕ}
+    (hmem : ∀ i, σ i ∈ A) (hinj : Function.Injective σ) {y : ℕ} (hy : y ∈ A) :
+    ∃ x, σ x = y := by
+  rw [← enum_image hA hmem hinj, Finset.mem_image] at hy
+  obtain ⟨x, -, hx⟩ := hy
+  exact ⟨x, hx⟩
+
+/-- **The factor characterizes colour compatibility** across an equality-extending step: the
+entry is one exactly when the colours differ. -/
+theorem factor_eq_one_iff {B : Finset ℕ} {σ τ : Fin k → ℕ}
+    (hτmem : ∀ i, τ i ∈ B) (hτinj : Function.Injective τ)
+    (hmatch : ∀ x, σ x ∈ B → τ x = σ x) (x y : Fin k) :
+    (offDiag k + diagInd (Finset.univ.filter (fun z => σ z ≠ τ z))) x y = 1 ↔ σ x ≠ τ y := by
+  rw [factor_apply]
+  by_cases hxy : x = y
+  · subst hxy
+    rw [if_pos rfl]
+    by_cases hT : x ∈ Finset.univ.filter (fun z => σ z ≠ τ z)
+    · rw [if_pos hT]
+      rw [Finset.mem_filter] at hT
+      exact ⟨fun _ => hT.2, fun _ => rfl⟩
+    · rw [if_neg hT]
+      rw [Finset.mem_filter] at hT
+      push Not at hT
+      have h2 := hT (Finset.mem_univ x)
+      constructor
+      · intro h
+        exact absurd h (by omega)
+      · intro h
+        exact absurd h2 h
+  · rw [if_neg hxy]
+    refine ⟨fun _ hcon => ?_, fun _ => rfl⟩
+    have hB : σ x ∈ B := hcon ▸ hτmem y
+    have h2 : τ x = σ x := hmatch x hB
+    exact hxy (hτinj (h2.trans hcon))
+
+end BridgeLemmas
+
 end ListColoring
