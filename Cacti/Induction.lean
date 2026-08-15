@@ -262,7 +262,212 @@ theorem cactus_pair_bound :
               rw [hprodV, hprodW']
               ring
           _ ≤ _ := hIH
-      · sorry
+      · -- no pendant away from the root
+        by_cases hrdeg : G.degree r = 1
+        · -- the root is a pendant: absorb everything beyond its neighbour
+          obtain ⟨u, hru, huniq⟩ := degree_eq_one_iff_existsUnique_adj.mp hrdeg
+          have hur : u ≠ r := hru.ne'
+          -- the shared absorption instance: A the edge, B the complement of r, cut at u
+          have hcover : ∀ v : V, v ∈ ({r, u} : Set V) ∨ v ∈ {y : V | y ≠ r} := fun v => by
+            by_cases hvr : v = r
+            · exact Or.inl (Or.inl hvr)
+            · exact Or.inr hvr
+          have hmeet : ∀ v : V, v ∈ ({r, u} : Set V) → v ∈ {y : V | y ≠ r} → v = u := by
+            intro v hvA hvB
+            rcases hvA with h | h
+            · exact absurd h hvB
+            · exact h
+          have hedge : ∀ x y, G.Adj x y →
+              (x ∈ ({r, u} : Set V) ∧ y ∈ ({r, u} : Set V)) ∨
+              (x ∈ {y : V | y ≠ r} ∧ y ∈ {y : V | y ≠ r}) := by
+            intro a b hadj
+            by_cases har : a = r
+            · exact Or.inl ⟨Or.inl har, Or.inr (huniq b (har ▸ hadj))⟩
+            · by_cases hbr : b = r
+              · exact Or.inl ⟨Or.inr (huniq a (hbr ▸ hadj.symm)), Or.inl hbr⟩
+              · exact Or.inr ⟨har, hbr⟩
+          have hBedge : ∀ a b, G.Adj a b → a ∈ ({r, u} : Set V) → b ∈ ({r, u} : Set V) →
+              (a = r ∧ b = u) ∨ (a = u ∧ b = r) := by
+            intro a b hadj ha hb
+            rcases ha with ha | ha <;> rcases hb with hb | hb
+            · exact absurd (ha.symm ▸ hb.symm ▸ hadj) (G.irrefl)
+            · exact Or.inl ⟨ha, hb⟩
+            · exact Or.inr ⟨ha, hb⟩
+            · exact absurd (ha.symm ▸ hb.symm ▸ hadj) (G.irrefl)
+          -- IH data on the complement
+          have hG' : IsCactus (G.induce {y | y ≠ r}) :=
+            isCactus_induce_of_leaf hG hrdeg ⟨u, hur⟩
+          have hL' : IsNListAssignment (fun v : {y : V // y ≠ r} => L v.val) k :=
+            fun v => hL v.val
+          have hcards : Fintype.card {y : V // y ≠ r} + 1 = n := by
+            have hcong := Fintype.card_congr (delOptionEquiv r)
+            rw [Fintype.card_option] at hcong
+            omega
+          have huB : u ∈ {y : V | y ≠ r} := hur
+          -- the B-side weight and its dominance
+          have hdomB : ∀ v : {y : V // y ≠ r}, ∀ c' ∈ L v.val, ∀ d' ∈ L v.val, c' ≠ d' →
+              ((if v.val = u then 1 else W v.val)) ^ 2 ≤
+                (if v.val = u then 1 else w v.val c') *
+                (if v.val = u then 1 else w v.val d') := by
+            intro v c' hc' d' hd' hcd'
+            by_cases hvu : v.val = u
+            · rw [if_pos hvu, if_pos hvu, if_pos hvu]
+              omega
+            · rw [if_neg hvu, if_neg hvu, if_neg hvu]
+              exact hdom v.val c' hc' d' hd' hcd'
+          have hIHB := IH _ (by omega) {y : V // y ≠ r} (G.induce {y | y ≠ r}) rfl hk hG'
+            _ hL' (fun v e => if v.val = u then 1 else w v.val e)
+            (fun v => if v.val = u then 1 else W v.val) hdomB ⟨u, huB⟩
+          -- notation for the message and its normalizer
+          set msg : ℕ → ℕ := fun e => rootedWcol (G.induce {y | y ≠ r})
+            (fun v => L v.val) (fun v e' => if v.val = u then 1 else w v.val e')
+            ⟨u, huB⟩ e with hmsg
+          set N : ℕ := rootedCol (G.induce {y | y ≠ r})
+            (constList {y : V // y ≠ r} k) ⟨u, huB⟩ 0 *
+            ∏ v : {y : V // y ≠ r}, (if v.val = u then 1 else W v.val) with hN
+          have hmsgdom : ∀ c' ∈ L u, ∀ d' ∈ L u, c' ≠ d' → N ^ 2 ≤ msg c' * msg d' :=
+            fun c' hc' d' hd' hcd' => hIHB c' hc' d' hd' hcd'
+          -- the profile through absorption and the edge
+          have hxc : ∀ c'' ∈ L r, rootedWcol G L w r c'' =
+              w r c'' * ∑ e ∈ (L u).filter (· ≠ c''), (w u e * msg e) := by
+            intro c'' hc''
+            rw [rootedWcol_absorb (A := ({r, u} : Set V)) (B := {y : V | y ≠ r}) (u := u)
+              (Set.mem_insert_of_mem _ rfl) huB hcover hmeet hedge (Set.mem_insert _ _) L w c'']
+            refine (rootedWcol_edge_full (G := G) (u := r) (x := u) hru hBedge L hc''
+              _ (Set.mem_insert _ _) (Set.mem_insert_of_mem _ rfl)).trans ?_
+            rw [if_neg (fun h : r = u => hur h.symm)]
+            congr 1
+            refine Finset.sum_congr rfl fun e he => ?_
+            rw [if_pos rfl]
+          -- composite dominance and the bridge sum
+          have hωdom : ∀ c' ∈ L u, ∀ d' ∈ L u, c' ≠ d' →
+              (W u * N) ^ 2 ≤ (w u c' * msg c') * (w u d' * msg d') := by
+            intro c' hc' d' hd' hcd'
+            calc (W u * N) ^ 2 = W u ^ 2 * N ^ 2 := by ring
+              _ ≤ (w u c' * w u d') * (msg c' * msg d') :=
+                  Nat.mul_le_mul (hdom u c' hc' d' hd' hcd') (hmsgdom c' hc' d' hd' hcd')
+              _ = _ := by ring
+          have hbridge : ∀ c', (k - 1) * (W u * N) ≤
+              ∑ e ∈ (L u).filter (· ≠ c'), (w u e * msg e) := by
+            intro c'
+            by_cases hc' : c' ∈ L u
+            · calc (k - 1) * (W u * N)
+                  ≤ ∑ e ∈ (L u).erase c', (w u e * msg e) :=
+                    bridge_sum_ge (by omega) (hL u) hωdom hc'
+                _ = ∑ e ∈ (L u).filter (· ≠ c'), (w u e * msg e) := by
+                    congr 1
+                    ext e
+                    simp [Finset.mem_erase, Finset.mem_filter, and_comm]
+            · obtain ⟨c₀, hc₀⟩ : ∃ c₀, c₀ ∈ L u := by
+                have : 0 < (L u).card := by rw [hL u]; omega
+                exact Finset.card_pos.mp this |>.imp fun _ h => h
+              calc (k - 1) * (W u * N)
+                  ≤ ∑ e ∈ (L u).erase c₀, (w u e * msg e) :=
+                    bridge_sum_ge (by omega) (hL u) hωdom hc₀
+                _ ≤ ∑ e ∈ (L u).filter (· ≠ c'), (w u e * msg e) :=
+                    Finset.sum_le_sum_of_subset (fun e he => Finset.mem_filter.mpr
+                      ⟨Finset.mem_of_mem_erase he,
+                        fun heq => hc' (heq ▸ Finset.mem_of_mem_erase he)⟩)
+          -- the uniform side
+          have hmsgU : ∀ e ∈ Finset.range k,
+              rootedCol (G.induce {y | y ≠ r}) (constList {y : V // y ≠ r} k) ⟨u, huB⟩ e
+                = rootedCol (G.induce {y | y ≠ r}) (constList {y : V // y ≠ r} k)
+                    ⟨u, huB⟩ 0 := by
+            intro e he
+            exact rootedCol_constList_eq _ k _ he (by simp [Finset.mem_range]; omega)
+          have hAG : rootedCol G (constList V k) r 0 = (k - 1) *
+              rootedCol (G.induce {y | y ≠ r}) (constList {y : V // y ≠ r} k) ⟨u, huB⟩ 0 := by
+            have h0 : (0 : ℕ) ∈ constList V k r := by
+              simp [constList_apply, Finset.mem_range]; omega
+            have habs := rootedWcol_absorb (A := ({r, u} : Set V)) (B := {y : V | y ≠ r})
+              (u := u) (Set.mem_insert_of_mem _ rfl) huB hcover hmeet hedge
+              (Set.mem_insert _ _) (constList V k) (fun _ _ => 1) 0
+            rw [rootedWcol_one] at habs
+            rw [habs]
+            refine (rootedWcol_edge_full (G := G) (u := r) (x := u) hru hBedge (constList V k)
+              h0 _ (Set.mem_insert _ _) (Set.mem_insert_of_mem _ rfl)).trans ?_
+            rw [if_neg (fun h : r = u => hur h.symm), one_mul]
+            calc ∑ e ∈ (constList V k u).filter (· ≠ 0),
+                  (if (u : V) = u then
+                    (1 : ℕ) * rootedWcol (G.induce {y | y ≠ r})
+                      (fun x' => constList V k x'.val)
+                      (fun x' e' => if x'.val = u then 1 else 1) ⟨u, huB⟩ e
+                  else 1)
+                = ∑ e ∈ (constList V k u).filter (· ≠ 0),
+                    rootedCol (G.induce {y | y ≠ r}) (constList {y : V // y ≠ r} k)
+                      ⟨u, huB⟩ e := by
+                  refine Finset.sum_congr rfl fun e he => ?_
+                  rw [if_pos rfl, one_mul]
+                  exact (rootedWcol_weight_congr (fun v d _ => ite_self _) _ _).trans
+                    (rootedWcol_one _ _ _)
+              _ = ∑ e ∈ (constList V k u).filter (· ≠ 0),
+                    rootedCol (G.induce {y | y ≠ r}) (constList {y : V // y ≠ r} k)
+                      ⟨u, huB⟩ 0 := by
+                  refine Finset.sum_congr rfl fun e he => ?_
+                  have he' : e ∈ Finset.range k := (Finset.mem_filter.mp he).1
+                  exact hmsgU e he'
+              _ = (k - 1) * rootedCol (G.induce {y | y ≠ r})
+                    (constList {y : V // y ≠ r} k) ⟨u, huB⟩ 0 := by
+                  rw [Finset.sum_const, smul_eq_mul]
+                  congr 1
+                  rw [show (constList V k u).filter (· ≠ (0:ℕ))
+                      = (Finset.range k).erase 0 from by
+                    ext e
+                    simp [Finset.mem_erase, Finset.mem_filter, and_comm, constList_apply]]
+                  rw [Finset.card_erase_of_mem (by simp [Finset.mem_range]; omega),
+                    Finset.card_range]
+          -- assemble
+          rw [hxc c hc, hxc d hd, hAG]
+          have hprodV : (∏ v, W v) = W r * ∏ v : {y : V // y ≠ r}, W v.val := by
+            rw [← Fintype.prod_equiv (delOptionEquiv r)
+              (fun o => W ((delOptionEquiv r) o)) W (fun o => rfl)]
+            rw [Fintype.prod_option]
+            rfl
+          have huS : (⟨u, huB⟩ : {y : V // y ≠ r}) ∈
+              (Finset.univ : Finset {y : V // y ≠ r}) := Finset.mem_univ _
+          have herase : (∏ v ∈ Finset.univ.erase (⟨u, huB⟩ : {y : V // y ≠ r}),
+                (if v.val = u then 1 else W v.val))
+              = ∏ v ∈ Finset.univ.erase (⟨u, huB⟩ : {y : V // y ≠ r}), W v.val :=
+            Finset.prod_congr rfl fun v hv =>
+              if_neg (fun h => Finset.ne_of_mem_erase hv (Subtype.ext h))
+          have hprodB : (∏ v : {y : V // y ≠ r}, W v.val)
+              = W u * ∏ v : {y : V // y ≠ r}, (if v.val = u then 1 else W v.val) := by
+            calc (∏ v : {y : V // y ≠ r}, W v.val)
+                = W u * ∏ v ∈ Finset.univ.erase (⟨u, huB⟩ : {y : V // y ≠ r}), W v.val :=
+                  (Finset.mul_prod_erase Finset.univ (fun v => W v.val) huS).symm
+              _ = W u * ∏ v ∈ Finset.univ.erase (⟨u, huB⟩ : {y : V // y ≠ r}),
+                    (if v.val = u then 1 else W v.val) := by rw [herase]
+              _ = W u * ∏ v : {y : V // y ≠ r}, (if v.val = u then 1 else W v.val) := by
+                  rw [← Finset.mul_prod_erase Finset.univ
+                    (fun v => if v.val = u then 1 else W v.val) huS]
+                  rw [show (if ((⟨u, huB⟩ : {y : V // y ≠ r}) : V) = u then (1:ℕ)
+                      else W ((⟨u, huB⟩ : {y : V // y ≠ r}) : V)) = 1 from if_pos rfl]
+                  rw [one_mul]
+          calc ((k - 1) * rootedCol (G.induce {y | y ≠ r})
+                (constList {y : V // y ≠ r} k) ⟨u, huB⟩ 0 * ∏ v, W v) ^ 2
+              = (W r * ((k - 1) * (W u * N))) ^ 2 := by
+                rw [hprodV, hprodB, hN]
+                ring
+            _ ≤ (W r * ∑ e ∈ (L u).filter (· ≠ c), (w u e * msg e)) *
+                  (W r * ∑ e ∈ (L u).filter (· ≠ d), (w u e * msg e)) := by
+                have h1 := hbridge c
+                have h2 := hbridge d
+                have h3 : (W r * ((k - 1) * (W u * N))) ^ 2
+                    = (W r * ((k - 1) * (W u * N))) * (W r * ((k - 1) * (W u * N))) := sq _
+                rw [h3]
+                exact Nat.mul_le_mul (Nat.mul_le_mul_left _ h1) (Nat.mul_le_mul_left _ h2)
+            _ ≤ (w r c * ∑ e ∈ (L u).filter (· ≠ c), (w u e * msg e)) *
+                  (w r d * ∑ e ∈ (L u).filter (· ≠ d), (w u e * msg e)) := by
+                have hr2 := hdom r c hc d hd hcd
+                calc (W r * ∑ e ∈ (L u).filter (· ≠ c), (w u e * msg e)) *
+                      (W r * ∑ e ∈ (L u).filter (· ≠ d), (w u e * msg e))
+                    = W r ^ 2 * ((∑ e ∈ (L u).filter (· ≠ c), (w u e * msg e)) *
+                        (∑ e ∈ (L u).filter (· ≠ d), (w u e * msg e))) := by ring
+                  _ ≤ (w r c * w r d) * ((∑ e ∈ (L u).filter (· ≠ c), (w u e * msg e)) *
+                        (∑ e ∈ (L u).filter (· ≠ d), (w u e * msg e))) :=
+                      Nat.mul_le_mul_right _ hr2
+                  _ = _ := by ring
+        · sorry
 
 end MainInduction
 

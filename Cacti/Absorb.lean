@@ -295,6 +295,96 @@ theorem rootedWcol_pendant {x u : V} (hxu : G.Adj x u) (huniq : ∀ y, G.Adj x y
     exact rootedWcol_edge hxu.symm hBedge L w hdu
   · rw [if_neg hvu, if_neg hvu]
 
+
+/-- The rooted weighted count of an edge `u—x` with **full weights**, the weight given
+directly on the subtype: the root's weight times the complementary weighted sum at the other
+end. -/
+theorem rootedWcol_edge_full {u x : V} (hux : G.Adj u x)
+    (hBedge : ∀ a b, G.Adj a b → a ∈ ({u, x} : Set V) → b ∈ ({u, x} : Set V) →
+      (a = u ∧ b = x) ∨ (a = x ∧ b = u))
+    (L : ListAssignment V) {d : ℕ} (hd : d ∈ L u)
+    {instF : Fintype (({u, x} : Set V) : Type _)}
+    {instD : DecidableRel (G.induce ({u, x} : Set V)).Adj}
+    (w' : (({u, x} : Set V) : Type _) → ℕ → ℕ)
+    (hmemu : u ∈ ({u, x} : Set V)) (hmemx : x ∈ ({u, x} : Set V)) :
+    rootedWcol (G.induce ({u, x} : Set V)) (fun v => L v) w' ⟨u, hmemu⟩ d
+      = w' ⟨u, hmemu⟩ d * ∑ e ∈ (L x).filter (· ≠ d), w' ⟨x, hmemx⟩ e := by
+  have hne : u ≠ x := hux.ne
+  have huniv : (Finset.univ : Finset (({u, x} : Set V) : Type _)) =
+      {⟨u, hmemu⟩, ⟨x, hmemx⟩} := by
+    ext v
+    simp only [Finset.mem_univ, true_iff, Finset.mem_insert, Finset.mem_singleton]
+    rcases v.property with h | h
+    · exact Or.inl (Subtype.ext h)
+    · exact Or.inr (Subtype.ext h)
+  rw [rootedWcol, Finset.mul_sum]
+  refine Finset.sum_nbij' (fun f => f ⟨x, hmemx⟩)
+    (fun e => fun v => if v.val = u then d else e) ?_ ?_ ?_ ?_ ?_
+  · intro f hf
+    rw [Finset.mem_filter] at hf
+    obtain ⟨hfc, hfu⟩ := hf
+    rw [SimpleGraph.mem_colorings_iff] at hfc
+    rw [Finset.mem_filter]
+    refine ⟨hfc.1 _, ?_⟩
+    intro hcontra
+    exact hfc.2 ⟨u, hmemu⟩ ⟨x, hmemx⟩ hux (by rw [hfu, hcontra])
+  · intro e he
+    rw [Finset.mem_filter] at he
+    obtain ⟨hemem, hene⟩ := he
+    rw [Finset.mem_filter, SimpleGraph.mem_colorings_iff]
+    refine ⟨⟨?_, ?_⟩, ?_⟩
+    · intro v
+      rcases v.property with h | h
+      · have : v.val = u := h
+        rw [if_pos this]
+        show d ∈ L v.val
+        rw [this]
+        exact hd
+      · have hvx : v.val = x := h
+        by_cases hvu : v.val = u
+        · rw [if_pos hvu]
+          show d ∈ L v.val
+          rw [hvu]
+          exact hd
+        · rw [if_neg hvu]
+          show e ∈ L v.val
+          rw [hvx]
+          exact hemem
+    · intro a b hadj
+      rcases hBedge a.val b.val hadj a.property b.property with ⟨ha, hb⟩ | ⟨ha, hb⟩
+      · rw [if_pos ha, if_neg (fun h => hne.symm (hb.symm.trans h))]
+        exact fun h => hene h.symm
+      · rw [if_neg (fun h => hne.symm (ha.symm.trans h)), if_pos hb]
+        exact hene
+    · show (if (u : V) = u then d else e) = d
+      rw [if_pos rfl]
+  · intro f hf
+    rw [Finset.mem_filter] at hf
+    funext v
+    by_cases hvu : v.val = u
+    · show (if v.val = u then d else _) = f v
+      rw [if_pos hvu, ← hf.2]
+      congr 1
+      exact Subtype.ext hvu.symm
+    · show (if v.val = u then d else f ⟨x, hmemx⟩) = f v
+      rw [if_neg hvu]
+      congr 1
+      exact Subtype.ext (by
+        rcases v.property with h | h
+        · exact absurd h hvu
+        · exact h.symm)
+  · intro e he
+    show (if (x : V) = u then d else e) = e
+    rw [if_neg hne.symm]
+  · intro f hf
+    rw [Finset.mem_filter] at hf
+    have hnesub : (⟨u, hmemu⟩ : (({u, x} : Set V) : Type _)) ∉
+        ({⟨x, hmemx⟩} : Finset (({u, x} : Set V) : Type _)) := by
+      simp only [Finset.mem_singleton]
+      intro h
+      exact hne (congrArg Subtype.val h)
+    rw [huniv, Finset.prod_insert hnesub, Finset.prod_singleton, hf.2]
+
 end Pendant
 
 end ListColoring
