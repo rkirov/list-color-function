@@ -3,6 +3,7 @@ Copyright (c) 2026. All rights reserved.
 Released under Apache 2.0 license.
 -/
 import Cacti.CycleCases
+import Cacti.Rooted
 
 /-!
 # The relabelling bridge: extension helpers
@@ -471,5 +472,96 @@ theorem exists_two_split {α : Type _} (l : List α) (i j : ℕ) (hij : i < j)
 end Surgery
 
 
+
+
+section MatrixModel
+
+open SimpleGraph Finset
+
+/-- **The matrix model of a listed cycle** (the relabelling bridge, handoff §6.2): every
+cyclically indexed graph with `k`-lists is counted by the transfer-matrix model, with the
+thread splits of its twisted closing labels. -/
+theorem exists_matrix_model {V : Type} [Fintype V] [DecidableEq V] {G : SimpleGraph V}
+    [DecidableRel G.Adj] {m : ℕ} (hm : 3 ≤ m) (w : Fin (m + 1) ≃ V)
+    (hadj : ∀ i j : Fin (m + 1), G.Adj (w i) (w j) ↔ (j = i + 1 ∨ i = j + 1))
+    {k : ℕ} (hk : 4 ≤ k) (L : ListAssignment V) (hL : IsNListAssignment L k) :
+    ∃ (Ts : List (Finset (Fin k))) (P : Equiv.Perm (Fin k)) (dom : Finset (Fin k))
+      (σ₀ : Fin k → ℕ),
+      Ts.length = m ∧ (∀ i, σ₀ i ∈ L (w 0)) ∧ Function.Injective σ₀ ∧
+      (∀ c, rootedCol G L (w 0) (σ₀ c) = rootCount Ts P dom c) ∧
+      (∀ c ∈ dom, P.symm c ≠ c →
+        ∃ (Ts₁ : List (Finset (Fin k))) (T : Finset (Fin k)) (Ts₂ : List (Finset (Fin k)))
+          (T' : Finset (Fin k)) (Ts₃ : List (Finset (Fin k))),
+          Ts = Ts₁ ++ T :: (Ts₂ ++ T' :: Ts₃) ∧ c ∈ T ∧ P.symm c ∈ T') := by
+  classical
+  -- the equality-extending chain along the path
+  obtain ⟨σ, hσmem, hσinj, hσmatch⟩ := exists_enum_chain (by omega)
+    (fun i : Fin (m + 1) => L (w i)) (fun i => hL (w i))
+  -- the survivor complements along the path edges
+  set Ts : List (Finset (Fin k)) := List.ofFn
+    (fun e : Fin m => Finset.univ.filter (fun x => σ e.castSucc x ≠ σ e.succ x)) with hTs
+  have hTslen : Ts.length = m := by rw [hTs, List.length_ofFn]
+  -- the closing data
+  set dom : Finset (Fin k) := Finset.univ.filter
+    (fun c => σ 0 c ∈ L (w (Fin.last m))) with hdom
+  have hμex : ∀ c ∈ dom, ∃ x, σ (Fin.last m) x = σ 0 c := by
+    intro c hc
+    rw [hdom, Finset.mem_filter] at hc
+    exact enum_surj (hL (w (Fin.last m))) (hσmem (Fin.last m)) (hσinj (Fin.last m)) hc.2
+  set μ : Fin k → Fin k := fun c => if hc : c ∈ dom then Classical.choose (hμex c hc) else c
+    with hμ
+  have hμspec : ∀ c (hc : c ∈ dom), σ (Fin.last m) (μ c) = σ 0 c := by
+    intro c hc
+    simp only [hμ]
+    rw [dif_pos hc]
+    exact Classical.choose_spec (hμex c hc)
+  have hμinj : ∀ c ∈ dom, ∀ c' ∈ dom, μ c = μ c' → c = c' := by
+    intro c hc c' hc' hcc
+    have h1 := hμspec c hc
+    have h2 := hμspec c' hc'
+    rw [hcc, h2] at h1
+    exact hσinj 0 h1.symm
+  -- the completed permutation: on the image of μ, send μ c back to c
+  have hgex : ∀ a ∈ dom.image μ, ∃ c ∈ dom, μ c = a := by
+    intro a ha
+    rw [Finset.mem_image] at ha
+    obtain ⟨c, hc, hca⟩ := ha
+    exact ⟨c, hc, hca⟩
+  set g : Fin k → Fin k := fun a => if ha : a ∈ dom.image μ then
+      Classical.choose (hgex a ha) else a
+    with hg
+  have hgspec : ∀ a (ha : a ∈ dom.image μ),
+      Classical.choose (hgex a ha) ∈ dom ∧ μ (Classical.choose (hgex a ha)) = a := by
+    intro a ha
+    exact ⟨(Classical.choose_spec (hgex a ha)).1, (Classical.choose_spec (hgex a ha)).2⟩
+  obtain ⟨P, hP⟩ := exists_extendPerm (dom.image μ) g (by
+    intro a ha b hb hab
+    simp only [hg] at hab
+    rw [dif_pos ha, dif_pos hb] at hab
+    obtain ⟨hca, hμa⟩ := hgspec a ha
+    obtain ⟨hcb, hμb⟩ := hgspec b hb
+    rw [← hμa, ← hμb, hab])
+  have hPμ : ∀ c ∈ dom, P (μ c) = c := by
+    intro c hc
+    have hmem : μ c ∈ dom.image μ := Finset.mem_image_of_mem μ hc
+    rw [hP _ hmem]
+    simp only [hg]
+    rw [dif_pos hmem]
+    obtain ⟨hc', hμ'⟩ := hgspec (μ c) hmem
+    exact hμinj _ hc' _ hc hμ'
+  have hPsymm : ∀ c ∈ dom, P.symm c = μ c := by
+    intro c hc
+    have h1 := hPμ c hc
+    have h2 : P.symm c = P.symm (P (μ c)) := by rw [h1]
+    rw [h2, Equiv.symm_apply_apply]
+  refine ⟨Ts, P, dom, σ 0, hTslen, hσmem 0, hσinj 0, ?_, ?_⟩
+  · -- the count identity
+    intro c
+    sorry
+  · -- the thread splits
+    intro c hc htw
+    sorry
+
+end MatrixModel
 
 end ListColoring
