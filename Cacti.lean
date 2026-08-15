@@ -11,6 +11,7 @@ import Cacti.WeightedProfile
 import Cacti.Absorb
 import Cacti.AbsorbProfile
 import Cacti.Uniform
+import Cacti.Bridge
 import Cacti.UniformProfile
 import Cacti.Statements
 
