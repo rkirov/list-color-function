@@ -4,6 +4,7 @@ Released under Apache 2.0 license.
 -/
 import Cacti.Defs
 import Cacti.Structure
+import Cacti.LeafPeeling
 import Cacti.RootedProfile
 import Cacti.Statements
 
