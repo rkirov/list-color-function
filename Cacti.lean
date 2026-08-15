@@ -7,7 +7,6 @@ import Cacti.Structure
 import Cacti.LeafPeeling
 import Cacti.Rooted
 import Cacti.Weighted
-import Cacti.Rooted
 import Cacti.WeightedProfile
 import Cacti.Statements
 
