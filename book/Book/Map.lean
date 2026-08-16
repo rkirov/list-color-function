@@ -136,12 +136,12 @@ Each Lean name below is the exact statement proved; each file link goes to the s
   * [K23.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/K23.lean)
 *
   * *Theorem 2*
-  * {name}`ListColoring.ecc_two_iff`
-  * [RubinProof.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/RubinProof.lean)
+  * {name}`SimpleGraph.ecc_two_iff`
+  * [CoreGraphs.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/CoreGraphs.lean)
 *
   * *Rubin's theorem*
-  * {name}`ListColoring.rubinTheorem`
-  * [RubinProof.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/RubinProof.lean)
+  * {name}`SimpleGraph.rubinTheorem`
+  * [CoreGraphs.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/CoreGraphs.lean)
 *
   * Rubin, steps 1–6
   * {name}`ListColoring.rubin_structure`

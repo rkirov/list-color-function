@@ -248,9 +248,9 @@ These are the theorems `comparator/Challenge.lean` states, in its own order;
 
 {docstring SimpleGraph.ecc_cycleGraph_of_three_le}
 
-{docstring ListColoring.rubinTheorem}
+{docstring SimpleGraph.rubinTheorem}
 
-{docstring ListColoring.ecc_two_iff}
+{docstring SimpleGraph.ecc_two_iff}
 
 {docstring SimpleGraph.exists_ecc_forall_ge}
 

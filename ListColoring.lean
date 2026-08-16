@@ -39,3 +39,4 @@ import ListColoring.CoreExtract
 import ListColoring.RubinProof
 import ListColoring.Section5
 import ListColoring.CycleGraph
+import ListColoring.CoreGraphs

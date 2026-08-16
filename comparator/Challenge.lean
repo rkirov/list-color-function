@@ -7,7 +7,7 @@ The statement surface of the `graph_coloring` development, a formalization of
 > Radoslav Kirov and Ramin Naimi, *List coloring and `n`-monophilic graphs*,
 > Ars Combinatoria (arXiv:1004.5183).
 
-Everything is stated exactly as in the library; proofs and the decidability instances are
+Everything is stated exactly as in the library; proofs and two decidability instances are
 `sorry`, so "declaration uses `sorry`" is expected.  The comparator checks these statements
 against `Submission.lean`, which imports the library; `config.json` lists what is claimed.
 -/
@@ -208,45 +208,15 @@ def addPendantPair {V : Type*} (G : SimpleGraph V) (u v : V) : SimpleGraph (Opti
   symm := ⟨by rintro (_ | a) (_ | b) h <;> simp_all [addPendantPairAdj, G.adj_comm]⟩
   loopless := ⟨by rintro (_ | a) h <;> simp_all [addPendantPairAdj]⟩
 
+instance instDecidableRelAddPendantPair {V : Type*} (G : SimpleGraph V) [DecidableEq V]
+    [DecidableRel G.Adj] (u v : V) : DecidableRel (G.addPendantPair u v).Adj := fun a b =>
+  match a, b with
+  | none, none => inferInstanceAs (Decidable False)
+  | none, some b => inferInstanceAs (Decidable (b = u ∨ b = v))
+  | some a, none => inferInstanceAs (Decidable (a = u ∨ a = v))
+  | some a, some b => inferInstanceAs (Decidable (G.Adj a b))
+
 end SimpleGraph
-
-namespace ListColoring
-
-open SimpleGraph
-
-/-- The vertex type of a path of length `k` (so `k + 1` vertices). -/
-def PathV : ℕ → Type
-  | 0 => Unit
-  | k + 1 => Option (PathV k)
-
-instance instDecidableEqPathV : (k : ℕ) → DecidableEq (PathV k) := sorry
-
-instance instFintypePathV : (k : ℕ) → Fintype (PathV k) := sorry
-
-/-- The terminal vertex of `pathG k` that was attached last. -/
-def pathEnd : (k : ℕ) → PathV k
-  | 0 => ()
-  | _ + 1 => none
-
-/-- The other terminal vertex of `pathG k`. -/
-def pathStart : (k : ℕ) → PathV k
-  | 0 => ()
-  | k + 1 => some (pathStart k)
-
-/-- The path of length `k`: `k + 1` vertices in a row. -/
-def pathG : (k : ℕ) → SimpleGraph (PathV k)
-  | 0 => ⊥
-  | k + 1 => (pathG k).addPendant (pathEnd k)
-
-instance instDecidableRelPathG : (k : ℕ) → DecidableRel (pathG k).Adj := sorry
-
-/-- The path of length `k` closed up: `pathG k` together with one extra edge joining its two
-terminal vertices.  For `k ≥ 2` this is the cycle on `k + 1` vertices. -/
-def closePath : (k : ℕ) → SimpleGraph (PathV k)
-  | 0 => ⊥
-  | k + 1 => (pathG k).addPendantPair (pathEnd k) (pathStart k)
-
-instance instDecidableRelClosePath : (k : ℕ) → DecidableRel (closePath k).Adj := sorry
 
 /-! ### 6. The machinery behind Theorem 1
 
@@ -260,38 +230,13 @@ minimizing assignment.
 
 Choosability is unchanged by attaching or removing pendant vertices, so a connected graph may be
 replaced by its **core**: the graph of which it is a `pendantTower`.  `CoreIs` spells that out,
-and `CoreIsVertex`, `CoreIsEvenCycle`, `CoreIsTheta` are the three cases Rubin's theorem names.
-It is proved in this development and claimed in full, both directions.
-
-`instDecidableRelPathG` and `instDecidableRelTheta` are listed for this section's sake alone:
-`CoreIs G H` asks for a decidable `H`.
+and `CoreIsVertex`, `CoreIsEvenCycle`, `CoreIsTheta` are the three cases Rubin's theorem names —
+a single vertex is `⊥` on `Fin 1`, a cycle is Mathlib's `cycleGraph`, and `θ_{2,2,2m}` is
+`thetaGraph m`, the cycle `C_{2m+2}` with one extra vertex attached to `0` and `2`.  Rubin's
+theorem is proved in this development and claimed in full, both directions.
 -/
 
-end ListColoring
-
 namespace SimpleGraph
-
-/-- Adjacency for the cone: `none` is joined to exactly the vertices of `K`. -/
-def coneAdj {V : Type*} (G : SimpleGraph V) (K : Finset V) : Option V → Option V → Prop
-  | some a, some b => G.Adj a b
-  | none, some b => b ∈ K
-  | some a, none => a ∈ K
-  | none, none => False
-
-/-- **The cone over `K`.** `coneOn G K` is the graph on `Option V` obtained from `G` by adding one
-new vertex `none` joined to precisely the vertices in `K`. -/
-def coneOn {V : Type*} (G : SimpleGraph V) (K : Finset V) : SimpleGraph (Option V) where
-  Adj := coneAdj G K
-  symm := ⟨by
-    rintro (_ | a) (_ | b) h
-    · exact h
-    · exact h
-    · exact h
-    · exact h.symm⟩
-  loopless := ⟨by
-    rintro (_ | a) h
-    · exact h
-    · exact h.ne rfl⟩
 
 /-- The vertex type of `G` after `k` successive pendant attachments: `V` with `k` extra points. -/
 def TowerV (V : Type u) : ℕ → Type u
@@ -318,16 +263,6 @@ namespace ListColoring
 
 open SimpleGraph
 
-/-- The vertex type of `θ_{2,2,2m}`. -/
-abbrev ThetaV (m : ℕ) : Type := Option (Option (PathV (2 * m)))
-
-/-- The theta graph `θ_{2,2,2m}`. -/
-def theta (m : ℕ) : SimpleGraph (ThetaV m) :=
-  coneOn (coneOn (pathG (2 * m)) {pathStart (2 * m), pathEnd (2 * m)})
-    {some (pathStart (2 * m)), some (pathEnd (2 * m))}
-
-instance instDecidableRelTheta : (m : ℕ) → DecidableRel (theta m).Adj := sorry
-
 /-- **The core of `G` is `H`**: `G` is `H` with a finite tower of pendant vertices attached — the
 reverse reading of "delete degree-one vertices until none remain".  Up to isomorphism, because the
 tower lives on its own vertex type. -/
@@ -335,20 +270,38 @@ def CoreIs {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
     (G : SimpleGraph V) [DecidableRel G.Adj] (H : SimpleGraph W) [DecidableRel H.Adj] : Prop :=
   ∃ (k : ℕ) (d : TowerData W k), Nonempty (G ≃g pendantTower H k d)
 
-/-- **The core of `G` is a single vertex.** `ListColoring.pathG 0` is the one-vertex graph — a
-path of length zero. Equivalently, `G` is a tree. First alternative of Theorem 2, and of Rubin's
-theorem. -/
+/-- `G` **contains** a copy of `K`: an injection of the vertices of `K` into those of `G` carrying
+edges to edges. Only a *subgraph* is asked for, not an induced one, which is all that a
+choosability argument ever needs. -/
+def Contains {V W : Type*} (G : SimpleGraph V) (K : SimpleGraph W) : Prop :=
+  ∃ f : W → V, Function.Injective f ∧ ∀ a b, K.Adj a b → G.Adj (f a) (f b)
+
+end ListColoring
+
+namespace SimpleGraph
+
+/-- `θ_{2,2,2m}`, on Mathlib's cycle graph: the cycle `C_{2m+2}` together with one extra vertex
+joined to `0` and `2`, which lie at distance two on the cycle.  The three arms between the branch
+vertices `some 0` and `some 2` have lengths `2`, `2` and `2m`. -/
+def thetaGraph (m : ℕ) : SimpleGraph (Option (Fin (2 * m + 2))) :=
+  (cycleGraph (2 * m + 2)).addPendantPair 0 2
+
+instance instDecidableRelThetaGraph (m : ℕ) : DecidableRel (thetaGraph m).Adj :=
+  inferInstanceAs (DecidableRel ((cycleGraph (2 * m + 2)).addPendantPair 0 2).Adj)
+
+/-- **The core of `G` is a single vertex**: Mathlib's `⊥` on `Fin 1`.  Equivalently, `G` is a
+tree.  First alternative of Rubin's theorem, and of Theorem 2. -/
 def CoreIsVertex {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V)
-    [DecidableRel G.Adj] : Prop := CoreIs G (pathG 0)
+    [DecidableRel G.Adj] : Prop := ListColoring.CoreIs G (⊥ : SimpleGraph (Fin 1))
 
-/-- **The core of `G` is an even cycle**, i.e. a cycle on an even number of vertices. Since
-`closePath k` has `k + 1` vertices, that is `Odd k`. Second alternative of Rubin's theorem. -/
+/-- **The core of `G` is an even cycle.**  Second alternative of Rubin's theorem. -/
 def CoreIsEvenCycle {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V)
-    [DecidableRel G.Adj] : Prop := ∃ k, Odd k ∧ 2 ≤ k ∧ CoreIs G (closePath k)
+    [DecidableRel G.Adj] : Prop := ∃ n, Even n ∧ 4 ≤ n ∧ ListColoring.CoreIs G (cycleGraph n)
 
-/-- **The core of `G` is `θ_{2,2,2m}` for some `m ≥ 1`.** Third alternative of Rubin's theorem. -/
+/-- **The core of `G` is `θ_{2,2,2m}` for some `m ≥ 1`.**  Third alternative of Rubin's
+theorem. -/
 def CoreIsTheta {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V)
-    [DecidableRel G.Adj] : Prop := ∃ m, 1 ≤ m ∧ CoreIs G (theta m)
+    [DecidableRel G.Adj] : Prop := ∃ m, 1 ≤ m ∧ ListColoring.CoreIs G (thetaGraph m)
 
 /-- **Rubin's theorem.**
 
@@ -374,29 +327,21 @@ theorem rubinTheorem : RubinTheorem := sorry
 `HasOddCycle`.
 -/
 
-/-- **The core of `G` is a cycle.** `closePath k` is the cycle on `k + 1` vertices, and `2 ≤ k`
-says it really is a cycle rather than a point or a single edge. No parity restriction: Theorem 2
-says "is a cycle", not "is an even cycle". Second alternative of Theorem 2. -/
+/-- **The core of `G` is a cycle**: Mathlib's `cycleGraph n`, a genuine cycle once `3 ≤ n`.
+No parity restriction: Theorem 2 says "is a cycle", not "is an even cycle".  Second alternative
+of Theorem 2. -/
 def CoreIsCycle {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V)
-    [DecidableRel G.Adj] : Prop := ∃ k, 2 ≤ k ∧ CoreIs G (closePath k)
+    [DecidableRel G.Adj] : Prop := ∃ n, 3 ≤ n ∧ ListColoring.CoreIs G (cycleGraph n)
 
-/-- **The core of `G` is `K₂,₃`.** `ListColoring.theta 1` is `θ_{2,2,2}`, which is `K₂,₃`; the
-isomorphism is `ListColoring.k23IsoThetaOne`. Third alternative of Theorem 2. -/
+/-- **The core of `G` is `K₂,₃`**, which is `thetaGraph 1 = θ_{2,2,2}`.  Third alternative of
+Theorem 2. -/
 def CoreIsK23 {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V)
-    [DecidableRel G.Adj] : Prop := CoreIs G (theta 1)
+    [DecidableRel G.Adj] : Prop := ListColoring.CoreIs G (thetaGraph 1)
 
-/-- `G` **contains** a copy of `K`: an injection of the vertices of `K` into those of `G` carrying
-edges to edges. Only a *subgraph* is asked for, not an induced one, which is all that a
-choosability argument ever needs. -/
-def Contains {V W : Type*} (G : SimpleGraph V) (K : SimpleGraph W) : Prop :=
-  ∃ f : W → V, Function.Injective f ∧ ∀ a b, K.Adj a b → G.Adj (f a) (f b)
-
-/-- **`G` contains an odd cycle**: a subgraph copy of a cycle on an odd number of vertices.
-
-`closePath k` is the cycle on `k + 1` vertices, so `Even k` is what makes it odd. Fourth
+/-- **`G` contains an odd cycle**: a subgraph copy of `cycleGraph n` for an odd `n ≥ 3`.  Fourth
 alternative of Theorem 2. -/
 def HasOddCycle {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V)
-    [DecidableRel G.Adj] : Prop := ∃ k, Even k ∧ 2 ≤ k ∧ Contains G (closePath k)
+    [DecidableRel G.Adj] : Prop := ∃ n, Odd n ∧ 3 ≤ n ∧ ListColoring.Contains G (cycleGraph n)
 
 /-- **Theorem 2 of Kirov–Naimi, with no hypothesis beyond connectivity.**
 
@@ -408,10 +353,6 @@ The paper's wording; "2-monophilic" is `SimpleGraph.ECCAt G 2`.  Kirov–Naimi, 
 theorem ecc_two_iff {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V)
     [DecidableRel G.Adj] (hconn : G.Connected) :
     G.ECCAt 2 ↔ CoreIsVertex G ∨ CoreIsCycle G ∨ CoreIsK23 G ∨ HasOddCycle G := sorry
-
-end ListColoring
-
-namespace SimpleGraph
 
 /-! ### 9. Every graph, eventually
 

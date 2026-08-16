@@ -125,19 +125,24 @@ example {n m : ℕ} (hn : 3 ≤ n) : (cycleGraph n).ECCAt (m + 2) :=
 ```
 
 *Eight: Rubin's theorem* {citep erdosRubinTaylor}[] —
-{ref "twochoosable"}[the `2`-choosability chapter].
+{ref "twochoosable"}[the `2`-choosability chapter]. Like Theorem 1, it is claimed on Mathlib's
+graphs: a single vertex is `⊥` on `Fin 1`, a cycle is `cycleGraph n`, and $`\theta_{2,2,2m}` is
+`thetaGraph m`, the cycle $`C_{2m+2}` with one extra vertex joined to `0` and `2`. The forms on
+the development's own path-built models are {name ListColoring.rubinTheorem}`rubinTheorem` and
+{name ListColoring.ecc_two_iff}`ecc_two_iff` in the library, and the claimed statements are proved
+from them by transporting `CoreIs` along the isomorphisms of the cores.
 
 ```lean
-open ListColoring in
+open SimpleGraph in
 example : RubinTheorem := rubinTheorem
 ```
 
 That display is unusual, and deliberately so. The claimed theorem's type is the bare constant
-{name ListColoring.RubinTheorem}`RubinTheorem`, so *the statement of Rubin's theorem is the body of
+{name SimpleGraph.RubinTheorem}`RubinTheorem`, so *the statement of Rubin's theorem is the body of
 that definition* — unfolding it is the only way to see what claim eight says:
 
 ```lean
-open SimpleGraph ListColoring in
+open SimpleGraph in
 example : RubinTheorem =
     ∀ {V : Type} [Fintype V] [DecidableEq V]
       (G : SimpleGraph V) [DecidableRel G.Adj],
@@ -155,7 +160,7 @@ statement is really checked.
 chapter]. It carries no hypothesis beyond connectivity.
 
 ```lean
-open SimpleGraph ListColoring in
+open SimpleGraph in
 example {V : Type} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) [DecidableRel G.Adj]
     (hconn : G.Connected) :
@@ -242,11 +247,11 @@ names, and defines nothing. Part II of this book is where those live.
 
 *Every definition carries its real body.* Every theorem has `sorry` for a proof — that is what
 makes it a challenge file rather than a library. Definitions, by contrast, are given in full, down
-to the tactic-proved `symm` and `loopless` fields of the three graph constructions and the
-adjacency matches (`coneAdj`, `addPendantAdj`, `addPendantPairAdj`) they are built on, so the file
-reads as a complete specification; the comparator never inspects the body of a listed definition,
-so nothing is given away. Only the decidability instances are `sorry`, and a `Decidable` instance
-is a subsingleton: which one is used cannot change any count.
+to the tactic-proved `symm` and `loopless` fields of the two pendant attachments and the adjacency
+matches (`addPendantAdj`, `addPendantPairAdj`) they are built on, so the file reads as a complete
+specification; the comparator never inspects the body of a listed definition, so nothing is given
+away. Only two decidability instances are `sorry`, and a `Decidable` instance is a subsingleton:
+which one is used cannot change any count.
 
 *`config.json` names what is claimed.* Two lists. `theorem_names` is the ten above.
 `definition_names` is not a curated aesthetic choice but a computed one: exactly the definitions
@@ -254,12 +259,13 @@ reachable from the types of those ten statements, together with the notions thos
 written in terms of, so that the file can be read without the library open beside it.
 
 *Instances are in the list because the surface needs them.* The Erdős–Rubin–Taylor claims' types
-need decidable adjacency for `K n`, and the core alternatives of Rubin's theorem and Theorem 2
-name `pathG 0`, `closePath k` and `theta m` through `CoreIs`, which asks for decidable adjacency
-and finite, decidable vertex types. The comparator's traversal demands that every constant
-reachable from the listed statements be either a listed definition or bit-identical between
-challenge and submission — which a placeholder body is not. So those six instances are listed, and
-they are the only instances that are.
+need decidable adjacency for `K n`, and the core alternatives name `⊥ : SimpleGraph (Fin 1)`,
+`cycleGraph n` and `thetaGraph m` through `CoreIs`, which asks for decidable adjacency and finite,
+decidable vertex types. Mathlib's own instances serve everything except `thetaGraph`, which
+carries its two (`instDecidableRelAddPendantPair`, `instDecidableRelThetaGraph`). The comparator's
+traversal demands that every constant reachable from the listed statements be either a listed
+definition or bit-identical between challenge and submission, so those three instances are listed,
+and they are the only instances that are.
 
 *Two declarations appear without being listed*, because a *body* rather than a statement needs them:
 the decidability of `IsProperColoring`, so that `colorings` can be written as a `Finset.filter`, and

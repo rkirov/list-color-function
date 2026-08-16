@@ -68,7 +68,7 @@ Read backwards, the same statement transports enumerative chromatic-choosability
 its core:
 
 ```lean
-open SimpleGraph ListColoring in
+open ListColoring in
 example {V W : Type} [Fintype V] [DecidableEq V] [Fintype W]
     [DecidableEq W] {G : SimpleGraph V} [DecidableRel G.Adj]
     {H : SimpleGraph W} [DecidableRel H.Adj]
@@ -135,7 +135,7 @@ The identification of $`K_{2,3}` with the smallest theta is an explicit bijectio
 `decide`, and it is what lets the same fact be quoted on either model:
 
 ```lean
-open SimpleGraph ListColoring in
+open ListColoring in
 example :
     completeBipartiteGraph (Fin 2) (Fin 3) ≃g theta 1 :=
   k23IsoThetaOne
@@ -185,7 +185,7 @@ example (m : ℕ) (hm : 2 ≤ m) :
 vertex, is a cycle, is $`K_{2,3}`, or it contains an odd cycle.*
 
 ```lean
-open SimpleGraph ListColoring in
+open ListColoring in
 example {V : Type} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) [DecidableRel G.Adj]
     (hconn : G.Connected) :
@@ -206,7 +206,7 @@ the {name ListColoring.CoreIs}`CoreIs` predicate of {ref "twochoosable"}[the pre
 phrase the paper states in words, so there is nothing to take on trust about what "core" means here:
 
 ```lean
-open SimpleGraph ListColoring in
+open ListColoring in
 example {V : Type} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) [DecidableRel G.Adj] :
     CoreIsCycle G ↔
@@ -214,14 +214,14 @@ example {V : Type} [Fintype V] [DecidableEq V]
 ```
 
 ```lean
-open SimpleGraph ListColoring in
+open ListColoring in
 example {V : Type} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) [DecidableRel G.Adj] :
     CoreIsK23 G ↔ CoreIs G (theta 1) := Iff.rfl
 ```
 
 ```lean
-open SimpleGraph ListColoring in
+open ListColoring in
 example {V : Type} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) [DecidableRel G.Adj] :
     HasOddCycle G ↔
@@ -240,7 +240,7 @@ Theorem 2 is proved by factoring through Rubin's theorem *as a statement* — a 
 taken as the first explicit argument:
 
 ```lean
-open SimpleGraph ListColoring in
+open ListColoring in
 example (rubin : RubinTheorem) {V : Type} [Fintype V]
     [DecidableEq V] (G : SimpleGraph V) [DecidableRel G.Adj]
     (hconn : G.Connected) :
@@ -256,7 +256,7 @@ records exactly how much of Rubin the classification consumes. The unconditional
 one-line discharge:
 
 ```lean
-open SimpleGraph ListColoring in
+open ListColoring in
 example {V : Type} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) [DecidableRel G.Adj]
     (hconn : G.Connected) :
@@ -277,7 +277,7 @@ stop at {name ListColoring.ecc_two_iff_of_rubin}`ecc_two_iff_of_rubin`.
 connectivity:
 
 ```lean
-open SimpleGraph ListColoring in
+open ListColoring in
 example {V : Type} [Fintype V] [DecidableEq V]
     {G : SimpleGraph V} [DecidableRel G.Adj]
     (h : CoreIsVertex G ∨ CoreIsCycle G ∨ CoreIsK23 G ∨
@@ -292,7 +292,7 @@ of bipartite graphs, and it is the one ingredient of the paper's proof that had 
 scratch, because Mathlib records it as an open `TODO` in its `Bipartite.lean`:
 
 ```lean
-open SimpleGraph ListColoring in
+open ListColoring in
 example {V : Type} [Fintype V] [DecidableEq V]
     {G : SimpleGraph V} [DecidableRel G.Adj]
     (h : ¬ G.Colorable 2) : HasOddCycle G :=
@@ -305,7 +305,7 @@ closed walks have lengths summing to the original, so exactly one of them is odd
 is on length.
 
 ```lean
-open SimpleGraph ListColoring in
+open ListColoring in
 example {V : Type} [DecidableEq V] {G : SimpleGraph V}
     {x : V} (w : G.Walk x x) (hodd : Odd w.length) :
     ∃ (y : V) (c : G.Walk y y), c.IsCycle ∧ Odd c.length :=
@@ -319,7 +319,7 @@ flagged as missing and that this development needed anyway.
 assumed here; its three-way conclusion is taken as a hypothesis and converted into the four-way one:
 
 ```lean
-open SimpleGraph ListColoring in
+open ListColoring in
 example {V : Type} [Fintype V] [DecidableEq V]
     {G : SimpleGraph V} [DecidableRel G.Adj]
     (hmono : G.ECCAt 2)
@@ -338,7 +338,7 @@ which is $`K_{2,3}`.
 hand:
 
 ```lean
-open SimpleGraph ListColoring in
+open ListColoring in
 example {V : Type} [Fintype V] [DecidableEq V]
     {G : SimpleGraph V} [DecidableRel G.Adj]
     (h : CoreIsVertex G ∨ CoreIsEvenCycle G ∨

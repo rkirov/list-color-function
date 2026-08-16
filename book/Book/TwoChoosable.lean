@@ -77,7 +77,7 @@ This is mechanization and not mathematics — the papers simply say "core" — a
 interchangeable because of the display above it. Choosability transports along it:
 
 ```lean
-open SimpleGraph ListColoring in
+open ListColoring in
 example {V W : Type} [Fintype V] [DecidableEq V] [Fintype W]
     [DecidableEq W] {G : SimpleGraph V} [DecidableRel G.Adj]
     {H : SimpleGraph W} [DecidableRel H.Adj]
@@ -118,7 +118,7 @@ let th :=
 That sentence is a theorem:
 
 ```lean
-open SimpleGraph ListColoring in
+open ListColoring in
 example {V : Type} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) [DecidableRel G.Adj]
     (hconn : G.Connected) :
@@ -132,7 +132,7 @@ independently of when it lands — which is how {ref "twoecc"}[Theorem 2] was st
 chapter's proof was still being built. Unfolded, the name reads:
 
 ```lean
-open SimpleGraph ListColoring in
+open ListColoring in
 example : RubinTheorem =
     ∀ {V : Type} [Fintype V] [DecidableEq V]
       (G : SimpleGraph V) [DecidableRel G.Adj],
@@ -152,7 +152,7 @@ above. Recall that `closePath k` has `k + 1` vertices, so `Odd k` picks out the 
 number of vertices:
 
 ```lean
-open SimpleGraph ListColoring in
+open ListColoring in
 example {V : Type} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) [DecidableRel G.Adj] :
     CoreIsEvenCycle G ↔
@@ -160,7 +160,7 @@ example {V : Type} [Fintype V] [DecidableEq V]
 ```
 
 ```lean
-open SimpleGraph ListColoring in
+open ListColoring in
 example {V : Type} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) [DecidableRel G.Adj] :
     CoreIsTheta G ↔ ∃ m, 1 ≤ m ∧ CoreIs G (theta m) :=
@@ -171,7 +171,7 @@ The same three families collected up to isomorphism, without the core, are
 {name ListColoring.RubinFamily}`RubinFamily`:
 
 ```lean
-open SimpleGraph ListColoring in
+open ListColoring in
 example {V : Type} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) [DecidableRel G.Adj] :
     RubinFamily G ↔ (Subsingleton V ∨
@@ -188,7 +188,7 @@ three paths of length two is exactly two vertices each joined to the same three 
 Everything on Rubin's list really is `2`-choosable:
 
 ```lean
-open SimpleGraph ListColoring in
+open ListColoring in
 example {V : Type} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) [DecidableRel G.Adj]
     (h : RubinFamily G) : G.Choosable 2 :=
@@ -198,7 +198,7 @@ example {V : Type} [Fintype V] [DecidableEq V]
 and therefore, transported along the core, in the form in which Rubin's theorem states it:
 
 ```lean
-open SimpleGraph ListColoring in
+open ListColoring in
 example {V : Type} [Fintype V] [DecidableEq V]
     {G : SimpleGraph V} [DecidableRel G.Adj]
     (h : CoreIsVertex G ∨ CoreIsEvenCycle G ∨
@@ -381,7 +381,7 @@ needs. All five are proved.
 inherits that.
 
 ```lean
-open SimpleGraph ListColoring in
+open ListColoring in
 example {V : Type} [Fintype V] [DecidableEq V]
     {G : SimpleGraph V} [DecidableRel G.Adj] {k : ℕ}
     (hk : Even k) (hk2 : 2 ≤ k)
@@ -394,7 +394,7 @@ the same statement, *a figure-eight*, two cycles sharing a single vertex. In a c
 two collapse into one clean statement:
 
 ```lean
-open SimpleGraph ListColoring in
+open ListColoring in
 example {V : Type} [Fintype V] [DecidableEq V]
     {G : SimpleGraph V} [DecidableRel G.Adj] {v z : V}
     {c₁ : G.Walk v v} {c₂ : G.Walk z z}
@@ -413,7 +413,7 @@ the connecting path allowed to be trivial. Underneath sits the raw indexed form,
 colour-forcing chain is written against:
 
 ```lean
-open SimpleGraph ListColoring in
+open ListColoring in
 example {V : Type} [Fintype V] [DecidableEq V]
     {G : SimpleGraph V} [DecidableRel G.Adj] {m n : ℕ}
     (hm : 2 ≤ m) (hn : 2 ≤ n) (A B : ℕ → V)
@@ -457,7 +457,7 @@ papers state in a clause; a formalization has to produce it. The result is conne
 a single vertex or has minimum degree at least two:
 
 ```lean
-open SimpleGraph ListColoring in
+open ListColoring in
 example {V : Type} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) [DecidableRel G.Adj] :
     HasCore G ↔
@@ -470,7 +470,7 @@ example {V : Type} [Fintype V] [DecidableEq V]
 ```
 
 ```lean
-open SimpleGraph ListColoring in
+open ListColoring in
 example {V : Type} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) [DecidableRel G.Adj]
     (hG : G.Connected) : HasCore G :=
@@ -482,7 +482,7 @@ a count rather than the usual longest-path argument: a connected acyclic graph h
 while minimum degree two forces at least `n`. Shortest, because minimality is used twice later:
 
 ```lean
-open SimpleGraph ListColoring in
+open ListColoring in
 example {V : Type} [Fintype V] [DecidableEq V]
     {G : SimpleGraph V} [DecidableRel G.Adj]
     (hconn : G.Connected) (hdeg : ∀ v : V, 2 ≤ G.degree v) :
@@ -501,7 +501,7 @@ connecting path — or a cycle closes inside the path, meeting $`C_1` in at most
 the previous section has already excluded.
 
 ```lean
-open SimpleGraph ListColoring in
+open ListColoring in
 example {V : Type} [Fintype V] [DecidableEq V]
     {G : SimpleGraph V} [DecidableRel G.Adj]
     (hconn : G.Connected) (hdeg : ∀ v : V, 2 ≤ G.degree v)
@@ -533,7 +533,7 @@ vertices `u` and `w` of the four-cycle. Each case exhibits one of the five obstr
 {name ListColoring.step56}`step56`, and the two together are the structural half:
 
 ```lean
-open SimpleGraph ListColoring in
+open ListColoring in
 example {V : Type} [Fintype V] [DecidableEq V]
     {G : SimpleGraph V} [DecidableRel G.Adj]
     (hconn : G.Connected) (hdeg : ∀ z : V, 2 ≤ G.degree z)
@@ -564,7 +564,7 @@ internally disjoint paths between two vertices is a theta graph. Neither Rubin n
 proves these — a paper says them in a clause — and both have to be built:
 
 ```lean
-open SimpleGraph ListColoring in
+open ListColoring in
 example {W : Type} [Fintype W] [DecidableEq W]
     {H : SimpleGraph W} [DecidableRel H.Adj]
     (hconn : H.Connected) (hdeg : ∀ w : W, H.degree w = 2) :
@@ -670,9 +670,9 @@ example : ∀ φ : Fin 2 → Fin 2,
 *No odd cycle.* It is bipartite, hence `2`-colourable, and a graph with an odd cycle is not:
 
 ```lean
-open SimpleGraph ListColoring in
-example : ¬ HasOddCycle (ERT.K 2) := fun h =>
-  not_colorable_two_of_hasOddCycle h
+open SimpleGraph in
+example : ¬ ListColoring.HasOddCycle (ERT.K 2) := fun h =>
+  ListColoring.not_colorable_two_of_hasOddCycle h
     (ERT.colorable 2 le_rfl)
 ```
 
