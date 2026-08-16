@@ -22,7 +22,7 @@ This file supplies the two remaining pieces.
 * **The theta bridge.** The choosability results of `ListColoring.ThetaGen` are stated about the
   abstract graph `ListColoring.gtheta ks`, while Rubin's steps produce *walks*.
   `ListColoring.contains_gtheta_of_walks` converts `n` internally disjoint paths joining two
-  branch vertices into `ListColoring.Contains G (gtheta ks)`, which
+  branch vertices into `SimpleGraph.Contains G (gtheta ks)`, which
   `ListColoring.not_choosable_of_contains` then consumes. This is the analogue for thetas of the
   `getVert` bridge at the top of `ListColoring.RubinStructure`, and like it is pure mechanization.
 * **Steps 4, 5 and 6.** Step 4 shows that `C₁ ∪ P₁` must be `θ_{2,2,2m}` and, using minimality of

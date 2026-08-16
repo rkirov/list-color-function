@@ -201,32 +201,32 @@ def thetaGraphIsoTheta (m : ℕ) (hm : 1 ≤ m) : thetaGraph m ≃g theta m wher
 /-- **The core of `G` is a single vertex**: Mathlib's `⊥` on `Fin 1`.  Equivalently, `G` is a
 tree.  First alternative of Rubin's theorem, and of Theorem 2. -/
 def CoreIsVertex {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V)
-    [DecidableRel G.Adj] : Prop := ListColoring.CoreIs G (⊥ : SimpleGraph (Fin 1))
+    [DecidableRel G.Adj] : Prop := SimpleGraph.CoreIs G (⊥ : SimpleGraph (Fin 1))
 
 /-- **The core of `G` is a cycle**: Mathlib's `cycleGraph n`, a genuine cycle once `3 ≤ n`.
 No parity restriction: Theorem 2 says "is a cycle", not "is an even cycle".  Second alternative
 of Theorem 2. -/
 def CoreIsCycle {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V)
-    [DecidableRel G.Adj] : Prop := ∃ n, 3 ≤ n ∧ ListColoring.CoreIs G (cycleGraph n)
+    [DecidableRel G.Adj] : Prop := ∃ n, 3 ≤ n ∧ SimpleGraph.CoreIs G (cycleGraph n)
 
 /-- **The core of `G` is an even cycle.**  Second alternative of Rubin's theorem. -/
 def CoreIsEvenCycle {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V)
-    [DecidableRel G.Adj] : Prop := ∃ n, Even n ∧ 4 ≤ n ∧ ListColoring.CoreIs G (cycleGraph n)
+    [DecidableRel G.Adj] : Prop := ∃ n, Even n ∧ 4 ≤ n ∧ SimpleGraph.CoreIs G (cycleGraph n)
 
 /-- **The core of `G` is `θ_{2,2,2m}` for some `m ≥ 1`.**  Third alternative of Rubin's
 theorem. -/
 def CoreIsTheta {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V)
-    [DecidableRel G.Adj] : Prop := ∃ m, 1 ≤ m ∧ ListColoring.CoreIs G (thetaGraph m)
+    [DecidableRel G.Adj] : Prop := ∃ m, 1 ≤ m ∧ SimpleGraph.CoreIs G (thetaGraph m)
 
 /-- **The core of `G` is `K₂,₃`**, which is `thetaGraph 1 = θ_{2,2,2}`.  Third alternative of
 Theorem 2. -/
 def CoreIsK23 {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V)
-    [DecidableRel G.Adj] : Prop := ListColoring.CoreIs G (thetaGraph 1)
+    [DecidableRel G.Adj] : Prop := SimpleGraph.CoreIs G (thetaGraph 1)
 
 /-- **`G` contains an odd cycle**: a subgraph copy of `cycleGraph n` for an odd `n ≥ 3`.  Fourth
 alternative of Theorem 2. -/
 def HasOddCycle {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V)
-    [DecidableRel G.Adj] : Prop := ∃ n, Odd n ∧ 3 ≤ n ∧ ListColoring.Contains G (cycleGraph n)
+    [DecidableRel G.Adj] : Prop := ∃ n, Odd n ∧ 3 ≤ n ∧ SimpleGraph.Contains G (cycleGraph n)
 
 variable {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V) [DecidableRel G.Adj]
 
@@ -277,20 +277,15 @@ theorem hasOddCycle_iff : HasOddCycle G ↔ ListColoring.HasOddCycle G := by
     exact ⟨k + 1, ⟨t, by omega⟩, by omega,
       (ListColoring.contains_congr_right (cycleGraphIsoClosePath k (by omega))).mpr h⟩
 
-/-- **Rubin's theorem.**
+/-- **Rubin's theorem**, on Mathlib's graphs.
 
 > A connected graph is `2`-choosable iff its core is a single vertex, an even cycle, or
 > `θ_{2,2,2m}` for some `m ≥ 1`.
 
 A. L. Rubin, in Erdős–Rubin–Taylor, *Choosability in graphs*, Congr. Numer. **26** (1980),
-125–157.  This `Prop` *is* the claimed statement: the theorem below has it as its bare type. -/
-def RubinTheorem : Prop :=
-  ∀ {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V) [DecidableRel G.Adj],
-    G.Connected → (G.Choosable 2 ↔ (CoreIsVertex G ∨ CoreIsEvenCycle G ∨ CoreIsTheta G))
-
-/-- **Rubin's theorem**, on Mathlib's graphs.  The paper cites it; this development proves it. -/
-theorem rubinTheorem : RubinTheorem := by
-  intro V _ _ G _ hconn
+125–157.  The paper cites it; this development proves it. -/
+theorem rubinTheorem (hconn : G.Connected) :
+    G.Choosable 2 ↔ (CoreIsVertex G ∨ CoreIsEvenCycle G ∨ CoreIsTheta G) := by
   rw [coreIsVertex_iff, coreIsEvenCycle_iff, coreIsTheta_iff]
   exact ListColoring.rubinTheorem G hconn
 

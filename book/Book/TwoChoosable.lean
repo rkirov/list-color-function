@@ -59,7 +59,7 @@ example {V : Type} [Fintype V] [DecidableEq V]
 Repeatedly deleting vertices of degree one until none is left produces the *core* of the graph. The
 statement above is that reduction run backwards, which is the form a formalization can use directly:
 rather than define a fixpoint of a deletion operation, present the graph as its core with a tower of
-pendant attachments on top. That reading is what {name ListColoring.CoreIs}`CoreIs` says, and it is
+pendant attachments on top. That reading is what {name SimpleGraph.CoreIs}`CoreIs` says, and it is
 spelled out exactly so:
 
 ```lean
@@ -77,7 +77,7 @@ This is mechanization and not mathematics — the papers simply say "core" — a
 interchangeable because of the display above it. Choosability transports along it:
 
 ```lean
-open ListColoring in
+open SimpleGraph ListColoring in
 example {V W : Type} [Fintype V] [DecidableEq V] [Fintype W]
     [DecidableEq W] {G : SimpleGraph V} [DecidableRel G.Adj]
     {H : SimpleGraph W} [DecidableRel H.Adj]
@@ -152,18 +152,18 @@ above. Recall that `closePath k` has `k + 1` vertices, so `Odd k` picks out the 
 number of vertices:
 
 ```lean
-open ListColoring in
+open SimpleGraph ListColoring in
 example {V : Type} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) [DecidableRel G.Adj] :
-    CoreIsEvenCycle G ↔
+    ListColoring.CoreIsEvenCycle G ↔
       ∃ k, Odd k ∧ 2 ≤ k ∧ CoreIs G (closePath k) := Iff.rfl
 ```
 
 ```lean
-open ListColoring in
+open SimpleGraph ListColoring in
 example {V : Type} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) [DecidableRel G.Adj] :
-    CoreIsTheta G ↔ ∃ m, 1 ≤ m ∧ CoreIs G (theta m) :=
+    ListColoring.CoreIsTheta G ↔ ∃ m, 1 ≤ m ∧ CoreIs G (theta m) :=
   Iff.rfl
 ```
 
@@ -381,7 +381,7 @@ needs. All five are proved.
 inherits that.
 
 ```lean
-open ListColoring in
+open SimpleGraph ListColoring in
 example {V : Type} [Fintype V] [DecidableEq V]
     {G : SimpleGraph V} [DecidableRel G.Adj] {k : ℕ}
     (hk : Even k) (hk2 : 2 ≤ k)
@@ -457,7 +457,7 @@ papers state in a clause; a formalization has to produce it. The result is conne
 a single vertex or has minimum degree at least two:
 
 ```lean
-open ListColoring in
+open SimpleGraph ListColoring in
 example {V : Type} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) [DecidableRel G.Adj] :
     HasCore G ↔

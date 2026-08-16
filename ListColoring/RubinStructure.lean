@@ -624,10 +624,10 @@ are not rediscovered.
   has length `4` anyway.
 
 What is missing beyond steps 4–6 — and is not listed in `plan.md`'s E1–E4 — is the passage from
-graph structure to `ListColoring.CoreIs`: that every connected graph *has* a core (a witness for
-`ListColoring.CoreIs G H` with `H` of minimum degree `≥ 2`), and the two isomorphism constructions
+graph structure to `SimpleGraph.CoreIs`: that every connected graph *has* a core (a witness for
+`SimpleGraph.CoreIs G H` with `H` of minimum degree `≥ 2`), and the two isomorphism constructions
 `H ≃g closePath k` from `H` being connected and `2`-regular and `H ≃g theta m` from `H` being
-`C₁ ∪ P₁` and nothing more. Steps 4–6 also need `ListColoring.Contains G (gtheta ks)` built from
+`C₁ ∪ P₁` and nothing more. Steps 4–6 also need `SimpleGraph.Contains G (gtheta ks)` built from
 walk data, which the abstract theta results (`ListColoring.choosable_two_gtheta_iff`,
 `ListColoring.not_choosable_two_gtheta_of_four`) consume. -/
 

@@ -34,18 +34,18 @@ This file is the last step: every ingredient was already proved, and here they a
   direction.
 
 What is genuinely proved here, rather than merely quoted, is the glue: transporting
-`ListColoring.CoreIs` along an isomorphism of the core, the counting argument that a graph of
+`SimpleGraph.CoreIs` along an isomorphism of the core, the counting argument that a graph of
 minimum degree `≥ 2` whose edges all lie on one cycle is `2`-regular, and the bookkeeping that
 presents the four-cycle-plus-path of the theta case as three internally disjoint arms.
 
 Because `ListColoring/Theorem2.lean` is *upstream* of `ListColoring/CoreExtract.lean` and
-`ListColoring/RubinCases.lean` — `ListColoring.HasCore` is stated in terms of `ListColoring.CoreIs`
+`ListColoring/RubinCases.lean` — `ListColoring.HasCore` is stated in terms of `SimpleGraph.CoreIs`
 — the unconditional form of Kirov–Naimi's Theorem 2 has to be stated here rather than there;
 `ListColoring.ecc_two_iff_of_rubin` is applied to `ListColoring.rubinTheorem` with no other change.
 
 ## Main results
 
-* `ListColoring.CoreIs.congr` : `ListColoring.CoreIs` only sees the core up to isomorphism
+* `SimpleGraph.CoreIs.congr` : `SimpleGraph.CoreIs` only sees the core up to isomorphism
 * `ListColoring.degree_eq_two_of_cycle_edges` : minimum degree `≥ 2` plus "every edge lies on the
   cycle `c`" forces `2`-regularity
 * `ListColoring.exists_iso_theta_of_thetaData` : the theta case of Rubin's structure theorem, as an
@@ -75,7 +75,7 @@ theorem exists_pendantTower_iso {W W' : Type} [Fintype W] [DecidableEq W] [Finty
       exact ⟨(d', f d.2), ⟨addPendantIso f d.2⟩⟩
 
 /-- **`CoreIs` only sees the core up to isomorphism.** -/
-theorem CoreIs.congr {V W W' : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+theorem _root_.SimpleGraph.CoreIs.congr {V W W' : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
     [Fintype W'] [DecidableEq W'] {G : SimpleGraph V} [DecidableRel G.Adj] {H : SimpleGraph W}
     [DecidableRel H.Adj] {H' : SimpleGraph W'} [DecidableRel H'.Adj]
     (h : CoreIs G H) (e : H ≃g H') : CoreIs G H' := by
@@ -431,7 +431,7 @@ end Guards
 end ListColoring
 
 #print axioms ListColoring.exists_pendantTower_iso
-#print axioms ListColoring.CoreIs.congr
+#print axioms SimpleGraph.CoreIs.congr
 #print axioms ListColoring.nonempty_iso_pathG_zero
 #print axioms ListColoring.exists_getVert_of_mem_edges
 #print axioms ListColoring.false_of_triangle_of_choosable_two

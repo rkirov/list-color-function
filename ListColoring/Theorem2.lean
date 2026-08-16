@@ -31,14 +31,14 @@ term `rubinTheorem : RubinTheorem` turns it into the unconditional theorem with 
 anywhere. Such a term now exists — `ListColoring.rubinTheorem`, in `ListColoring/RubinProof.lean` —
 and the unconditional statement is `ListColoring.ecc_two_iff` there. It has to be stated in that
 file rather than this one purely for import reasons: `ListColoring.HasCore` is phrased in terms of
-`ListColoring.CoreIs`, so everything Rubin's theorem is proved from imports *this* file.
+`SimpleGraph.CoreIs`, so everything Rubin's theorem is proved from imports *this* file.
 
 ## What "core" means here
 
 The **core** of a graph, in the paper's sense, is what remains after repeatedly deleting vertices of
 degree one. Read backwards, "the core of `G` is `H`" says that `G` is `H` with a finite tower of
 pendant vertices attached, which is exactly `SimpleGraph.pendantTower` from `ListColoring.Core`.
-That is the definition used here (`ListColoring.CoreIs`), and the four alternatives of Theorem 2 and
+That is the definition used here (`SimpleGraph.CoreIs`), and the four alternatives of Theorem 2 and
 the three of Rubin's theorem are spelled out on top of it.
 
 This presentation is **mechanization, not mathematics**: the paper simply says "core", and the
@@ -72,7 +72,7 @@ locally:
 
 ## Main definitions
 
-* `ListColoring.CoreIs G H` : the core of `G` is `H` — `G` is `H` with a pendant tower attached
+* `SimpleGraph.CoreIs G H` : the core of `G` is `H` — `G` is `H` with a pendant tower attached
 * `ListColoring.CoreIsVertex`, `ListColoring.CoreIsCycle`, `ListColoring.CoreIsK23` : three of the
   four alternatives of Theorem 2; the fourth is `ListColoring.HasOddCycle`
 * `ListColoring.CoreIsEvenCycle`, `ListColoring.CoreIsTheta` : the other two alternatives of Rubin's
@@ -299,7 +299,7 @@ This definition is **mechanization**, not part of Kirov–Naimi: the paper simpl
 Kirov–Naimi's **Lemma 5** (`SimpleGraph.ecc_pendantTower_iff`) is what makes the two
 readings interchangeable for enumerative chromatic-choosability, and its choosability analogue
 (`SimpleGraph.choosable_pendantTower_iff`) does the same for choosability. -/
-def CoreIs {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+def _root_.SimpleGraph.CoreIs {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
     (G : SimpleGraph V) [DecidableRel G.Adj] (H : SimpleGraph W) [DecidableRel H.Adj] : Prop :=
   ∃ (k : ℕ) (d : TowerData W k), Nonempty (G ≃g pendantTower H k d)
 
@@ -309,7 +309,7 @@ variable {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
   {G : SimpleGraph V} [DecidableRel G.Adj] {H : SimpleGraph W} [DecidableRel H.Adj]
 
 /-- **A graph is enumeratively chromatic-choosable at `n` exactly when its core is.** This is
-Kirov–Naimi's **Lemma 5**, transported across the isomorphism in `ListColoring.CoreIs`. -/
+Kirov–Naimi's **Lemma 5**, transported across the isomorphism in `SimpleGraph.CoreIs`. -/
 theorem ecc_iff_of_coreIs (h : CoreIs G H) (n : ℕ) : G.ECCAt n ↔ H.ECCAt n := by
   obtain ⟨k, d, ⟨e⟩⟩ := h
   letI := instDecidableEqTowerV (V := W) k
@@ -333,7 +333,7 @@ variable {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V) [DecidableRe
 
 /-! The six alternatives below — four from Theorem 2, three from Rubin's theorem, sharing the
 one-vertex case — are **mechanization**, not mathematics: each spells out on top of
-`ListColoring.CoreIs` a phrase the two papers state in words. -/
+`SimpleGraph.CoreIs` a phrase the two papers state in words. -/
 
 /-- **The core of `G` is a single vertex.** `ListColoring.pathG 0` is the one-vertex graph — a
 path of length zero. Equivalently, `G` is a tree. First alternative of Theorem 2, and of Rubin's

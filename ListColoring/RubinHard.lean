@@ -73,7 +73,7 @@ induction along an arm of unbounded length, is missing.
 ## Main definitions
 
 * `ListColoring.thetaGen` : the general theta graph `θ_{a,b,c}`
-* `ListColoring.Contains` : `G` contains a copy of `K` as a subgraph
+* `SimpleGraph.Contains` : `G` contains a copy of `K` as a subgraph
 * `ListColoring.armBlockLists`, `ListColoring.thetaBadLists` : the general witness assignment
 * `ListColoring.ValidShape`, `ListColoring.GoodShape` : normalized theta shapes, and Rubin's shape
 * `ListColoring.ThetaClassification` : the classification of `2`-choosable theta graphs, discharged
@@ -213,7 +213,7 @@ proved for all lengths at once on the model `ListColoring.thetaOf`. -/
 /-- `G` **contains** a copy of `K`: an injection of the vertices of `K` into those of `G` carrying
 edges to edges. Only a *subgraph* is asked for, not an induced one, which is all that a
 choosability argument ever needs. -/
-def Contains {V W : Type*} (G : SimpleGraph V) (K : SimpleGraph W) : Prop :=
+def _root_.SimpleGraph.Contains {V W : Type*} (G : SimpleGraph V) (K : SimpleGraph W) : Prop :=
   ∃ f : W → V, Function.Injective f ∧ ∀ a b, K.Adj a b → G.Adj (f a) (f b)
 
 /-- A graph contains itself. -/

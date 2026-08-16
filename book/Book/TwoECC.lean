@@ -68,7 +68,7 @@ Read backwards, the same statement transports enumerative chromatic-choosability
 its core:
 
 ```lean
-open ListColoring in
+open SimpleGraph ListColoring in
 example {V W : Type} [Fintype V] [DecidableEq V] [Fintype W]
     [DecidableEq W] {G : SimpleGraph V} [DecidableRel G.Adj]
     {H : SimpleGraph W} [DecidableRel H.Adj]
@@ -202,29 +202,29 @@ and it is used nowhere else in the argument. In particular the ⟸ direction, di
 not even that.
 
 *The four alternatives are real definitions, not abstract propositions.* Each spells out on top of
-the {name ListColoring.CoreIs}`CoreIs` predicate of {ref "twochoosable"}[the previous chapter] a
+the {name SimpleGraph.CoreIs}`CoreIs` predicate of {ref "twochoosable"}[the previous chapter] a
 phrase the paper states in words, so there is nothing to take on trust about what "core" means here:
 
 ```lean
-open ListColoring in
+open SimpleGraph ListColoring in
 example {V : Type} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) [DecidableRel G.Adj] :
-    CoreIsCycle G ↔
+    ListColoring.CoreIsCycle G ↔
       ∃ k, 2 ≤ k ∧ CoreIs G (closePath k) := Iff.rfl
 ```
 
 ```lean
-open ListColoring in
+open SimpleGraph ListColoring in
 example {V : Type} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) [DecidableRel G.Adj] :
-    CoreIsK23 G ↔ CoreIs G (theta 1) := Iff.rfl
+    ListColoring.CoreIsK23 G ↔ CoreIs G (theta 1) := Iff.rfl
 ```
 
 ```lean
-open ListColoring in
+open SimpleGraph ListColoring in
 example {V : Type} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) [DecidableRel G.Adj] :
-    HasOddCycle G ↔
+    ListColoring.HasOddCycle G ↔
       ∃ k, Even k ∧ 2 ≤ k ∧ Contains G (closePath k) :=
   Iff.rfl
 ```

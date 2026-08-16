@@ -201,9 +201,9 @@ The core of a graph is what remains after repeatedly deleting vertices of degree
 backwards, that says the graph is its core with a tower of pendant vertices on top, which is the
 form a formalization can use directly.
 
-{docstring ListColoring.Contains}
+{docstring SimpleGraph.Contains}
 
-{docstring ListColoring.CoreIs}
+{docstring SimpleGraph.CoreIs}
 
 {docstring ListColoring.CoreIsVertex}
 

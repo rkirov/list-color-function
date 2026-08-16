@@ -24,8 +24,8 @@ Everything up to here has been exposition. This chapter is a guide to a single f
 the point: `comparator/Challenge.lean` is the *statement surface* of the development — what is
 claimed, stated exactly as the library states it, with the proofs removed.
 
-If you have read Part I, you can now read that file top to bottom. Its nine sections are the eight
-chapters you have just read, in the same order.
+If you have read Part I, you can now read that file top to bottom. Its eight sections are the
+eight chapters you have just read, in the same order.
 
 # What the file is for
 
@@ -134,27 +134,13 @@ from them by transporting `CoreIs` along the isomorphisms of the cores.
 
 ```lean
 open SimpleGraph in
-example : RubinTheorem := rubinTheorem
+example {V : Type} [Fintype V] [DecidableEq V]
+    (G : SimpleGraph V) [DecidableRel G.Adj]
+    (hconn : G.Connected) :
+    G.Choosable 2 ↔
+      CoreIsVertex G ∨ CoreIsEvenCycle G ∨ CoreIsTheta G :=
+  rubinTheorem G hconn
 ```
-
-That display is unusual, and deliberately so. The claimed theorem's type is the bare constant
-{name SimpleGraph.RubinTheorem}`RubinTheorem`, so *the statement of Rubin's theorem is the body of
-that definition* — unfolding it is the only way to see what claim eight says:
-
-```lean
-open SimpleGraph in
-example : RubinTheorem =
-    ∀ {V : Type} [Fintype V] [DecidableEq V]
-      (G : SimpleGraph V) [DecidableRel G.Adj],
-      G.Connected → (G.Choosable 2 ↔
-        CoreIsVertex G ∨ CoreIsEvenCycle G ∨
-          CoreIsTheta G) :=
-  rfl
-```
-
-`Challenge.lean` therefore reproduces that body verbatim rather than leaving it a placeholder; the
-comparator matches `RubinTheorem` by its type, which is only `Prop`, so the library is where the
-statement is really checked.
 
 *Nine: Theorem 2 of Kirov–Naimi* — {ref "twoecc"}[the enumerative chromatic-choosability at `2`
 chapter]. It carries no hypothesis beyond connectivity.
@@ -180,7 +166,7 @@ example {V : Type} [Fintype V] [DecidableEq V]
   exists_ecc_forall_ge G
 ```
 
-# The nine sections
+# The eight sections
 
 ```
 ### 1. Colouring a graph
@@ -188,10 +174,9 @@ example {V : Type} [Fintype V] [DecidableEq V]
 ### 3. Lists instead of a palette
 ### 4. Chordal graphs and Kostochka–Sidorenko
 ### 5. Theorem 1: every cycle is enumeratively chromatic-choosable at `n`
-### 6. The machinery behind Theorem 1
-### 7. 2-choosability: Rubin's theorem
-### 8. Enumerative chromatic-choosability at `2`: Theorem 2
-### 9. Every graph, eventually
+### 6. 2-choosability: Rubin's theorem
+### 7. Enumerative chromatic-choosability at `2`: Theorem 2
+### 8. Every graph, eventually
 ```
 
 :::table +header (align := left)
@@ -220,28 +205,24 @@ example {V : Type} [Fintype V] [DecidableEq V]
   * {ref "theorem1"}[Theorem 1: Cycles]
   * 7
 *
-  * §6 The machinery behind Theorem 1
-  * {ref "paths"}[Paths], {ref "swapping"}[Swapping], {ref "cycles"}[Cycles]
-  * none — prose only
-*
-  * §7 Rubin's theorem
+  * §6 Rubin's theorem
   * {ref "twochoosable"}[Which Graphs Are 2-Choosable?]
   * 8
 *
-  * §8 Theorem 2
+  * §7 Theorem 2
   * {ref "twoecc"}[Which Graphs Are Enumeratively Chromatic-Choosable at 2?]
   * 9
 *
-  * §9 Every graph, eventually
+  * §8 Every graph, eventually
   * {ref "threshold"}[Every Graph, Eventually]
   * 10
 :::
 
-Two sections carry no claim and are there for continuity. §1 defines the vocabulary every later
-statement is written in — `col`, `colConst`, `IsProperColoring` — and claims nothing about it. §6 is
-prose only: it names the three technical steps behind Theorem 1 (the nesting lemma for a bridge, the
-strict monotonicity of the count on a path, and the two parts of Lemma 3), points at the library
-names, and defines nothing. Part II of this book is where those live.
+One section carries no claim: §1 defines the vocabulary every later statement is written in —
+`col`, `colConst`, `IsProperColoring` — and claims nothing about it. The machinery behind
+Theorem 1 — the nesting lemma for a bridge, the strict monotonicity of the count on a path, the
+two parts of Lemma 3 — has no section at all; {ref "paths"}[Paths], {ref "swapping"}[Swapping]
+and {ref "cycles"}[Cycles] in Part II are where it lives.
 
 # Conventions
 

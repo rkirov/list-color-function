@@ -17,14 +17,14 @@ graph is a cycle", "`C₁ ∪ P₁` is a theta graph" — and neither Rubin nor 
 is new is only the mechanization.
 
 `ListColoring/RubinStructure.lean` records what the structural half of Rubin's argument still needs
-beyond his steps 1–6, namely *"the passage from graph structure to `ListColoring.CoreIs`"*. This
+beyond his steps 1–6, namely *"the passage from graph structure to `SimpleGraph.CoreIs`"*. This
 file supplies two of the three pieces named there.
 
 ## The three results
 
 * **The core exists.** `ListColoring.hasCore`: a connected finite graph `G` admits a graph `H`, on
   its own vertex type, which is connected, is either a single vertex or of minimum degree `≥ 2`, and
-  satisfies `ListColoring.CoreIs G H`. The proof is the obvious induction on `Fintype.card V`: if
+  satisfies `SimpleGraph.CoreIs G H`. The proof is the obvious induction on `Fintype.card V`: if
   some vertex has degree `≤ 1` — and, `G` being connected on more than one vertex, then exactly `1`
   — delete it, recurse, and put the deleted vertex back as the top of the pendant tower. Deleting a
   vertex of degree one keeps a connected graph connected, which is Mathlib's
@@ -128,9 +128,9 @@ def isoAddPendantOfDegreeOne {V : Type} [DecidableEq V] {G : SimpleGraph V} {v u
 
 /-- **`G` has a core**: a graph `H` on its own vertex type which is connected, is either a single
 vertex or has minimum degree at least `2`, and of which `G` is a pendant tower
-(`ListColoring.CoreIs`).
+(`SimpleGraph.CoreIs`).
 
-The three instance arguments have to be carried by the existential because `ListColoring.CoreIs`
+The three instance arguments have to be carried by the existential because `SimpleGraph.CoreIs`
 takes them; only the vertex type `W` and the graph `H` are mathematical content. -/
 def HasCore {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V) [DecidableRel G.Adj] :
     Prop :=
@@ -178,7 +178,7 @@ private theorem hasCore_aux : ∀ (n : ℕ) {V : Type} [Fintype V] [DecidableEq 
 /-- **Every connected finite graph has a core.** Delete vertices of degree one until none is left;
 what remains is connected, and is either a single vertex or of minimum degree at least `2`. Read
 backwards, the deletions are a `SimpleGraph.pendantTower`, so the graph one started from is
-`ListColoring.CoreIs` over the graph one ends with.
+`SimpleGraph.CoreIs` over the graph one ends with.
 
 Classical, and assumed without proof wherever "the core" is used: Kirov–Naimi's Lemma 5 speaks of
 "the core" of a graph, and Rubin's argument (Erdős–Rubin–Taylor 1980, pp. 131–134) begins by

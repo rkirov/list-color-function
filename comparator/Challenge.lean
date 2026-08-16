@@ -172,9 +172,9 @@ theorem ecc_of_isChordal {V : Type u} [Fintype V] [DecidableEq V] (G : SimpleGra
 /-! ### 5. Theorem 1: every cycle is enumeratively chromatic-choosable at `n`
 
 The paper's main theorem, claimed on Mathlib's `SimpleGraph.cycleGraph` so that the statement
-involves no construction of this development.  The pendant attachments below build §7's paths,
-cycles and theta graphs: a path is iterated `addPendant`, a cycle is a path with its ends joined
-by `addPendantPair`.
+involves no construction of this development.  The two pendant attachments below are §6's
+vocabulary: iterated, they grow a core back into a graph, and `addPendantPair` over a cycle
+builds the theta graph.
 -/
 
 /-- **Theorem 1 of Kirov–Naimi: every cycle is enumeratively chromatic-choosable at `n`, for
@@ -216,17 +216,7 @@ instance instDecidableRelAddPendantPair {V : Type*} (G : SimpleGraph V) [Decidab
   | some a, none => inferInstanceAs (Decidable (a = u ∨ a = v))
   | some a, some b => inferInstanceAs (Decidable (G.Adj a b))
 
-end SimpleGraph
-
-/-! ### 6. The machinery behind Theorem 1
-
-Nothing is defined or claimed here.  Theorem 1 rests on three steps, all in the library: Lemma 2,
-swapping across a bridge makes the end lists nested; Lemma 4, enlarging lists on a path strictly
-increases the count; Lemma 3(b)(c), the `min(A_k, B_k)` lower bound and the parity shape of a
-minimizing assignment.
--/
-
-/-! ### 7. `2`-choosability: Rubin's theorem
+/-! ### 6. `2`-choosability: Rubin's theorem
 
 Choosability is unchanged by attaching or removing pendant vertices, so a connected graph may be
 replaced by its **core**: the graph of which it is a `pendantTower`.  `CoreIs` spells that out,
@@ -235,8 +225,6 @@ a single vertex is `⊥` on `Fin 1`, a cycle is Mathlib's `cycleGraph`, and `θ_
 `thetaGraph m`, the cycle `C_{2m+2}` with one extra vertex attached to `0` and `2`.  Rubin's
 theorem is proved in this development and claimed in full, both directions.
 -/
-
-namespace SimpleGraph
 
 /-- The vertex type of `G` after `k` successive pendant attachments: `V` with `k` extra points. -/
 def TowerV (V : Type u) : ℕ → Type u
@@ -257,12 +245,6 @@ def pendantTower {V : Type u} (G : SimpleGraph V) :
   | 0, _ => G
   | k + 1, d => (pendantTower G k d.1).addPendant d.2
 
-end SimpleGraph
-
-namespace ListColoring
-
-open SimpleGraph
-
 /-- **The core of `G` is `H`**: `G` is `H` with a finite tower of pendant vertices attached — the
 reverse reading of "delete degree-one vertices until none remain".  Up to isomorphism, because the
 tower lives on its own vertex type. -/
@@ -276,10 +258,6 @@ choosability argument ever needs. -/
 def Contains {V W : Type*} (G : SimpleGraph V) (K : SimpleGraph W) : Prop :=
   ∃ f : W → V, Function.Injective f ∧ ∀ a b, K.Adj a b → G.Adj (f a) (f b)
 
-end ListColoring
-
-namespace SimpleGraph
-
 /-- `θ_{2,2,2m}`, on Mathlib's cycle graph: the cycle `C_{2m+2}` together with one extra vertex
 joined to `0` and `2`, which lie at distance two on the cycle.  The three arms between the branch
 vertices `some 0` and `some 2` have lengths `2`, `2` and `2m`. -/
@@ -292,16 +270,16 @@ instance instDecidableRelThetaGraph (m : ℕ) : DecidableRel (thetaGraph m).Adj 
 /-- **The core of `G` is a single vertex**: Mathlib's `⊥` on `Fin 1`.  Equivalently, `G` is a
 tree.  First alternative of Rubin's theorem, and of Theorem 2. -/
 def CoreIsVertex {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V)
-    [DecidableRel G.Adj] : Prop := ListColoring.CoreIs G (⊥ : SimpleGraph (Fin 1))
+    [DecidableRel G.Adj] : Prop := CoreIs G (⊥ : SimpleGraph (Fin 1))
 
 /-- **The core of `G` is an even cycle.**  Second alternative of Rubin's theorem. -/
 def CoreIsEvenCycle {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V)
-    [DecidableRel G.Adj] : Prop := ∃ n, Even n ∧ 4 ≤ n ∧ ListColoring.CoreIs G (cycleGraph n)
+    [DecidableRel G.Adj] : Prop := ∃ n, Even n ∧ 4 ≤ n ∧ CoreIs G (cycleGraph n)
 
 /-- **The core of `G` is `θ_{2,2,2m}` for some `m ≥ 1`.**  Third alternative of Rubin's
 theorem. -/
 def CoreIsTheta {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V)
-    [DecidableRel G.Adj] : Prop := ∃ m, 1 ≤ m ∧ ListColoring.CoreIs G (thetaGraph m)
+    [DecidableRel G.Adj] : Prop := ∃ m, 1 ≤ m ∧ CoreIs G (thetaGraph m)
 
 /-- **Rubin's theorem.**
 
@@ -309,20 +287,16 @@ def CoreIsTheta {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V)
 > `θ_{2,2,2m}` for some `m ≥ 1`.
 
 A. L. Rubin, in Erdős–Rubin–Taylor, *Choosability in graphs*, Congr. Numer. **26** (1980),
-125–157.  This `Prop` *is* the claimed statement: the theorem below has it as its bare type. -/
-def RubinTheorem : Prop :=
-  ∀ {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V) [DecidableRel G.Adj],
-    G.Connected → (G.Choosable 2 ↔ (CoreIsVertex G ∨ CoreIsEvenCycle G ∨ CoreIsTheta G))
+125–157.  The paper cites it; this development proves it. -/
+theorem rubinTheorem {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V)
+    [DecidableRel G.Adj] (hconn : G.Connected) :
+    G.Choosable 2 ↔ (CoreIsVertex G ∨ CoreIsEvenCycle G ∨ CoreIsTheta G) := sorry
 
-/-- **Rubin's theorem.**  The paper cites it; this development proves it.  Its statement is the
-body of `RubinTheorem` above; there is no other place to read it. -/
-theorem rubinTheorem : RubinTheorem := sorry
-
-/-! ### 8. Enumerative chromatic-choosability at `2`: Theorem 2
+/-! ### 7. Enumerative chromatic-choosability at `2`: Theorem 2
 
 `K₂,₃ = θ_{2,2,2}` is enumeratively chromatic-choosable at `2` (Kirov–Naimi's Lemma 6) and
 `θ_{2,2,2m}` with `m ≥ 2` is not; with §5's cycles, §4's chordal graphs and the core reduction
-(Lemma 5), that turns §7's list into Theorem 2's.  Where Rubin says "even cycle", Theorem 2 says
+(Lemma 5), that turns §6's list into Theorem 2's.  Where Rubin says "even cycle", Theorem 2 says
 "cycle": odd cycles qualify by not being `2`-colourable at all, which is the fourth alternative,
 `HasOddCycle`.
 -/
@@ -331,17 +305,17 @@ theorem rubinTheorem : RubinTheorem := sorry
 No parity restriction: Theorem 2 says "is a cycle", not "is an even cycle".  Second alternative
 of Theorem 2. -/
 def CoreIsCycle {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V)
-    [DecidableRel G.Adj] : Prop := ∃ n, 3 ≤ n ∧ ListColoring.CoreIs G (cycleGraph n)
+    [DecidableRel G.Adj] : Prop := ∃ n, 3 ≤ n ∧ CoreIs G (cycleGraph n)
 
 /-- **The core of `G` is `K₂,₃`**, which is `thetaGraph 1 = θ_{2,2,2}`.  Third alternative of
 Theorem 2. -/
 def CoreIsK23 {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V)
-    [DecidableRel G.Adj] : Prop := ListColoring.CoreIs G (thetaGraph 1)
+    [DecidableRel G.Adj] : Prop := CoreIs G (thetaGraph 1)
 
 /-- **`G` contains an odd cycle**: a subgraph copy of `cycleGraph n` for an odd `n ≥ 3`.  Fourth
 alternative of Theorem 2. -/
 def HasOddCycle {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V)
-    [DecidableRel G.Adj] : Prop := ∃ n, Odd n ∧ 3 ≤ n ∧ ListColoring.Contains G (cycleGraph n)
+    [DecidableRel G.Adj] : Prop := ∃ n, Odd n ∧ 3 ≤ n ∧ Contains G (cycleGraph n)
 
 /-- **Theorem 2 of Kirov–Naimi, with no hypothesis beyond connectivity.**
 
@@ -354,7 +328,7 @@ theorem ecc_two_iff {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V)
     [DecidableRel G.Adj] (hconn : G.Connected) :
     G.ECCAt 2 ↔ CoreIsVertex G ∨ CoreIsCycle G ∨ CoreIsK23 G ∨ HasOddCycle G := sorry
 
-/-! ### 9. Every graph, eventually
+/-! ### 8. Every graph, eventually
 
 Donner's theorem.  The library proves more than is claimed: the explicit threshold
 `n > 2^{|E(G)|}` suffices (`SimpleGraph.ecc_of_two_pow_lt`). -/
