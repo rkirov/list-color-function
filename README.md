@@ -152,8 +152,8 @@ what the proof runs on; and the residual table's four rows are three instances o
   indexing and orientation errors that would not have surfaced as type errors. See the
   "Specs verified numerically" section of `plan.md`.
 * CI runs the real [leanprover/comparator](https://github.com/leanprover/comparator) against
-  `comparator/Challenge.lean`, which claims **fifteen keystone theorems** — ten from the paper and
-  the five of the cactus classification — and the definitions needed to state them — deliberately not the whole library, so that what is certified is legible.
+  `comparator/Challenge.lean`, which claims **thirteen keystone theorems** — ten from the paper
+  and three of the cactus classification — and the definitions needed to state them — deliberately not the whole library, so that what is certified is legible.
   That checks three things an axiom audit cannot: that the statements really are the ones claimed,
   that only the permitted axioms are used, and that every proof replays through two independent
   kernels (Lean's, via `lean4export`, and `nanoda`). It is CI-only — it builds four external tools.

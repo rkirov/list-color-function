@@ -25,6 +25,7 @@ name = "OpenProblems"
 # The cactus ECC classification (the 2026-08 AI research collaboration; see
 # ai_research_notes/FINAL_CACTI_ECC_HANDOFF.md). Separate from the Kirov-Naimi formalization:
 # imports ListColoring, never imported by it. Complete and sorry-free; the five headline
-# statements are in Cacti/Statements.lean and are claimed in comparator/config.json.
+# statements are in Cacti/Statements.lean, three of which -- k >= 3, the k = 2 classification
+# and the full spectrum -- are claimed in comparator/config.json.
 [[lean_lib]]
 name = "Cacti"

@@ -373,19 +373,13 @@ def HasAtMostOneCycle {V : Type} [DecidableEq V] (G : SimpleGraph V) : Prop :=
   ∀ ⦃u v : V⦄ (p : G.Walk u u) (q : G.Walk v v), p.IsCycle → q.IsCycle →
     p.edges.toFinset = q.edges.toFinset
 
-/-- **Every cactus is `k`-ECC for `k ≥ 4`** (handoff §6, UM-108).  The block induction over the
-cut-vertex decomposition, run on the pair invariant `A² ≤ x_c · x_d`; the transfer-matrix bound
-supplies it on a cycle block, and the slack `k - 3 ≥ 1` pays for the weight peeling. -/
-theorem isCactus_ecc_of_four_le {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V)
-    [DecidableRel G.Adj] {k : ℕ} (hk : 4 ≤ k) (hG : IsCactus G) : G.ECCAt k := sorry
-
-/-- **Every cactus is `3`-ECC** (handoff §5, UM-105).  At `k = 3` the pair invariant is false and
-the induction carries GM dominance instead; its cycle blocks are the balanced core of an odd cycle
-(UM-025) and the full tensor capacity of an even one (UM-104). -/
-theorem isCactus_ecc_three {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V)
-    [DecidableRel G.Adj] (hG : IsCactus G) : G.ECCAt 3 := sorry
-
-/-- **Every cactus is `k`-ECC for `k ≥ 3`**: the two cases above. -/
+/-- **Every cactus is `k`-ECC for `k ≥ 3`** (handoff §5–§6).  Two cases behind one statement.
+At `k ≥ 4` (UM-108) it is a block induction over the cut-vertex decomposition on the pair
+invariant `A² ≤ x_c · x_d`, with the slack `k - 3 ≥ 1` paying for the weight peeling.  At `k = 3`
+(UM-105) that invariant is false, so the induction carries GM dominance instead, and its cycle
+blocks are the balanced core of an odd cycle (UM-025) and the full tensor capacity of an even one
+(UM-104).  The library proves the two separately, as `isCactus_ecc_of_four_le` and
+`isCactus_ecc_three`; only their union is claimed here. -/
 theorem isCactus_ecc_of_three_le {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V)
     [DecidableRel G.Adj] {k : ℕ} (hk : 3 ≤ k) (hG : IsCactus G) : G.ECCAt k := sorry
 

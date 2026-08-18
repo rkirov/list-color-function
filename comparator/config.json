@@ -51,8 +51,6 @@
     "SimpleGraph.rubinTheorem",
     "SimpleGraph.ecc_two_iff",
     "SimpleGraph.exists_ecc_forall_ge",
-    "ListColoring.isCactus_ecc_of_four_le",
-    "ListColoring.isCactus_ecc_three",
     "ListColoring.isCactus_ecc_of_three_le",
     "ListColoring.isCactus_ecc_two_iff",
     "ListColoring.isCactus_ecc_iff"
