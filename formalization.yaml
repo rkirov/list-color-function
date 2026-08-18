@@ -32,12 +32,11 @@ project:
   mathlib_rev: "db584cd6d46c92f209a44c0f1c829460d327499d"
   permitted_axioms: [propext, Classical.choice, Quot.sound]
   standard_of_proof: >-
-    No sorry, admit or native_decide anywhere in ListColoring/. Every headline result
-    depends on exactly the three permitted axioms, asserted by #print axioms at the foot of
-    each file and enforced in CI by leanprover/comparator against comparator/Challenge.lean.
-    The only sorries in the repository are the three in OpenProblems.lean, a separate lean_lib
-    that imports ListColoring and is imported by nothing; there a sorry means the question is
-    open, not that a proof is missing.
+    No sorry, admit or native_decide anywhere in ListColoring/ or Cacti/. Every headline
+    result depends on exactly the three permitted axioms, asserted by #print axioms at the foot
+    of each file and enforced in CI by leanprover/comparator against comparator/Challenge.lean.
+    The only sorries in the repository are the three in OpenProblems.lean, which is imported by
+    nothing: there a sorry means the question is open, not that a proof is missing.
 
 # Vocabulary for the `status` field.
 statuses:
@@ -329,6 +328,16 @@ beyond_the_paper:
   - {name: SimpleGraph.exists_ecc_forall_ge, file: ListColoring/Threshold.lean, credit: "Donner 1992; threshold via Wang-Qian-Yan 2017"}
   - {name: SimpleGraph.ecc_of_two_pow_lt, file: ListColoring/Threshold.lean, credit: "weaker form of Wang-Qian-Yan 2017; superseded by Dong-Zhang 2023, which is not formalized"}
   - {name: ListColoring.exists_odd_isCycle_of_odd_closed_walk, file: ListColoring/Theorem2.lean, credit: "classical", note: "Listed as an open TODO in Mathlib's Combinatorics/SimpleGraph/Bipartite.lean at the pinned revision. Worth upstreaming."}
+
+  # The cactus classification. Not in Kirov-Naimi and, as far as we can determine, not in the
+  # literature: the complete ECC spectrum of a cactus. Result of the 2026-08 AI research
+  # collaboration on this repository; source of record ai_research_notes/FINAL_CACTI_ECC_HANDOFF.md.
+  # Lives in its own lean_lib, Cacti/, which imports ListColoring and is imported by nothing.
+  - {name: ListColoring.isCactus_ecc_iff, file: Cacti/Statements.lean, credit: "2026-08 AI research collaboration (handoff Theorem A)", note: "A cactus is ECC at every list size iff it has at most one cycle or contains an odd cycle. The three cases below are its content."}
+  - {name: ListColoring.isCactus_ecc_two_iff, file: Cacti/Statements.lean, credit: "2026-08 AI research collaboration (handoff section 3)", note: "k = 2. Routes through Kirov-Naimi Theorem 2 and Rubin's theorem, plus the cactus core analysis."}
+  - {name: ListColoring.isCactus_ecc_three, file: Cacti/Statements.lean, credit: "2026-08 AI research collaboration (UM-105, handoff section 5)", note: "k = 3. The pair invariant is false here; the induction carries GM dominance, and the even-cycle block is the tensor capacity UM-104, split into C4, C6 (UM-096) and every longer cycle."}
+  - {name: ListColoring.isCactus_ecc_of_four_le, file: Cacti/Statements.lean, credit: "2026-08 AI research collaboration (UM-108, handoff section 6)", note: "k >= 4. Block induction on the pair invariant A^2 <= x_c x_d over the cut-vertex decomposition; the slack k - 3 >= 1 pays for the weight peeling."}
+  - {name: ListColoring.isCactus_ecc_of_three_le, file: Cacti/Statements.lean, credit: "2026-08 AI research collaboration", note: "k >= 3, the two cases above combined."}
 
 # Corrections to the literature found by formalizing it. references.md section 14 and
 # provenance.md section 3 carry the full statements.

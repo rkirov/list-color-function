@@ -42,7 +42,8 @@ theorem beta_succ (k s : ℕ) : beta k (s + 1) = alpha k s + (k - 2) * beta k s 
   rw [beta_succ, alpha_zero, beta_zero, Nat.mul_zero]
 
 /-- The row-sum identity: `α_s + (k-1)·β_s = (k-1)^s`. -/
-theorem alpha_add_beta {k : ℕ} (hk : 2 ≤ k) : ∀ s, alpha k s + (k - 1) * beta k s = (k - 1) ^ s := by
+theorem alpha_add_beta {k : ℕ} (hk : 2 ≤ k) :
+    ∀ s, alpha k s + (k - 1) * beta k s = (k - 1) ^ s := by
   obtain ⟨m, rfl⟩ : ∃ m, k = m + 2 := ⟨k - 2, by omega⟩
   have h1 : m + 2 - 1 = m + 1 := by omega
   have h2 : m + 2 - 2 = m := by omega
@@ -236,6 +237,19 @@ theorem transferProd_cons (T : Finset (Fin k)) (Ts : List (Finset (Fin k))) :
 theorem transferProd_append (Ts₁ Ts₂ : List (Finset (Fin k))) :
     transferProd (Ts₁ ++ Ts₂) = transferProd Ts₁ * transferProd Ts₂ := by
   rw [transferProd, List.map_append, List.prod_append, transferProd, transferProd]
+
+/-- The empty gate is the zero matrix. -/
+@[simp] theorem diagInd_empty : diagInd (∅ : Finset (Fin k)) = 0 := by
+  ext i j
+  simp [diagInd]
+
+/-- With no surviving labels anywhere, the transfer product is the pure power. -/
+theorem transferProd_replicate_empty (n : ℕ) :
+    transferProd (List.replicate n (∅ : Finset (Fin k))) = offDiag k ^ n := by
+  induction n with
+  | zero => simp
+  | succ n ih =>
+    rw [List.replicate_succ, transferProd_cons, ih, diagInd_empty, add_zero, pow_succ']
 
 /-- The pure part: `(J-I)^len ≤ transferProd`. -/
 theorem offDiag_pow_le_transferProd (Ts : List (Finset (Fin k))) :

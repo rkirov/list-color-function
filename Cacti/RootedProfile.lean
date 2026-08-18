@@ -10,7 +10,7 @@ import Cacti.Defs
 
 The cactus induction (handoff §4, §6.5) passes **rooted profiles** — vectors of rooted coloring
 counts indexed by root colors — up a block-cut tree. This file is the profile algebra layer: it
-knows nothing about graphs. Everything here is `sorry`-free.
+knows nothing about graphs. Everything here is proved outright.
 
 The invariant carried at `k ≥ 4` is the **pair bound** `P'`: every pair of distinct coordinates
 has product at least `A²`, where `A` is the block's uniform normalizer. Following the review's
@@ -23,6 +23,9 @@ simplification, subset products are never needed with roots: the terminal closur
 * `PairBound.mul`   — cut-vertex composition: profiles multiply, normalizers multiply
 * `PairBound.pow_card_le_prod` — `A ^ k ≤ ∏ x` (cyclic pairing; no roots)
 * `PairBound.card_mul_le_sum`  — `k * A ≤ ∑ x` (terminal AM–GM closure)
+* `card_mul_le_sum_of_pow_le_prod` — that closure from the product bound alone, the form the
+  `k = 3` route needs
+* `card_pow_mul_prod_le_sum_pow` — AM–GM in product form, for the balanced-core route
 -/
 
 namespace ListColoring
@@ -76,14 +79,16 @@ theorem pow_card_le_prod (hk : 2 ≤ k) (hA : 0 ≤ A) (hx : ∀ c, 0 ≤ x c)
   have hApow : 0 ≤ A ^ (m + 2) := pow_nonneg hA _
   nlinarith [hsq, hxprod, hApow]
 
-/-- The terminal AM–GM closure: pair bounds give `k * A ≤ ∑ x`. This is the final inequality of
-the cactus induction (handoff (6.16)): at the root, `∑ x = P(G, L)` and `k * A = P(G, k)`. -/
-theorem card_mul_le_sum (hk : 2 ≤ k) (hA : 0 ≤ A) (hx : ∀ c, 0 ≤ x c)
-    (h : PairBound A x) : (k : ℝ) * A ≤ ∑ c, x c := by
-  have hk0 : (0 : ℝ) < (k : ℝ) := by
-    have : 0 < k := by omega
-    exact_mod_cast this
-  have hprod : A ^ k ≤ ∏ c, x c := pow_card_le_prod hk hA hx h
+end PairBound
+
+/-- **The AM–GM closure**: a profile whose product clears `A ^ k` has sum at least `k * A`.
+The terminal inequality of the cactus induction, in the form that needs only the product bound
+— which is what the `k = 3` route supplies (GM dominance, handoff §5.6) and what the pair bound
+gives through `PairBound.pow_card_le_prod`. -/
+theorem card_mul_le_sum_of_pow_le_prod {k : ℕ} {A : ℝ} {x : Fin k → ℝ} (hk : 0 < k)
+    (hA : 0 ≤ A) (hx : ∀ c, 0 ≤ x c) (hprod : A ^ k ≤ ∏ c, x c) :
+    (k : ℝ) * A ≤ ∑ c, x c := by
+  have hk0 : (0 : ℝ) < (k : ℝ) := by exact_mod_cast hk
   set r : ℝ := 1 / (k : ℝ) with hr
   have hr0 : 0 ≤ r := by positivity
   have hgm : ∏ c, x c ^ r ≤ ∑ c, r * x c :=
@@ -110,6 +115,51 @@ theorem card_mul_le_sum (hk : 2 ≤ k) (hA : 0 ≤ A) (hx : ∀ c, 0 ≤ x c)
   calc (k : ℝ) * A ≤ (k : ℝ) * (r * ∑ c, x c) :=
         mul_le_mul_of_nonneg_left hchain (le_of_lt hk0)
     _ = ∑ c, x c := by rw [hr]; field_simp
+
+
+/-- **AM–GM in product form**: `k ^ k · ∏ x ≤ (∑ x) ^ k` for a nonnegative profile. This is the
+step the balanced-core route applies to each root fibre (UM-025 ⟹ UM-026): a fibre of `F`
+colourings has weighted sum at least `F` times the geometric mean of its terms. -/
+theorem card_pow_mul_prod_le_sum_pow {k : ℕ} {x : Fin k → ℝ} (hk : 0 < k)
+    (hx : ∀ c, 0 ≤ x c) : (k : ℝ) ^ k * ∏ c, x c ≤ (∑ c, x c) ^ k := by
+  have hprod : (0 : ℝ) ≤ ∏ c, x c := Finset.prod_nonneg fun c _ => hx c
+  have hk0 : (0 : ℝ) < (k : ℝ) := by exact_mod_cast hk
+  set A : ℝ := (∏ c, x c) ^ ((k : ℝ)⁻¹) with hA
+  have hA0 : 0 ≤ A := Real.rpow_nonneg hprod _
+  have hAk : A ^ k = ∏ c, x c := by
+    rw [hA, ← Real.rpow_natCast ((∏ c, x c) ^ ((k : ℝ)⁻¹)) k, ← Real.rpow_mul hprod,
+      inv_mul_cancel₀ (ne_of_gt hk0), Real.rpow_one]
+  have hsum := card_mul_le_sum_of_pow_le_prod hk hA0 hx (le_of_eq hAk)
+  calc (k : ℝ) ^ k * ∏ c, x c = ((k : ℝ) * A) ^ k := by rw [mul_pow, hAk]
+    _ ≤ (∑ c, x c) ^ k := by gcongr
+
+/-- The same AM–GM over an arbitrary finite family: `|S| ^ |S| · ∏ x ≤ (∑ x) ^ |S|`. -/
+theorem card_pow_mul_prod_le_sum_pow' {α : Type*} (S : Finset α) (x : α → ℝ)
+    (hx : ∀ a ∈ S, 0 ≤ x a) :
+    (S.card : ℝ) ^ S.card * ∏ a ∈ S, x a ≤ (∑ a ∈ S, x a) ^ S.card := by
+  classical
+  rcases Nat.eq_zero_or_pos S.card with h0 | hpos
+  · rw [Finset.card_eq_zero] at h0
+    subst h0
+    simp
+  · have hsum : ∑ a ∈ S, x a = ∑ i : Fin S.card, x ((S.equivFin.symm i : S) : α) := by
+      rw [← Finset.sum_coe_sort S x]
+      exact (Fintype.sum_equiv S.equivFin.symm _ _ fun _ => rfl).symm
+    have hprod : ∏ a ∈ S, x a = ∏ i : Fin S.card, x ((S.equivFin.symm i : S) : α) := by
+      rw [← Finset.prod_coe_sort S x]
+      exact (Fintype.prod_equiv S.equivFin.symm _ _ fun _ => rfl).symm
+    rw [hsum, hprod]
+    exact card_pow_mul_prod_le_sum_pow hpos fun i => hx _ (S.equivFin.symm i).2
+
+namespace PairBound
+
+variable {k : ℕ} {A : ℝ} {x : Fin k → ℝ}
+
+/-- The terminal AM–GM closure: pair bounds give `k * A ≤ ∑ x`. This is the final inequality of
+the cactus induction (handoff (6.16)): at the root, `∑ x = P(G, L)` and `k * A = P(G, k)`. -/
+theorem card_mul_le_sum (hk : 2 ≤ k) (hA : 0 ≤ A) (hx : ∀ c, 0 ≤ x c)
+    (h : PairBound A x) : (k : ℝ) * A ≤ ∑ c, x c :=
+  card_mul_le_sum_of_pow_le_prod (by omega) hA hx (pow_card_le_prod hk hA hx h)
 
 end PairBound
 

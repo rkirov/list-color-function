@@ -37,6 +37,10 @@ jobs:
       # is the comparator workflow. Note comparator/Challenge.lean contains placeholders by
       # design, so it is deliberately outside this grep.
       #
+      # Cacti/ is inside it: the cactus classification is complete, and the grep is what keeps
+      # it that way. The word `sorry` therefore does not appear in that directory at all, prose
+      # included -- reword rather than weaken the grep.
+      #
       # OpenProblems.lean is outside it too, and deliberately so: it states Kirov-Naimi's two
       # open questions and asserts them with `sorry`. It is a separate lean_lib that imports
       # ListColoring and that nothing imports, so no theorem can rest on an unproved statement.
@@ -44,7 +48,7 @@ jobs:
       # questions unstateable rather than making the library any cleaner.
       - name: No sorry, admit, or native_decide
         run: |
-          if grep -rnwE 'sorry|admit|native_decide' ListColoring/ ListColoring.lean; then
+          if grep -rnwE 'sorry|admit|native_decide' ListColoring/ ListColoring.lean Cacti/ Cacti.lean; then
             echo "::error::found sorry/admit/native_decide in the formalization"
             exit 1
           fi

@@ -102,6 +102,12 @@ def ECCAt {V : Type*} [Fintype V] [DecidableEq V] (G : SimpleGraph V) [Decidable
     (n : ℕ) : Prop :=
   ∀ L : ListAssignment V, IsNListAssignment L n → G.colConst n ≤ G.col L
 
+/-- `G` is **enumeratively chromatic-choosable** when it is enumeratively chromatic-choosable at
+every `n`.  Below `χ(G)` the pointwise property is vacuous, so quantifying over all `n` rather
+than over `n ≥ χ(G)` costs nothing. -/
+def ECC {V : Type*} [Fintype V] [DecidableEq V] (G : SimpleGraph V) [DecidableRel G.Adj] : Prop :=
+  ∀ n, G.ECCAt n
+
 /-- The set of coloring counts achievable by `n`-list assignments. -/
 def colCounts {V : Type*} [Fintype V] [DecidableEq V] (G : SimpleGraph V) [DecidableRel G.Adj]
     (n : ℕ) : Set ℕ := {c | ∃ L : ListAssignment V, IsNListAssignment L n ∧ G.col L = c}
@@ -339,3 +345,62 @@ theorem exists_ecc_forall_ge {V : Type*} [Fintype V] [DecidableEq V] (G : Simple
     [DecidableRel G.Adj] : ∃ N, ∀ k, N ≤ k → G.ECCAt k := sorry
 
 end SimpleGraph
+
+/-! ### 9. Cacti
+
+Not from the paper.  The cactus classification is the result of the 2026-08 AI research
+collaboration on this repository; source of record `ai_research_notes/FINAL_CACTI_ECC_HANDOFF.md`,
+formalized in `Cacti/`.  A **cactus** is a connected graph in which any two cycles that share an
+edge are the same cycle — equivalently, every block is an edge or a cycle.  Above `2` every cactus
+is enumeratively chromatic-choosable; at `2` the property is an exact structural condition, and
+that is the whole spectrum.
+-/
+
+namespace ListColoring
+
+open SimpleGraph
+
+/-- A **cactus**: a connected graph in which any two cycles sharing an edge coincide as edge
+sets. -/
+def IsCactus {V : Type} [DecidableEq V] (G : SimpleGraph V) : Prop :=
+  G.Connected ∧
+    ∀ ⦃u v : V⦄ (p : G.Walk u u) (q : G.Walk v v), p.IsCycle → q.IsCycle →
+      ∀ e ∈ p.edges, e ∈ q.edges → p.edges.toFinset = q.edges.toFinset
+
+/-- **At most one cycle**: any two cycles coincide as edge sets.  With connectivity this covers
+trees (no cycles at all) and unicyclic graphs. -/
+def HasAtMostOneCycle {V : Type} [DecidableEq V] (G : SimpleGraph V) : Prop :=
+  ∀ ⦃u v : V⦄ (p : G.Walk u u) (q : G.Walk v v), p.IsCycle → q.IsCycle →
+    p.edges.toFinset = q.edges.toFinset
+
+/-- **Every cactus is `k`-ECC for `k ≥ 4`** (handoff §6, UM-108).  The block induction over the
+cut-vertex decomposition, run on the pair invariant `A² ≤ x_c · x_d`; the transfer-matrix bound
+supplies it on a cycle block, and the slack `k - 3 ≥ 1` pays for the weight peeling. -/
+theorem isCactus_ecc_of_four_le {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V)
+    [DecidableRel G.Adj] {k : ℕ} (hk : 4 ≤ k) (hG : IsCactus G) : G.ECCAt k := sorry
+
+/-- **Every cactus is `3`-ECC** (handoff §5, UM-105).  At `k = 3` the pair invariant is false and
+the induction carries GM dominance instead; its cycle blocks are the balanced core of an odd cycle
+(UM-025) and the full tensor capacity of an even one (UM-104). -/
+theorem isCactus_ecc_three {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V)
+    [DecidableRel G.Adj] (hG : IsCactus G) : G.ECCAt 3 := sorry
+
+/-- **Every cactus is `k`-ECC for `k ≥ 3`**: the two cases above. -/
+theorem isCactus_ecc_of_three_le {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V)
+    [DecidableRel G.Adj] {k : ℕ} (hk : 3 ≤ k) (hG : IsCactus G) : G.ECCAt k := sorry
+
+/-- **The `k = 2` cactus classification** (handoff §3): a cactus is `2`-ECC iff it has at most one
+cycle or contains an odd cycle — `SimpleGraph.HasOddCycle`, the same predicate §7's Theorem 2 is
+stated with.  Routes through Theorem 2 and Rubin's theorem above. -/
+theorem isCactus_ecc_two_iff {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V)
+    [DecidableRel G.Adj] (hG : IsCactus G) :
+    G.ECCAt 2 ↔ HasAtMostOneCycle G ∨ SimpleGraph.HasOddCycle G := sorry
+
+/-- **The full cactus spectrum** (handoff Theorem A): a cactus is enumeratively
+chromatic-choosable iff it has at most one cycle or contains an odd cycle.  Below `2` the property
+is vacuous, at `2` it is the classification, and above it every cactus qualifies. -/
+theorem isCactus_ecc_iff {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V)
+    [DecidableRel G.Adj] (hG : IsCactus G) :
+    G.ECC ↔ HasAtMostOneCycle G ∨ SimpleGraph.HasOddCycle G := sorry
+
+end ListColoring

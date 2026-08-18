@@ -1,9 +1,9 @@
 # Comparator workspace for this repository.
 #
 # `Challenge.lean` is the statement surface of the development: every public definition and every
-# top-level result, stated exactly as in `ListColoring/`, with placeholder bodies. `Submission.lean`
-# delegates to the library itself (path-required, not vendored), so the comparator checks the exact
-# library build. Shares the root's `packagesDir` to reuse the already-built Mathlib.
+# top-level result, stated exactly as in `ListColoring/` and `Cacti/`, with placeholder bodies.
+# `Submission.lean` delegates to the libraries themselves (path-required, not vendored), so the
+# comparator checks the exact library build. Shares the root's `packagesDir` to reuse the already-built Mathlib.
 #
 # Workspace layout follows the `jacobian_challenge_diffgeo` replica in
 # github.com/rkirov/jacobian-fable (branch `lean-eval`), which in turn follows lean-eval's own

@@ -8,14 +8,18 @@ import Cacti.TransferMatrix
 # The bare cycle pair bound: case analysis (UM-106)
 
 The single-root bounds of handoff §6.3 over the transfer-matrix model: `Ts` the list of
-surviving-label sets along the relabelled path (`n - 1` entries for an `n`-cycle, `n` even),
-`P` the inverse completion of the closing partial injection, `dom` its domain.
+surviving-label sets along the relabelled path (`n - 1` entries for an `n`-cycle), `P` the
+inverse completion of the closing partial injection, `dom` its domain.
 
 * undefined roots carry the full row sum, at least `q^{n-1} = A + (α ≥ 2)`;
 * fixed roots carry at least the fixed base `A = (k-1)·β`;
 * twisted roots carry at least the moved base `A - 1`, plus their leave/entry corrections
   when the placement is not rigid;
 * rigid twisted roots donate at least `k - 2` twice to any other root's count.
+
+That deficit of one is what the thread analysis repairs, and it is an even-cycle phenomenon:
+for `n` odd the alternation runs the other way, the moved base is `A + 1`, and every root
+clears `A` on its own (`rootCount_odd`).
 -/
 
 namespace ListColoring
@@ -38,7 +42,7 @@ section SingleRoot
 
 /-- **Undefined roots**: the full row sum clears `A + (k - 2)`. -/
 theorem rootCount_undef (hk : 4 ≤ k) {Ts : List (Finset (Fin k))} {P : Equiv.Perm (Fin k)}
-    {dom : Finset (Fin k)} {c : Fin k} (hc : c ∉ dom) {n : ℕ} (hn : 4 ≤ n)
+    {dom : Finset (Fin k)} {c : Fin k} (hc : c ∉ dom) {n : ℕ} (hn : 3 ≤ n)
     (hlen : Ts.length = n - 1) :
     uniformA k n + (k - 2) ≤ rootCount Ts P dom c := by
   rw [rootCount, if_neg hc]
@@ -68,7 +72,7 @@ theorem rootCount_undef (hk : 4 ≤ k) {Ts : List (Finset (Fin k))} {P : Equiv.P
 /-- **Fixed roots**: the diagonal clears the fixed base `A`. -/
 theorem rootCount_fixed (hk : 4 ≤ k) {Ts : List (Finset (Fin k))} {P : Equiv.Perm (Fin k)}
     {dom : Finset (Fin k)} {c : Fin k} (hc : c ∈ dom) (hfix : P.symm c = c) {n : ℕ}
-    (hn : 4 ≤ n) (hlen : Ts.length = n - 1) :
+    (hn : 3 ≤ n) (hlen : Ts.length = n - 1) :
     uniformA k n ≤ rootCount Ts P dom c := by
   rw [rootCount, if_pos hc]
   have h1 : uniformA k n = ((offDiag k ^ Ts.length) * offPerm P) c c := by
@@ -111,6 +115,29 @@ theorem rootCount_defined_base (hk : 4 ≤ k) {Ts : List (Finset (Fin k))}
       rw [base_diag_moved (show 1 ≤ k by omega) P hfix, hlen]
     refine le_trans (le_of_eq h1.symm) ?_
     exact matmul_le_matmul (offDiag_pow_le_transferProd Ts) (fun _ _ => le_refl _) c c
+
+/-- **Odd cycles**: every root clears the normalizer outright. With `n` odd the alternation
+runs the other way, so a moved root carries `A + 1` where an even cycle would carry `A - 1`. -/
+theorem rootCount_odd (hk : 4 ≤ k) {Ts : List (Finset (Fin k))} {P : Equiv.Perm (Fin k)}
+    {dom : Finset (Fin k)} (c : Fin k) {n : ℕ} (hn : 3 ≤ n) (hno : Odd n)
+    (hlen : Ts.length = n - 1) :
+    uniformA k n ≤ rootCount Ts P dom c := by
+  by_cases hc : c ∈ dom
+  · by_cases hfix : P.symm c = c
+    · exact rootCount_fixed hk hc hfix hn hlen
+    · have halt : alpha k (n - 1) = beta k (n - 1) + 1 :=
+        (beta_alternation (show 2 ≤ k by omega) (n - 1)).2 (Nat.Odd.sub_odd hno odd_one)
+      rw [rootCount, if_pos hc]
+      have h1 : ((offDiag k ^ Ts.length) * offPerm P) c c
+          = alpha k (n - 1) + (k - 2) * beta k (n - 1) := by
+        rw [base_diag_moved (show 1 ≤ k by omega) P hfix, hlen]
+      have h2 : uniformA k n ≤ alpha k (n - 1) + (k - 2) * beta k (n - 1) := by
+        rw [uniformA, show k - 1 = 1 + (k - 2) from by omega, Nat.add_mul, Nat.one_mul, halt]
+        omega
+      refine le_trans h2 (le_trans (le_of_eq h1.symm) ?_)
+      exact matmul_le_matmul (offDiag_pow_le_transferProd Ts) (fun _ _ => le_refl _) c c
+  · have := rootCount_undef (P := P) hk hc hn hlen
+    omega
 
 /-- **The twisted master bound**: the moved base plus the leave and entry corrections. -/
 theorem rootCount_twisted (hk : 4 ≤ k) {P : Equiv.Perm (Fin k)}
@@ -288,7 +315,7 @@ theorem rootCount_classify (hk : 4 ≤ k) {n : ℕ} (hn : 4 ≤ n) (hne : Even n
     uniformA k n ≤ rootCount Ts P dom e ∨ RigidData Ts P dom e := by
   by_cases hedom : e ∈ dom
   · by_cases hfix : P.symm e = e
-    · exact Or.inl (rootCount_fixed hk hedom hfix hn hlen)
+    · exact Or.inl (rootCount_fixed hk hedom hfix (by omega) hlen)
     · obtain ⟨Ts₁, T, Ts₂, T', Ts₃, hsplit, heT, hmT'⟩ := hthread e hedom hfix
       have halt : beta k (n - 1) = alpha k (n - 1) + 1 :=
         (beta_alternation (show 2 ≤ k by omega) (n - 1)).1
@@ -343,7 +370,7 @@ theorem rootCount_classify (hk : 4 ≤ k) {n : ℕ} (hn : 4 ≤ n) (hne : Even n
                 _ ≤ _ := Nat.mul_le_mul hb1 (Nat.mul_le_mul (le_refl _) hb3)
             omega
         omega
-  · refine Or.inl (le_trans ?_ (rootCount_undef hk hedom hn hlen))
+  · refine Or.inl (le_trans ?_ (rootCount_undef hk hedom (by omega) hlen))
     omega
 
 
@@ -395,7 +422,7 @@ theorem cycle_cases_pair (hk : 4 ≤ k) {n : ℕ} (hn : 4 ≤ n) (hne : Even n)
       rw [Nat.mul_comm]
       exact pair_arith_rigid hA2 (hbase d hd.1) hxc
     · have hxc : uniformA k n + 2 ≤ rootCount Ts P dom c := by
-        have := rootCount_undef (P := P) hk hcdom hn hlen
+        have := rootCount_undef (P := P) hk hcdom (by omega) hlen
         omega
       rw [Nat.mul_comm]
       exact pair_arith_rigid hA2 (hbase d hd.1) hxc
@@ -404,12 +431,21 @@ theorem cycle_cases_pair (hk : 4 ≤ k) {n : ℕ} (hn : 4 ≤ n) (hne : Even n)
     · have hxd := hdonate c d hc hddom (fun h => hcd h.symm)
       exact pair_arith_rigid hA2 (hbase c hc.1) hxd
     · have hxd : uniformA k n + 2 ≤ rootCount Ts P dom d := by
-        have := rootCount_undef (P := P) hk hddom hn hlen
+        have := rootCount_undef (P := P) hk hddom (by omega) hlen
         omega
       exact pair_arith_rigid hA2 (hbase c hc.1) hxd
   · -- both rigid: `c`'s thread donates to `d`
     have hxd := hdonate c d hc hd.1 (fun h => hcd h.symm)
     exact pair_arith_rigid hA2 (hbase c hc.1) hxd
+
+/-- **The odd cycle pair bound**: no thread analysis is needed, since every single root already
+clears the normalizer. -/
+theorem cycle_cases_pair_odd (hk : 4 ≤ k) {n : ℕ} (hn : 3 ≤ n) (hno : Odd n)
+    {Ts : List (Finset (Fin k))} (hlen : Ts.length = n - 1)
+    {P : Equiv.Perm (Fin k)} {dom : Finset (Fin k)} (c d : Fin k) :
+    uniformA k n ^ 2 ≤ rootCount Ts P dom c * rootCount Ts P dom d := by
+  rw [pow_two]
+  exact Nat.mul_le_mul (rootCount_odd hk c hn hno hlen) (rootCount_odd hk d hn hno hlen)
 
 end PairTheorem
 

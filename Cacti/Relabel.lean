@@ -6,17 +6,26 @@ import Cacti.CycleCases
 import Cacti.Rooted
 
 /-!
-# The relabelling bridge: extension helpers
+# The relabelling bridge
 
-Connecting actual list colorings of a cycle to the transfer-matrix model needs two extension
-constructions (handoff §6.2):
+List colorings of a cycle counted by the transfer-matrix model (handoff §6.2). Two finite
+extensions carry the relabelling — fix the prescribed part, biject the leftovers:
 
-* a partial injection on `Fin k` extends to a permutation (`extendPerm`) — the completion `P`
-  of the closing matching;
+* a partial injection on `Fin k` extends to a permutation (`exists_extendPerm`) — the
+  completion `P` of the closing matching;
 * an enumeration of a `k`-list extends to the next list matching shared colours
-  (`extendEnum`) — the equality-extending relabelling step.
+  (`exists_extendEnum`), and along a path to the whole chain (`exists_enum_chain`).
 
-Both are the standard finite extension: fix the prescribed part, biject the leftovers.
+On top of them:
+
+* `transferProd_apply_eq_pathCount` / `sum_transferProd_ofFn` — the transfer product counts
+  index paths, and its row sums count paths into a set of endpoints;
+* `rootedCol_eq_rootCount` — the count identity: under the chain, rooted colorings at the root
+  colour `σ 0 c` are the `c`-row of the transfer product, closed by `P` where the closing edge
+  binds and left open where the root colour misses the last list;
+* `exists_matrix_model` — the model with the thread splits its twisted labels force;
+* `rootedCol_constList_cycle` — against the constant list the model degenerates to the pure
+  power, giving the uniform normalizer `A`.
 -/
 
 namespace ListColoring
@@ -373,6 +382,43 @@ theorem transferProd_apply_eq_pathCount (Ts : List (Finset (Fin k))) (a b : Fin 
       rw [this] at hfac0
       exact absurd hfac0 one_ne_zero
 
+/-- The path count against an external length: the list's length rewritten to a variable. -/
+theorem pathCount_eq_card {n : ℕ} {Ts : List (Finset (Fin k))} (h : Ts.length = n) (a b : Fin k) :
+    pathCount Ts a b =
+      (Finset.univ.filter (fun g : Fin (n + 1) → Fin k =>
+        g 0 = a ∧ g (Fin.last n) = b ∧
+        ∀ e : Fin n, (offDiag k + diagInd (Ts.get (Fin.cast h.symm e)))
+          (g e.castSucc) (g e.succ) = 1)).card := by
+  subst h
+  rfl
+
+/-- **Index paths into a set of endpoints**: the transfer product of `List.ofFn T`, summed over
+a set of right endpoints, counts the index paths ending in that set. -/
+theorem sum_transferProd_ofFn {n : ℕ} (T : Fin n → Finset (Fin k)) (a : Fin k)
+    (S : Finset (Fin k)) :
+    ∑ b ∈ S, transferProd (List.ofFn T) a b =
+      (Finset.univ.filter (fun g : Fin (n + 1) → Fin k =>
+        g 0 = a ∧ g (Fin.last n) ∈ S ∧
+        ∀ e : Fin n, (offDiag k + diagInd (T e)) (g e.castSucc) (g e.succ) = 1)).card := by
+  classical
+  have hget : ∀ e : Fin n,
+      (List.ofFn T).get (Fin.cast (List.length_ofFn (f := T)).symm e) = T e :=
+    fun e => List.get_ofFn T _
+  rw [Finset.card_eq_sum_card_fiberwise (f := fun g : Fin (n + 1) → Fin k => g (Fin.last n))
+    (t := S) (fun g hg => by
+      simp only [Finset.mem_coe, Finset.mem_filter] at hg
+      exact hg.2.2.1)]
+  refine Finset.sum_congr rfl fun b hb => ?_
+  rw [transferProd_apply_eq_pathCount, pathCount_eq_card (List.length_ofFn) a b]
+  congr 1
+  ext g
+  simp only [Finset.mem_filter, Finset.mem_univ, true_and, hget]
+  constructor
+  · rintro ⟨h0, hlast, hedge⟩
+    exact ⟨⟨h0, hlast ▸ hb, hedge⟩, hlast⟩
+  · rintro ⟨⟨h0, -, hedge⟩, hlast⟩
+    exact ⟨h0, hlast, hedge⟩
+
 end TransferCount
 
 
@@ -478,13 +524,128 @@ section MatrixModel
 
 open SimpleGraph Finset
 
+/-- The successor in `Fin (m+1)` is either a step along the path or the closing wrap. -/
+theorem fin_succ_cases {m : ℕ} {i j : Fin (m + 1)} (h : j = i + 1) :
+    (∃ e : Fin m, i = e.castSucc ∧ j = e.succ) ∨ (i = Fin.last m ∧ j = 0) := by
+  by_cases hi : i.val < m
+  · refine Or.inl ⟨⟨i.val, hi⟩, Fin.ext rfl, Fin.ext ?_⟩
+    rw [h, Fin.val_add_one_of_lt (Fin.lt_def.mpr (by simpa using hi)), Fin.val_succ]
+  · have hlast : i = Fin.last m := Fin.ext (by
+      rw [Fin.val_last]
+      have := i.isLt
+      omega)
+    exact Or.inr ⟨hlast, by rw [h, hlast, Fin.last_add_one]⟩
+
+/-- **The count identity of the matrix model**: for a cyclically indexed graph with an
+equality-extending enumeration chain `σ`, the rooted count at the root colour `σ 0 c` is the
+`c`-row of the transfer product, closed by `P` at the defined roots. -/
+theorem rootedCol_eq_rootCount {V : Type} [Fintype V] [DecidableEq V] {G : SimpleGraph V}
+    [DecidableRel G.Adj] {m k : ℕ} (w : Fin (m + 1) ≃ V)
+    (hadj : ∀ i j : Fin (m + 1), G.Adj (w i) (w j) ↔ (j = i + 1 ∨ i = j + 1))
+    (L : ListAssignment V) (hL : IsNListAssignment L k)
+    (σ : Fin (m + 1) → Fin k → ℕ)
+    (hσmem : ∀ i x, σ i x ∈ L (w i)) (hσinj : ∀ i, Function.Injective (σ i))
+    (hσmatch : ∀ (i : Fin (m + 1)) (h : i.val + 1 < m + 1) (x : Fin k),
+      σ i x ∈ L (w ⟨i.val + 1, h⟩) → σ ⟨i.val + 1, h⟩ x = σ i x)
+    (P : Equiv.Perm (Fin k)) (dom : Finset (Fin k))
+    (hdom : ∀ c, c ∈ dom ↔ σ 0 c ∈ L (w (Fin.last m)))
+    (hP : ∀ c ∈ dom, σ (Fin.last m) (P.symm c) = σ 0 c) (c : Fin k) :
+    rootedCol G L (w 0) (σ 0 c)
+      = rootCount (List.ofFn (fun e : Fin m =>
+          Finset.univ.filter (fun x => σ e.castSucc x ≠ σ e.succ x))) P dom c := by
+  classical
+  set T : Fin m → Finset (Fin k) :=
+    fun e => Finset.univ.filter (fun x => σ e.castSucc x ≠ σ e.succ x) with hT
+  set S : Finset (Fin k) := if c ∈ dom then Finset.univ.erase (P.symm c) else Finset.univ with hS
+  -- the closing datum turns the root count into a row sum over `S`
+  have hrc : rootCount (List.ofFn T) P dom c = ∑ b ∈ S, transferProd (List.ofFn T) c b := by
+    rw [rootCount, hS]
+    by_cases hc : c ∈ dom
+    · rw [if_pos hc, if_pos hc, mulOffPerm_diag]
+    · rw [if_neg hc, if_neg hc]
+  rw [hrc, sum_transferProd_ofFn]
+  -- the factor entry is exactly colour compatibility across a path edge
+  have hfac : ∀ (e : Fin m) (x y : Fin k),
+      (offDiag k + diagInd (T e)) x y = 1 ↔ σ e.castSucc x ≠ σ e.succ y := by
+    intro e x y
+    have hlt : (Fin.castSucc e : Fin (m + 1)).val + 1 < m + 1 := by
+      have := e.isLt
+      simp only [Fin.val_castSucc]
+      omega
+    have hcast : (⟨(Fin.castSucc e : Fin (m + 1)).val + 1, hlt⟩ : Fin (m + 1)) = e.succ :=
+      Fin.ext (by simp)
+    refine factor_eq_one_iff (B := L (w e.succ)) (fun i => hσmem e.succ i) (hσinj e.succ)
+      (fun z hz => ?_) x y
+    have h2 := hσmatch (Fin.castSucc e) hlt z (by rw [hcast]; exact hz)
+    rwa [hcast] at h2
+  have hpath : ∀ e : Fin m, G.Adj (w e.castSucc) (w e.succ) :=
+    fun e => (hadj _ _).mpr (Or.inl Fin.coeSucc_eq_succ.symm)
+  have hclose : G.Adj (w (Fin.last m)) (w 0) :=
+    (hadj _ _).mpr (Or.inl (Fin.last_add_one m).symm)
+  rw [rootedCol]
+  refine (Finset.card_bij (fun g _ => (fun v => σ (w.symm v) (g (w.symm v)))) ?_ ?_ ?_).symm
+  · -- an index path is a rooted colouring
+    intro g hg
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hg
+    obtain ⟨h0, hlast, hedge⟩ := hg
+    have key : ∀ i j : Fin (m + 1), j = i + 1 → σ i (g i) ≠ σ j (g j) := by
+      intro i j hij
+      rcases fin_succ_cases hij with ⟨e, rfl, rfl⟩ | ⟨rfl, rfl⟩
+      · exact (hfac e _ _).mp (hedge e)
+      · intro hcon
+        rw [h0] at hcon
+        by_cases hc : c ∈ dom
+        · rw [hS, if_pos hc] at hlast
+          exact Finset.ne_of_mem_erase hlast
+            (hσinj (Fin.last m) (hcon.trans (hP c hc).symm))
+        · exact (hdom c).not.mp hc (hcon ▸ hσmem (Fin.last m) (g (Fin.last m)))
+    rw [Finset.mem_filter, SimpleGraph.mem_colorings_iff]
+    refine ⟨⟨fun v => ?_, fun u v huv => ?_⟩, ?_⟩
+    · have := hσmem (w.symm v) (g (w.symm v))
+      rwa [Equiv.apply_symm_apply] at this
+    · have h1 : G.Adj (w (w.symm u)) (w (w.symm v)) := by
+        rw [Equiv.apply_symm_apply, Equiv.apply_symm_apply]
+        exact huv
+      rcases (hadj _ _).mp h1 with h | h
+      · exact key _ _ h
+      · exact (key _ _ h).symm
+    · show σ (w.symm (w 0)) (g (w.symm (w 0))) = σ 0 c
+      rw [Equiv.symm_apply_apply, h0]
+  · -- distinct index paths give distinct colourings
+    intro g₁ h₁ g₂ h₂ heq
+    funext i
+    have hi := congrFun heq (w i)
+    simp only [Equiv.symm_apply_apply] at hi
+    exact hσinj i hi
+  · -- every rooted colouring is an index path
+    intro f hf
+    rw [Finset.mem_filter, SimpleGraph.mem_colorings_iff] at hf
+    obtain ⟨⟨hfmem, hfprop⟩, hfroot⟩ := hf
+    choose g hgi using fun i : Fin (m + 1) =>
+      enum_surj (hL (w i)) (hσmem i) (hσinj i) (hfmem (w i))
+    refine ⟨g, ?_, ?_⟩
+    · simp only [Finset.mem_filter, Finset.mem_univ, true_and]
+      refine ⟨hσinj 0 ((hgi 0).trans hfroot), ?_, fun e => ?_⟩
+      · by_cases hc : c ∈ dom
+        · rw [hS, if_pos hc]
+          refine Finset.mem_erase.mpr ⟨fun hcon => ?_, Finset.mem_univ _⟩
+          refine hfprop _ _ hclose ?_
+          rw [← hgi (Fin.last m), hcon, hP c hc, hfroot]
+        · rw [hS, if_neg hc]
+          exact Finset.mem_univ _
+      · refine (hfac e _ _).mpr ?_
+        rw [hgi e.castSucc, hgi e.succ]
+        exact hfprop _ _ (hpath e)
+    · funext v
+      rw [hgi (w.symm v), Equiv.apply_symm_apply]
+
 /-- **The matrix model of a listed cycle** (the relabelling bridge, handoff §6.2): every
 cyclically indexed graph with `k`-lists is counted by the transfer-matrix model, with the
 thread splits of its twisted closing labels. -/
 theorem exists_matrix_model {V : Type} [Fintype V] [DecidableEq V] {G : SimpleGraph V}
-    [DecidableRel G.Adj] {m : ℕ} (hm : 3 ≤ m) (w : Fin (m + 1) ≃ V)
+    [DecidableRel G.Adj] {m : ℕ} (w : Fin (m + 1) ≃ V)
     (hadj : ∀ i j : Fin (m + 1), G.Adj (w i) (w j) ↔ (j = i + 1 ∨ i = j + 1))
-    {k : ℕ} (hk : 4 ≤ k) (L : ListAssignment V) (hL : IsNListAssignment L k) :
+    {k : ℕ} (L : ListAssignment V) (hL : IsNListAssignment L k) :
     ∃ (Ts : List (Finset (Fin k))) (P : Equiv.Perm (Fin k)) (dom : Finset (Fin k))
       (σ₀ : Fin k → ℕ),
       Ts.length = m ∧ (∀ i, σ₀ i ∈ L (w 0)) ∧ Function.Injective σ₀ ∧
@@ -557,7 +718,12 @@ theorem exists_matrix_model {V : Type} [Fintype V] [DecidableEq V] {G : SimpleGr
   refine ⟨Ts, P, dom, σ 0, hTslen, hσmem 0, hσinj 0, ?_, ?_⟩
   · -- the count identity
     intro c
-    sorry
+    rw [hTs]
+    exact rootedCol_eq_rootCount w hadj L hL σ hσmem hσinj hσmatch P dom
+      (fun c => by
+        rw [hdom, Finset.mem_filter]
+        exact ⟨fun h => h.2, fun h => ⟨Finset.mem_univ c, h⟩⟩)
+      (fun c hc => by rw [hPsymm c hc]; exact hμspec c hc) c
   · -- the thread splits
     intro c hc htw
     rw [hPsymm c hc] at htw ⊢
@@ -699,6 +865,31 @@ theorem exists_matrix_model {V : Type} [Fintype V] [DecidableEq V] {G : SimpleGr
         E2.max'_mem hE2ne
       rw [Finset.mem_filter] at hmm
       exact hmm.2
+
+/-- **The uniform rooted count of a cycle**: against the constant list every label survives, so
+the model degenerates to the pure power and the rooted count is the normalizer `A`. -/
+theorem rootedCol_constList_cycle {V : Type} [Fintype V] [DecidableEq V] {G : SimpleGraph V}
+    [DecidableRel G.Adj] {m k : ℕ} (hk : 1 ≤ k) (w : Fin (m + 1) ≃ V)
+    (hadj : ∀ i j : Fin (m + 1), G.Adj (w i) (w j) ↔ (j = i + 1 ∨ i = j + 1)) :
+    rootedCol G (constList V k) (w 0) 0 = uniformA k (m + 1) := by
+  classical
+  have h := rootedCol_eq_rootCount w hadj (constList V k) (isNListAssignment_constList k)
+    (fun _ x => (x : ℕ))
+    (fun i x => by simp [constList_apply, Finset.mem_range, x.isLt])
+    (fun _ a b hab => Fin.val_injective hab)
+    (fun _ _ _ _ => rfl)
+    (1 : Equiv.Perm (Fin k)) Finset.univ
+    (fun c => by simp [constList_apply, Finset.mem_range, c.isLt])
+    (fun _ _ => rfl) ⟨0, hk⟩
+  have hTs : (List.ofFn (fun _ : Fin m =>
+      Finset.univ.filter (fun x : Fin k => ((x : ℕ)) ≠ ((x : ℕ))))) =
+      List.replicate m (∅ : Finset (Fin k)) := by
+    rw [← List.ofFn_const]
+    congr
+    funext e
+    simp
+  rw [h, hTs, rootCount, if_pos (Finset.mem_univ _), transferProd_replicate_empty,
+    base_diag_fixed hk 1 rfl, uniformA, Nat.add_sub_cancel]
 
 end MatrixModel
 

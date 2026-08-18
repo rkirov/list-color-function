@@ -24,7 +24,7 @@ name = "OpenProblems"
 
 # The cactus ECC classification (the 2026-08 AI research collaboration; see
 # ai_research_notes/FINAL_CACTI_ECC_HANDOFF.md). Separate from the Kirov-Naimi formalization:
-# imports ListColoring, never imported by it. Statements.lean carries `sorry`s that mean
-# "proved on paper, formalization in progress" -- see its module docstring.
+# imports ListColoring, never imported by it. Complete and sorry-free; the five headline
+# statements are in Cacti/Statements.lean and are claimed in comparator/config.json.
 [[lean_lib]]
 name = "Cacti"

@@ -6,6 +6,8 @@ import Cacti.LeafPeeling
 import Cacti.Absorb
 import Cacti.Uniform
 import Cacti.Bridge
+import Cacti.CyclePair
+import Cacti.CutVertex
 
 /-!
 # The block induction: statement and transport steps
@@ -13,12 +15,21 @@ import Cacti.Bridge
 The `k ≥ 4` cactus theorem (handoff §6, UM-107/108) is a strong induction on the vertex count
 carrying the pair invariant: for pair-dominant weights, the weighted rooted profile is
 pair-bounded by the uniform normalizer times the weight normalizers. This file packages the
-transport steps the induction consumes.
+transport steps the induction consumes, and runs the induction.
 
 * `rootedWcol_one` / `rootedWcol_const_at` — weight specializations;
 * `rootedCol_pendant_uniform` — the uniform side of pendant absorption carries factor `k - 1`;
 * `pendant_weight_dominant` — pendant absorption preserves pair-dominance with normalizer
-  `(k-1) · W x · W u` (the bridge inequality, squared).
+  `(k-1) · W x · W u` (the bridge inequality, squared);
+* `rootedCol_absorb_uniform` — the uniform side of absorption at a cut vertex;
+* `pair_bound_of_cut` — the cut-vertex step: the pair bound on both sides of a split gives the
+  pair bound for the whole;
+* `cactus_pair_bound` — the induction itself.
+
+The structural dichotomy it rests on — a cactus with no pendant vertex is a single cycle, or
+splits at a cut vertex — is `exists_cut_split_or_cyclic_index`, proved here from
+`Cacti/CutVertex.lean` and `exists_iso_closePath_of_two_regular`. Nothing in this file is
+proved outright, with no unproved step: the whole induction is complete.
 -/
 
 namespace ListColoring
@@ -129,6 +140,161 @@ theorem rootedCol_pendant_uniform {x u : V} (hxu : G.Adj x u)
           ⟨r, hrx⟩ c :=
         rootedWcol_const_at _ _ _ _ _
 
+/-- The uniform side of absorption at a cut vertex: the `B`-side uniform count factors out,
+since by colour symmetry it does not depend on the colour at the cut vertex. -/
+theorem rootedCol_absorb_uniform {A B : Set V} [DecidablePred (· ∈ A)] [DecidablePred (· ∈ B)]
+    {u : V} (huA : u ∈ A) (huB : u ∈ B) (hcover : ∀ v, v ∈ A ∨ v ∈ B)
+    (hmeet : ∀ v, v ∈ A → v ∈ B → v = u)
+    (hedge : ∀ x y, G.Adj x y → (x ∈ A ∧ y ∈ A) ∨ (x ∈ B ∧ y ∈ B))
+    {r : V} (hrA : r ∈ A) {k : ℕ} (hk : 1 ≤ k) (c : ℕ) :
+    rootedCol G (constList V k) r c =
+      rootedCol (G.induce B) (constList B k) ⟨u, huB⟩ 0 *
+        rootedCol (G.induce A) (constList A k) ⟨r, hrA⟩ c := by
+  have h := rootedWcol_absorb huA huB hcover hmeet hedge hrA (constList V k) (fun _ _ => 1) c
+  rw [rootedWcol_one] at h
+  rw [h]
+  have hzero : (0 : ℕ) ∈ Finset.range k := Finset.mem_range.mpr (by omega)
+  calc rootedWcol (G.induce A) (fun v => constList V k v.val)
+        (fun v d => if v.val = u then
+            (1 : ℕ) * rootedWcol (G.induce B) (fun x => constList V k x.val)
+              (fun x _ => if x.val = u then 1 else 1) ⟨u, huB⟩ d
+          else 1) ⟨r, hrA⟩ c
+      = rootedWcol (G.induce A) (fun v => constList V k v.val)
+          (fun v _ => if v = (⟨u, huA⟩ : A) then
+              rootedCol (G.induce B) (fun x => constList V k x.val) ⟨u, huB⟩ 0
+            else 1) ⟨r, hrA⟩ c := by
+        refine rootedWcol_weight_congr (fun v d hd => ?_) _ _
+        by_cases hvu : v.val = u
+        · rw [if_pos hvu, if_pos (Subtype.ext hvu), one_mul]
+          rw [rootedWcol_weight_congr (fun _ _ _ => ite_self 1) _ _, rootedWcol_one]
+          exact rootedCol_constList_eq (G.induce B) k ⟨u, huB⟩ hd hzero
+        · rw [if_neg hvu, if_neg (fun hv => hvu (congrArg Subtype.val hv))]
+    _ = _ := rootedWcol_const_at _ _ _ _ _
+
+/-- **The cut-vertex step**: with `V` split at `u` into `A` and `B` and the root in `A`, the
+pair bound on both sides gives the pair bound for `G`. The `B` side is absorbed into the weight
+at `u`, where its uniform count times its normalizer product becomes the new normalizer. -/
+theorem pair_bound_of_cut {A B : Set V} [DecidablePred (· ∈ A)] [DecidablePred (· ∈ B)]
+    {u : V} (huA : u ∈ A) (huB : u ∈ B) (hcover : ∀ v, v ∈ A ∨ v ∈ B)
+    (hmeet : ∀ v, v ∈ A → v ∈ B → v = u)
+    (hedge : ∀ x y, G.Adj x y → (x ∈ A ∧ y ∈ A) ∨ (x ∈ B ∧ y ∈ B))
+    {r : V} (hrA : r ∈ A) {k : ℕ} (hk : 4 ≤ k)
+    (L : ListAssignment V) (w : V → ℕ → ℕ) (W : V → ℕ)
+    (hdom : ∀ v, ∀ c ∈ L v, ∀ d ∈ L v, c ≠ d → (W v) ^ 2 ≤ w v c * w v d)
+    (hBside : ∀ (wB : B → ℕ → ℕ) (WB : B → ℕ),
+      (∀ x, ∀ c ∈ L x.val, ∀ d ∈ L x.val, c ≠ d → (WB x) ^ 2 ≤ wB x c * wB x d) →
+      ∀ c ∈ L u, ∀ d ∈ L u, c ≠ d →
+        (rootedCol (G.induce B) (constList B k) ⟨u, huB⟩ 0 * ∏ x, WB x) ^ 2 ≤
+          rootedWcol (G.induce B) (fun x => L x.val) wB ⟨u, huB⟩ c *
+            rootedWcol (G.induce B) (fun x => L x.val) wB ⟨u, huB⟩ d)
+    (hAside : ∀ (wA : A → ℕ → ℕ) (WA : A → ℕ),
+      (∀ v, ∀ c ∈ L v.val, ∀ d ∈ L v.val, c ≠ d → (WA v) ^ 2 ≤ wA v c * wA v d) →
+      ∀ c ∈ L r, ∀ d ∈ L r, c ≠ d →
+        (rootedCol (G.induce A) (constList A k) ⟨r, hrA⟩ 0 * ∏ v, WA v) ^ 2 ≤
+          rootedWcol (G.induce A) (fun v => L v.val) wA ⟨r, hrA⟩ c *
+            rootedWcol (G.induce A) (fun v => L v.val) wA ⟨r, hrA⟩ d) :
+    ∀ c ∈ L r, ∀ d ∈ L r, c ≠ d →
+      (rootedCol G (constList V k) r 0 * ∏ v, W v) ^ 2 ≤
+        rootedWcol G L w r c * rootedWcol G L w r d := by
+  intro c hc d hd hcd
+  -- the `B` side, with `u`'s own weight charged to the `A` side
+  have hB := hBside (fun x e => if x.val = u then 1 else w x.val e)
+    (fun x => if x.val = u then 1 else W x.val) (by
+      intro x c' hc' d' hd' hcd'
+      by_cases hxu : x.val = u
+      · rw [if_pos hxu, if_pos hxu, if_pos hxu]
+        omega
+      · rw [if_neg hxu, if_neg hxu, if_neg hxu]
+        exact hdom x.val c' hc' d' hd' hcd')
+  -- the absorbed weight at `u` is still pair-dominant, over the `B`-side normalizer
+  have hA := hAside
+    (fun v d' => if v.val = u then
+        w u d' * rootedWcol (G.induce B) (fun x => L x.val)
+          (fun x e => if x.val = u then 1 else w x.val e) ⟨u, huB⟩ d'
+      else w v.val d')
+    (fun v => if v.val = u then
+        W u * (rootedCol (G.induce B) (constList B k) ⟨u, huB⟩ 0 *
+          ∏ x : B, (if x.val = u then 1 else W x.val))
+      else W v.val)
+    (by
+      intro v c' hc' d' hd' hcd'
+      by_cases hvu : v.val = u
+      · rw [if_pos hvu, if_pos hvu, if_pos hvu]
+        have h1 := hdom u c' (hvu ▸ hc') d' (hvu ▸ hd') hcd'
+        have h2 := hB c' (hvu ▸ hc') d' (hvu ▸ hd') hcd'
+        calc (W u * (rootedCol (G.induce B) (constList B k) ⟨u, huB⟩ 0 *
+                ∏ x : B, (if x.val = u then 1 else W x.val))) ^ 2
+            = W u ^ 2 * (rootedCol (G.induce B) (constList B k) ⟨u, huB⟩ 0 *
+                ∏ x : B, (if x.val = u then 1 else W x.val)) ^ 2 := by ring
+          _ ≤ (w u c' * w u d') *
+              (rootedWcol (G.induce B) (fun x => L x.val)
+                  (fun x e => if x.val = u then 1 else w x.val e) ⟨u, huB⟩ c' *
+                rootedWcol (G.induce B) (fun x => L x.val)
+                  (fun x e => if x.val = u then 1 else w x.val e) ⟨u, huB⟩ d') :=
+              Nat.mul_le_mul h1 h2
+          _ = _ := by ring
+      · rw [if_neg hvu, if_neg hvu, if_neg hvu]
+        exact hdom v.val c' hc' d' hd' hcd') c hc d hd hcd
+  -- rewrite the goal through absorption, then match the normalizer products
+  rw [rootedWcol_absorb huA huB hcover hmeet hedge hrA L w c,
+    rootedWcol_absorb huA huB hcover hmeet hedge hrA L w d,
+    rootedCol_absorb_uniform huA huB hcover hmeet hedge hrA (by omega : 1 ≤ k) 0]
+  have hWA : (∏ v : A, (if v.val = u then
+        W u * (rootedCol (G.induce B) (constList B k) ⟨u, huB⟩ 0 *
+          ∏ x : B, (if x.val = u then 1 else W x.val))
+      else W v.val))
+      = (W u * (rootedCol (G.induce B) (constList B k) ⟨u, huB⟩ 0 *
+          ∏ x : B, (if x.val = u then 1 else W x.val))) *
+        ∏ v ∈ Finset.univ.erase (⟨u, huA⟩ : A), W v.val := by
+    rw [← Finset.mul_prod_erase Finset.univ _ (Finset.mem_univ (⟨u, huA⟩ : A)), if_pos rfl]
+    congr 1
+    exact Finset.prod_congr rfl fun v hv =>
+      if_neg (fun h => Finset.ne_of_mem_erase hv (Subtype.ext h))
+  have hWAu : W u * ∏ v ∈ Finset.univ.erase (⟨u, huA⟩ : A), W v.val = ∏ v : A, W v.val :=
+    Finset.mul_prod_erase Finset.univ (fun v : A => W v.val)
+      (Finset.mem_univ (⟨u, huA⟩ : A))
+  -- the whole normalizer product splits along the two sides
+  have hAB : (∏ v, W v) = (∏ v : A, W v.val) * ∏ x : B, (if x.val = u then 1 else W x.val) := by
+    have hA' : (∏ v : A, W v.val) = ∏ v ∈ A.toFinset, W v :=
+      (Finset.prod_subtype A.toFinset (fun _ => Set.mem_toFinset) W).symm
+    have hB' : (∏ x : B, (if x.val = u then 1 else W x.val))
+        = ∏ x ∈ B.toFinset, (if x = u then 1 else W x) :=
+      (Finset.prod_subtype B.toFinset (fun _ => Set.mem_toFinset)
+        (fun x => if x = u then 1 else W x)).symm
+    have huBF : u ∈ B.toFinset := Set.mem_toFinset.mpr huB
+    have hBerase : (∏ x ∈ B.toFinset, (if x = u then 1 else W x))
+        = ∏ x ∈ B.toFinset.erase u, W x := by
+      rw [← Finset.mul_prod_erase B.toFinset (fun x => if x = u then 1 else W x) huBF,
+        if_pos rfl, one_mul]
+      exact Finset.prod_congr rfl fun x hx => if_neg (Finset.ne_of_mem_erase hx)
+    have hdisj : Disjoint A.toFinset (B.toFinset.erase u) := by
+      rw [Finset.disjoint_left]
+      intro x hxA hxB
+      exact Finset.ne_of_mem_erase hxB
+        (hmeet x (Set.mem_toFinset.mp hxA)
+          (Set.mem_toFinset.mp (Finset.mem_of_mem_erase hxB)))
+    have huniv : (Finset.univ : Finset V) = A.toFinset ∪ B.toFinset.erase u := by
+      refine (Finset.eq_univ_of_forall fun v => ?_).symm
+      rcases hcover v with h | h
+      · exact Finset.mem_union_left _ (Set.mem_toFinset.mpr h)
+      · by_cases hvu : v = u
+        · exact Finset.mem_union_left _ (Set.mem_toFinset.mpr (hvu ▸ huA))
+        · exact Finset.mem_union_right _
+            (Finset.mem_erase.mpr ⟨hvu, Set.mem_toFinset.mpr h⟩)
+    rw [hA', hB', hBerase, ← Finset.prod_union hdisj]
+    exact Finset.prod_congr huniv fun _ _ => rfl
+  have hprod : rootedCol (G.induce B) (constList B k) ⟨u, huB⟩ 0 *
+        rootedCol (G.induce A) (constList A k) ⟨r, hrA⟩ 0 * ∏ v, W v
+      = rootedCol (G.induce A) (constList A k) ⟨r, hrA⟩ 0 *
+        ∏ v : A, (if v.val = u then
+            W u * (rootedCol (G.induce B) (constList B k) ⟨u, huB⟩ 0 *
+              ∏ x : B, (if x.val = u then 1 else W x.val))
+          else W v.val) := by
+    rw [hWA, hAB, ← hWAu]
+    ring
+  rw [hprod]
+  exact hA
+
 end PendantPrereqs
 
 section MainInduction
@@ -156,13 +322,72 @@ theorem rootedWcol_of_card_eq_one {V : Type} [Fintype V] [DecidableEq V]
     ext v; simp [Subsingleton.elim v r]]
   rw [Finset.prod_singleton]
 
+/-- **The structural dichotomy for cacti** (handoff §6.5): a cactus in which no vertex is
+pendant either splits at a cut vertex into two smaller cacti, or is a single cycle — indexed
+from any prescribed root.
+
+With every degree at least two, a graph all of whose degrees are exactly two is a cycle
+(`exists_iso_closePath_of_two_regular`), which the cyclic index reads off; otherwise some vertex
+has degree at least three and `exists_cut_split_of_three_le_degree` splits the graph. -/
+theorem exists_cut_split_or_cyclic_index {V : Type} [Fintype V] [DecidableEq V]
+    {G : SimpleGraph V} [DecidableRel G.Adj] (hG : IsCactus G) (hdeg : ∀ v : V, 2 ≤ G.degree v)
+    (r : V) :
+    (∃ (u : V) (A B : Set V) (dA : DecidablePred (· ∈ A)) (dB : DecidablePred (· ∈ B)),
+        letI := dA; letI := dB;
+        (r ∈ A ∧ u ∈ A ∧ u ∈ B ∧
+          (∀ v : V, v ∈ A ∨ v ∈ B) ∧ (∀ v : V, v ∈ A → v ∈ B → v = u) ∧
+          (∀ x y : V, G.Adj x y → (x ∈ A ∧ y ∈ A) ∨ (x ∈ B ∧ y ∈ B)) ∧
+          (∃ a ∈ A, a ≠ u) ∧ (∃ b ∈ B, b ≠ u) ∧
+          IsCactus (G.induce A) ∧ IsCactus (G.induce B))) ∨
+      (∃ (m : ℕ) (ix : Fin (m + 1) ≃ V), 2 ≤ m ∧ ix 0 = r ∧
+        ∀ i j : Fin (m + 1), G.Adj (ix i) (ix j) ↔ (j = i + 1 ∨ i = j + 1)) := by
+  by_cases h3 : ∃ u : V, 3 ≤ G.degree u
+  · obtain ⟨u, hu⟩ := h3
+    exact Or.inl (exists_cut_split_of_three_le_degree hG hu r)
+  · -- every degree is exactly two: the graph is a cycle, and the index rotates to the root
+    push Not at h3
+    have hdeg2 : ∀ v : V, G.degree v = 2 := fun v => by
+      have h1 := h3 v
+      have h2 := hdeg v
+      omega
+    obtain ⟨m, hm, ⟨e⟩⟩ := exists_iso_closePath_of_two_regular hG.1 hdeg2
+    obtain ⟨ix, hix0, hadj⟩ := exists_cyclic_index hm e r
+    exact Or.inr ⟨m, ix, hm, hix0, hadj⟩
+
+/-- **The structural trichotomy** for a cactus on at least three vertices: it splits at a cut
+vertex — the edge at a pendant vertex, or a genuine cut vertex — or it is a single cycle,
+indexed from any prescribed root. This is the form the induction consumes when it does not
+separate the pendant cases by hand. -/
+theorem exists_cut_split_or_cyclic_index_of_three_le {V : Type} [Fintype V] [DecidableEq V]
+    {G : SimpleGraph V} [DecidableRel G.Adj] (hG : IsCactus G) (hcard : 3 ≤ Fintype.card V)
+    (r : V) :
+    (∃ (u : V) (A B : Set V) (dA : DecidablePred (· ∈ A)) (dB : DecidablePred (· ∈ B)),
+        letI := dA; letI := dB;
+        (r ∈ A ∧ u ∈ A ∧ u ∈ B ∧
+          (∀ v : V, v ∈ A ∨ v ∈ B) ∧ (∀ v : V, v ∈ A → v ∈ B → v = u) ∧
+          (∀ x y : V, G.Adj x y → (x ∈ A ∧ y ∈ A) ∨ (x ∈ B ∧ y ∈ B)) ∧
+          (∃ a ∈ A, a ≠ u) ∧ (∃ b ∈ B, b ≠ u) ∧
+          IsCactus (G.induce A) ∧ IsCactus (G.induce B))) ∨
+      (∃ (m : ℕ) (ix : Fin (m + 1) ≃ V), 2 ≤ m ∧ ix 0 = r ∧
+        ∀ i j : Fin (m + 1), G.Adj (ix i) (ix j) ↔ (j = i + 1 ∨ i = j + 1)) := by
+  by_cases hleaf : ∃ x : V, G.degree x = 1
+  · obtain ⟨x, hx⟩ := hleaf
+    exact Or.inl (exists_leaf_cut_split hG hx hcard r)
+  · push Not at hleaf
+    have hnt : Nontrivial V := Fintype.one_lt_card_iff_nontrivial.mp (by omega)
+    refine exists_cut_split_or_cyclic_index hG (fun v => ?_) r
+    have hpos : 0 < G.degree v := hG.1.preconnected.degree_pos_of_nontrivial v
+    have h1 : G.degree v ≠ 1 := hleaf v
+    omega
+
 /-- **The pair-invariant induction** (UM-107/108, `k ≥ 4`): on a cactus with pair-dominant
 weights, the weighted rooted profile is pair-bounded by the uniform normalizer times the
 product of the weight normalizers.
 
 Case structure: one-vertex base; pendant absorption away from the root; the bridge at the
-root; and the cycle blocks (single cycle, and leaf-cycle absorption) — the last two are the
-remaining open cases, tracked as the `UM-106`/`UM-107` formalization. -/
+root; and a cactus of minimum degree two, where `exists_cut_split_or_cyclic_index` either
+splits at a cut vertex — `pair_bound_of_cut` and two uses of the induction hypothesis — or
+presents the graph as a single cycle, closed by `cycle_pair_bound_index` (UM-106 + UM-107). -/
 theorem cactus_pair_bound :
     ∀ (n : ℕ) (V : Type) [Fintype V] [DecidableEq V] (G : SimpleGraph V) [DecidableRel G.Adj],
       Fintype.card V = n → ∀ {k : ℕ}, 4 ≤ k → IsCactus G →
@@ -467,7 +692,36 @@ theorem cactus_pair_bound :
                         (∑ e ∈ (L u).filter (· ≠ d), (w u e * msg e))) :=
                       Nat.mul_le_mul_right _ hr2
                   _ = _ := by ring
-        · sorry
+        · -- no pendant vertex anywhere: every vertex has degree at least two
+          have hnt : Nontrivial V := Fintype.one_lt_card_iff_nontrivial.mp (by omega)
+          have hdeg2 : ∀ v : V, 2 ≤ G.degree v := by
+            intro v
+            have hpos : 0 < G.degree v := hG.1.preconnected.degree_pos_of_nontrivial v
+            by_cases hv : v = r
+            · subst hv
+              have h1 : G.degree v ≠ 1 := hrdeg
+              omega
+            · have h1 : G.degree v ≠ 1 := fun h => hpend ⟨v, hv, h⟩
+              omega
+          rcases exists_cut_split_or_cyclic_index hG hdeg2 r with
+            ⟨u, A, B, dA, dB, hrA, huA, huB, hcover, hmeet, hedge, ⟨a, haA, hau⟩,
+              ⟨b, hbB, hbu⟩, hcA, hcB⟩ | ⟨m, ix, hm, hix0, hadj⟩
+          · -- a cut vertex: absorb the `B` side into the weight at `u`, recurse on both sides
+            have hbA : b ∉ A := fun h => hbu (hmeet b h hbB)
+            have haB : a ∉ B := fun h => hau (hmeet a haA h)
+            refine pair_bound_of_cut huA huB hcover hmeet hedge hrA hk L w W hdom ?_ ?_
+              c hc d hd hcd
+            · intro wB WB hdomB c' hc' d' hd' hcd'
+              exact IH _ (by rw [← hcard]; exact Fintype.card_subtype_lt (x := a) haB) _
+                (G.induce B) rfl hk hcB _ (fun x => hL x.val) wB WB hdomB
+                ⟨u, huB⟩ c' hc' d' hd' hcd'
+            · intro wA WA hdomA c' hc' d' hd' hcd'
+              exact IH _ (by rw [← hcard]; exact Fintype.card_subtype_lt (x := b) hbA) _
+                (G.induce A) rfl hk hcA _ (fun v => hL v.val) wA WA hdomA
+                ⟨r, hrA⟩ c' hc' d' hd' hcd'
+          · -- a single cycle: the weighted cycle pair theorem closes it
+            rw [← hix0] at hc hd ⊢
+            exact cycle_pair_bound_index hm ix hadj hk L hL w W hdom c hc d hd hcd
 
 end MainInduction
 

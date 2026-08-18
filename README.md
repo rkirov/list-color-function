@@ -32,6 +32,7 @@ choosability, no DP-coloring, no chordality, and no Brooks or Vizing. Everything
 | | |
 |---|---|
 | `ListColoring/` | the formalization |
+| `Cacti/` | the cactus classification — beyond the paper, see below |
 | `OpenProblems.lean` | Kirov–Naimi §6's two open questions, stated in Lean and asserted with `sorry` |
 | `formalization.yaml` | machine-readable map: every numbered result of the paper → its Lean name, file, and status |
 | `book/` | a Verso textbook companion (see `book/README.md`) |
@@ -113,9 +114,34 @@ propositions; `ListColoring.ecc_two_iff` supplies that argument, so Theorem 2 no
 nothing beyond connectivity. (The two live in different files only because everything Rubin's
 theorem is proved from imports `ListColoring/Theorem2.lean`.)
 
+## Beyond the paper: the cactus classification
+
+`Cacti/` proves a result that is not in Kirov–Naimi and, as far as we know, not in the literature:
+**the complete enumerative-chromatic-choosability spectrum of a cactus.** A *cactus* is a connected
+graph in which any two cycles sharing an edge are the same cycle.
+
+> A cactus is enumeratively chromatic-choosable — at *every* list size — iff it has at most one
+> cycle or contains an odd cycle. (`ListColoring.isCactus_ecc_iff`)
+
+The content is in the three cases, all proved with no `sorry`:
+
+| | |
+|---|---|
+| `k = 2` | `isCactus_ecc_two_iff` — the classification, through Theorem 2 and Rubin above |
+| `k ≥ 4` | `isCactus_ecc_of_four_le` — a block induction on the pair invariant `A² ≤ x_c·x_d`, with the slack `k - 3 ≥ 1` paying for the weight peeling |
+| `k = 3` | `isCactus_ecc_three` — the pair invariant is *false* here, so the induction carries GM dominance instead; the even-cycle block is a tensor capacity argument (`Cacti/RefTensor.lean` through `Cacti/LargeBranch.lean`) split into `C₄`, `C₆` and every longer cycle |
+
+This is the result of a 2026-08 AI research collaboration on this repository, not of the paper;
+the source of record is `ai_research_notes/FINAL_CACTI_ECC_HANDOFF.md`. Three things the notes
+had wrong were caught by formalizing them: a reported gap in the non-identity budget was an
+`m ≥ 4` argument misapplied at `m = 3`; the strict factor the path cone actually supplies is
+`(729/256)ⁿ`, not the stronger constant the `C₆` note quotes, so that section's arithmetic is not
+what the proof runs on; and the residual table's four rows are three instances of one law.
+`Cacti/` imports `ListColoring/` and is never imported by it.
+
 ## Standard of proof
 
-* No `sorry`, `admit`, or `native_decide` anywhere in `ListColoring/`, checked by CI.
+* No `sorry`, `admit`, or `native_decide` anywhere in `ListColoring/` or `Cacti/`, checked by CI.
   The three `sorry`s in the repository are all in `OpenProblems.lean`, which is a **separate
   `lean_lib`** for exactly that reason: it imports `ListColoring` and nothing imports it, so no
   theorem can rest on an unproved statement. A `sorry` there means *nobody knows* — those are
@@ -126,8 +152,8 @@ theorem is proved from imports `ListColoring/Theorem2.lean`.)
   indexing and orientation errors that would not have surfaced as type errors. See the
   "Specs verified numerically" section of `plan.md`.
 * CI runs the real [leanprover/comparator](https://github.com/leanprover/comparator) against
-  `comparator/Challenge.lean`, which claims **ten keystone theorems** and the definitions needed to
-  state them — deliberately not the whole library, so that what is certified is legible.
+  `comparator/Challenge.lean`, which claims **fifteen keystone theorems** — ten from the paper and
+  the five of the cactus classification — and the definitions needed to state them — deliberately not the whole library, so that what is certified is legible.
   That checks three things an axiom audit cannot: that the statements really are the ones claimed,
   that only the permitted axioms are used, and that every proof replays through two independent
   kernels (Lean's, via `lean4export`, and `nanoda`). It is CI-only — it builds four external tools.
