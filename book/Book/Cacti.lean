@@ -25,9 +25,8 @@ Everything up to here has been Kirov and Naimi's, or Rubin's. This chapter is no
 of the 2026 research collaboration on this repository, proved in the course of formalizing their
 paper rather than found in it, and the only reason it belongs in a companion to their paper is that
 it answers, for one infinite family, exactly the question they left open at `n = 2` and never asked
-above it. The source of record for the mathematics is `FINAL_CACTI_ECC_HANDOFF.md` in the
-repository's research notes; what follows is a guide to the formalized version, which differs from
-the notes in three places recorded at the end of the chapter.
+above it. What follows is a guide to the proof as it stands in the library — nothing here needs any
+document outside this book.
 
 Their Theorem 2 settles which graphs are enumeratively chromatic-choosable at `2`
 ({ref "twoecc"}[the classification chapter]). Above `2` almost nothing is known in general. For
@@ -282,8 +281,8 @@ where `uniformA k n = (k-1) · beta k (n-1)` and `beta` is the usual two-term re
 chromatic polynomial of a cycle ({ref "cycles"}[the cycles chapter]). The pair bound on a cycle
 then reduces to a finite case analysis on how the closing permutation acts on the two root colours
 being compared — whether each is fixed, moved, or outside the domain — and each case is an
-inequality between products of `alpha` and `beta`. This is UM-106 to UM-108 in the research notes,
-and it is the comfortable half.
+inequality between products of `alpha` and `beta`. This is the comfortable half of the whole
+development: the margin is wide enough that no step needs to be exact.
 
 # Odd cycles at three: the balanced core
 
@@ -339,9 +338,10 @@ step and one closing constraint where the cycle returns to its start.
 when the walk returns to the root the identification it comes back with need not be the one it left
 with. The discrepancy is a permutation $`\sigma` of three elements — the *holonomy* — and it is the
 only thing about the enumeration the argument depends on. There are three cases up to conjugacy:
-the identity, a transposition, and a three-cycle. The residual tables in the development are the
-book-keeping of these three, and one of the corrections below is that the four rows the source notes
-tabulate are three instances of a single law.
+the identity, a transposition, and a three-cycle, distinguished by how many colours $`\sigma` fixes
+— three, one, or none. The residual tables in the development record what each does to the closing
+edge, and they are one law instantiated three times, not three separate computations: the residual
+is determined by the fixed-point count alone.
 
 *A reference tensor, compared by weighted AM–GM.* The bound is proved by comparing the true
 weighted sum against an explicit reference distribution of integer masses over words, chosen to have
@@ -382,33 +382,53 @@ cover the whole even range, is the same in both directions: the margin at six is
 The general argument is provably short there — its margin at six is negative — and above six it
 carries the case on its own, so the tables are needed exactly once.
 
-# What mechanization corrected
+# The proof, end to end
 
-Three claims of the source notes did not survive formalization. None of them changes the theorem;
-all three change what one should believe about the argument, which is the point of doing this at
-all ({ref "findings"}[the findings chapter] records the same phenomenon for the paper itself).
+Every piece is now in place, and the argument fits in a page. Take a cactus `G`, a list size
+`k ≥ 3`, and an assignment `L` of `k`-element lists. The goal is `colConst k ≤ col L`. Pick any
+vertex `r` as root.
 
-*An alleged gap that was not one.* The notes report the budget going negative in the non-identity
-case at the two smallest lengths, and treat this as a hole. Recomputing the margins shows the
-negative values belong to lengths the argument explicitly excludes by name — the general chain is
-stated for the longer cycles, and the short ones have their own treatment. The margins at the
-lengths the chain does cover are positive and growing.
+*One: both sides are statements about the profile at `r`.* The right-hand side is the sum of the
+profile, and the left-hand side is `k` times the uniform profile — which is the same number at every
+colour, so any one of them will do:
 
-*A constant that is not what the notes say.* The six-cycle section quotes a strict factor of the
-form $`2^{108}/(5^{10} \cdot 11^{22})`, and the machinery of the path cone does not deliver it. What
-it delivers is $`(729/256)^5 = 3^{30}/2^{40}`, which is `1.12` bits weaker. The formalized six-cycle
-argument therefore runs on the weaker constant, with the margins quoted above; the notes' own
-arithmetic is a true statement about a factor the proof does not have. Two integer comparisons
-recording the notes' version are kept in the development, marked as such, because a reader of the
-notes will look for them.
+```lean
+open SimpleGraph ListColoring in
+example {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V) [DecidableRel G.Adj]
+    (k : ℕ) (r : V) {c : ℕ} (hc : c ∈ Finset.range k) :
+    k * rootedCol G (constList V k) r c = G.colConst k :=
+  card_mul_rootedCol_constList G k r hc
+```
 
-*Four rows that are three.* The residual table for the closing edge lists four cases. They are three
-instances of one law, uniform in the holonomy, and reading them as four suggests a case analysis
-that is not there.
+So the goal has become $`k \cdot A \le \sum_c x_c`, an inequality about `k` numbers and their
+uniform counterpart.
 
-The first of these is the one worth pausing on. A reported hole in a proof is exactly the kind of
-claim that is expensive to check by hand and cheap to check mechanically, and getting it wrong in
-the pessimistic direction costs as much work as getting it wrong in the optimistic one.
+*Two: the induction supplies a multiplicative bound on those numbers.* Run it at `r` with all
+weights set to `1`. Above three it returns $`A^2 \le x_c x_d` for every pair of distinct colours;
+at three it returns $`A^3 \le \prod_c x_c`.
+
+*Three: an elementary inequality turns the multiplicative bound into the additive one.* This is
+`PairBound.card_mul_le_sum` above three and `card_mul_le_sum_of_pow_le_prod` at three. Both were
+displayed earlier; both are pure arithmetic, with no graph in sight. The goal is closed.
+
+All the work is in step two, and it recurses on the block structure. A one-vertex or single-edge
+cactus is a base case. A cactus with a cut vertex splits into two smaller ones: absorb one side into
+a weight at the cut vertex, check by the induction hypothesis that the absorbed weight still
+satisfies the dominance condition, and apply the hypothesis again to the other side — which is why
+the induction is on the number of vertices, and why the weights had to be carried from the start.
+A cactus with no cut vertex is a single cycle, and that is where the three cycle arguments live: the
+transfer matrix above three, the balanced core for odd cycles at three, and the tensor bound for
+even ones.
+
+Nothing else is needed. The `k = 2` case joins on through Theorem 2, and the spectrum theorem is
+those two facts together with the observation that below `2` there is nothing to prove:
+
+```lean
+open SimpleGraph ListColoring in
+example {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V) [DecidableRel G.Adj]
+    (hG : IsCactus G) : G.ECC ↔ HasAtMostOneCycle G ∨ SimpleGraph.HasOddCycle G :=
+  isCactus_ecc_iff G hG
+```
 
 # What is claimed
 
