@@ -123,21 +123,35 @@ graph in which any two cycles sharing an edge are the same cycle.
 > A cactus is enumeratively chromatic-choosable — at *every* list size — iff it has at most one
 > cycle or contains an odd cycle. (`ListColoring.isCactus_ecc_iff`)
 
-The content is in the three cases, all proved with no `sorry`:
+The proof, in outline. Fix a root `r`. Both sides of `colConst k ≤ col L` are statements about the
+*rooted profile* at `r` — the count of colourings per colour of `r` — so the goal is
+`k·A ≤ ∑_c x_c`, where `A` is the uniform profile. That sum is what a cut vertex fails to respect,
+so the induction over the block structure carries a pointwise bound on the profile instead and
+converts to the sum only at the root, by an inequality of arithmetic-geometric type. The recursion
+has one hard case: a cactus with no cut vertex is a single cycle.
+
+Which pointwise bound depends on the list size, and that is the whole difficulty:
 
 | | |
 |---|---|
-| `k = 2` | `isCactus_ecc_two_iff` — the classification, through Theorem 2 and Rubin above |
-| `k ≥ 4` | `isCactus_ecc_of_four_le` — a block induction on the pair invariant `A² ≤ x_c·x_d`, with the slack `k - 3 ≥ 1` paying for the weight peeling |
-| `k = 3` | `isCactus_ecc_three` — the pair invariant is *false* here, so the induction carries GM dominance instead; the even-cycle block is a tensor capacity argument (`Cacti/RefTensor.lean` through `Cacti/LargeBranch.lean`) split into `C₄`, `C₆` and every longer cycle |
+| `k ≥ 4` | the pair bound `A² ≤ x_c·x_d`. Peeling a block costs a factor, and the slack `k - 3 ≥ 1` pays for it |
+| `k = 3` | the slack is exactly zero and the pair bound is **false**. GM dominance `A³ ≤ ∏_c x_c` replaces it, with every step tight — equality at the uniform configuration — so nothing anywhere may be discarded |
+| `k = 2` | not a counting argument at all: an odd cycle makes both counts zero, and a cactus with two even cycles has none of the cores Theorem 2 allows |
 
-This is the result of a 2026-08 AI research collaboration on this repository, not of the paper;
-the source of record is `ai_research_notes/FINAL_CACTI_ECC_HANDOFF.md`. Three things the notes
-had wrong were caught by formalizing them: a reported gap in the non-identity budget was an
-`m ≥ 4` argument misapplied at `m = 3`; the strict factor the path cone actually supplies is
-`(729/256)ⁿ`, not the stronger constant the `C₆` note quotes, so that section's arithmetic is not
-what the proof runs on; and the residual table's four rows are three instances of one law.
-`Cacti/` imports `ListColoring/` and is never imported by it.
+The cycle blocks are where the three cases differ. Above `3` a transfer matrix suffices. At `3` an
+odd cycle admits a *balanced core* — a subfamily of colourings hitting every vertex-colour pair
+exactly `A` times — and an even cycle admits none, which is why `Cacti/RefTensor.lean` through
+`Cacti/LargeBranch.lean` exist: a tensor capacity argument over the cycle's word model, split into
+`C₄`, `C₆` and every longer cycle.
+
+The book's [*Beyond the Paper: Cacti*](https://rkirov.github.io/list-color-function/) chapter is a
+guide to all of this that assumes only the chapters before it. `Cacti/Examples.lean` pins the definition down on three
+graphs — `K₄` refused, a triangle accepted, and the bowtie accepted while having two cycles, which
+is what keeps the classification from being a statement about unicyclic graphs.
+
+This is the result of a 2026 AI research collaboration on this repository, not of the paper; the
+working notes are in `ai_research_notes/`. `Cacti/` imports `ListColoring/` and is never imported
+by it.
 
 ## Standard of proof
 

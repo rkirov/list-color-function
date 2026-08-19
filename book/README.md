@@ -1,7 +1,8 @@
 # Counting List Colorings — a Verso companion
 
 A textbook companion to the Lean 4 formalization in `../ListColoring/`, covering Kirov & Naimi,
-*List coloring and n-monophilic graphs* (Ars Combin. **124** (2016), 329–340; arXiv:1004.5183).
+*List coloring and n-monophilic graphs* (Ars Combin. **124** (2016), 329–340; arXiv:1004.5183), and
+closing with the cactus classification proved here in `../Cacti/`.
 
 Every displayed statement in the book is an `example` discharged against the corresponding theorem
 in the development, so the prose cannot drift from the proofs: rename a theorem or change its
@@ -18,7 +19,12 @@ Theorem 2, unconditional), *Every Graph, Eventually*, and *Reading `Challenge.le
 **Part II** is the proofs: *Counting List Colorings*, *Cones over Cliques* (Lemma 1), *Paths and the
 Two Recurrences* (`A_k`, `B_k`, Lemma 3(a)), *The Swapping Lemma* (Lemmas 2 and 4), *Minimizing
 Assignments, and Cycles* (Lemmas 3(b), 3(c), Theorem 1), *Cores* (Lemma 5, `K₂,₃`), *Theta Graphs
-and Theorem 2*, *Colorable but Not Choosable*, *What Mechanization Found*, and *The Declarations*.
+and Theorem 2*, *Colorable but Not Choosable*, *Beyond the Paper: Cacti*, *What Mechanization
+Found*, and *The Declarations*.
+
+*Beyond the Paper: Cacti* is the odd one out: it guides a result that is not Kirov and Naimi's but
+this repository's — the complete spectrum of the enumeratively chromatic-choosable cacti — and is
+written to be read on its own once Part I is behind you.
 
 The chapter order is `Book.lean`; each chapter is a module under `Book/`.
 
