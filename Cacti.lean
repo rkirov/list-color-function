@@ -31,6 +31,7 @@ import Cacti.C6Branch
 import Cacti.LargeBranch
 import Cacti.GMFinal
 import Cacti.Statements
+import Cacti.Examples
 
 /-!
 # Cacti

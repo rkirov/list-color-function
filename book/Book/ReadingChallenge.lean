@@ -1,6 +1,7 @@
 import VersoManual
 import Book.Papers
 import ListColoring
+import Cacti
 
 open Verso.Genre Manual
 open Verso.Genre.Manual.InlineLean
@@ -46,10 +47,12 @@ the library, and this book.
 Compiling `Challenge.lean` on its own is *expected* to report "declaration uses `sorry`". That is
 not a defect; the file exists to state, not to prove.
 
-# The ten claims
+# The thirteen claims
 
 `config.json` lists what is claimed under the key `theorem_names`, and it is a short list. Each of
-the ten is displayed below with the library theorem that discharges it, in the file's own order.
+the thirteen is displayed below with the library theorem that discharges it, in the file's own
+order. The first ten are Kirov and Naimi's paper and what it quotes; the last three are the cactus
+classification, which is not from the paper at all ({ref "cacti"}[Beyond the Paper: Cacti]).
 
 *One: the chromatic polynomial evaluates to the colouring count* —
 {ref "polynomial"}[the chromatic polynomial chapter].
@@ -166,7 +169,45 @@ example {V : Type} [Fintype V] [DecidableEq V]
   exists_ecc_forall_ge G
 ```
 
-# The eight sections
+*Eleven: every cactus is enumeratively chromatic-choosable at every list size above two* —
+{ref "cacti"}[the cacti chapter]. The library proves the `k = 3` and `k ≥ 4` halves separately,
+by different invariants; the surface claims their union.
+
+```lean
+open SimpleGraph ListColoring in
+example {V : Type} [Fintype V] [DecidableEq V]
+    (G : SimpleGraph V) [DecidableRel G.Adj]
+    {k : ℕ} (hk : 3 ≤ k) (hG : IsCactus G) :
+    G.ECCAt k :=
+  isCactus_ecc_of_three_le G hk hG
+```
+
+*Twelve: the cactus classification at `2`* — a cactus is enumeratively chromatic-choosable at `2`
+exactly when it has at most one cycle or contains an odd cycle. The odd cycle is the same
+predicate claim nine is stated with.
+
+```lean
+open SimpleGraph ListColoring in
+example {V : Type} [Fintype V] [DecidableEq V]
+    (G : SimpleGraph V) [DecidableRel G.Adj]
+    (hG : IsCactus G) :
+    G.ECCAt 2 ↔ HasAtMostOneCycle G ∨ SimpleGraph.HasOddCycle G :=
+  isCactus_ecc_two_iff G hG
+```
+
+*Thirteen: the whole spectrum of a cactus* — the two above, and the observation that below `2` the
+property is vacuous.
+
+```lean
+open SimpleGraph ListColoring in
+example {V : Type} [Fintype V] [DecidableEq V]
+    (G : SimpleGraph V) [DecidableRel G.Adj]
+    (hG : IsCactus G) :
+    G.ECC ↔ HasAtMostOneCycle G ∨ SimpleGraph.HasOddCycle G :=
+  isCactus_ecc_iff G hG
+```
+
+# The nine sections
 
 ```
 ### 1. Colouring a graph
@@ -177,6 +218,7 @@ example {V : Type} [Fintype V] [DecidableEq V]
 ### 6. 2-choosability: Rubin's theorem
 ### 7. Enumerative chromatic-choosability at `2`: Theorem 2
 ### 8. Every graph, eventually
+### 9. Cacti
 ```
 
 :::table +header (align := left)
@@ -216,6 +258,10 @@ example {V : Type} [Fintype V] [DecidableEq V]
   * §8 Every graph, eventually
   * {ref "threshold"}[Every Graph, Eventually]
   * 10
+*
+  * §9 Cacti
+  * {ref "cacti"}[Beyond the Paper: Cacti]
+  * 11, 12, 13
 :::
 
 One section carries no claim: §1 defines the vocabulary every later statement is written in —
@@ -234,9 +280,9 @@ specification; the comparator never inspects the body of a listed definition, so
 away. Only two decidability instances are `sorry`, and a `Decidable` instance is a subsingleton:
 which one is used cannot change any count.
 
-*`config.json` names what is claimed.* Two lists. `theorem_names` is the ten above.
+*`config.json` names what is claimed.* Two lists. `theorem_names` is the thirteen above.
 `definition_names` is not a curated aesthetic choice but a computed one: exactly the definitions
-reachable from the types of those ten statements, together with the notions those are in turn
+reachable from the types of those thirteen statements, together with the notions those are in turn
 written in terms of, so that the file can be read without the library open beside it.
 
 *Instances are in the list because the surface needs them.* The Erdős–Rubin–Taylor claims' types
@@ -274,8 +320,8 @@ first and a narrative second, and that the two coincide less often than one woul
 
 # What is in the library and not in the file
 
-A great deal. The file claims ten theorems; the library proves several hundred. Everything
-discussed in this book that is not one of the ten — Kirov and Naimi's Lemmas 1 through 6, the
+A great deal. The file claims thirteen theorems; the library proves several hundred. Everything
+discussed in this book that is not one of the thirteen — Kirov and Naimi's Lemmas 1 through 6, the
 three regimes,
 the explicit threshold $`n > 2^{|E|}`, the counts $`A_k` and $`B_k` and their closed forms,
 Dirac's theorem and Dirac's lemma, Theorem 1 on the development's own `closePath`, Rubin's easy
@@ -285,6 +331,7 @@ graphs — is in the library.
 
 The count is derived, not chosen: one claim per named list-colouring result. Two claims pin down
 what the subject is, five statements are the four named theorems of the literature the development
-stands on — the Erdős–Rubin–Taylor separation being one result in two statements — and three are
-the results the paper's abstract advertises. Reading the file is reading those ten and the
-vocabulary they need. Reading this book is everything else.
+stands on — the Erdős–Rubin–Taylor separation being one result in two statements — three are
+the results the paper's abstract advertises, and three are the cactus classification, which is the
+one thing here that was proved rather than formalized. Reading the file is reading those thirteen
+and the vocabulary they need. Reading this book is everything else.
