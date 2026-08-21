@@ -38,6 +38,7 @@ choosability, no DP-coloring, no chordality, and no Brooks or Vizing. Everything
 | `book/` | a Verso textbook companion (see `book/README.md`) |
 | `plan.md` | milestones, design decisions, progress log, and findings |
 | `references.md` | verified bibliography, with corrections to the literature |
+| `check-submission.py` | lints the repository against a registry's mechanical requirements — licence, metadata, layout |
 | `provenance.md` | **credit ledger** — which theorem in which paper each result is, and what is not claimed |
 | `survey.md` | the original scoping report that started the project |
 

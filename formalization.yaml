@@ -1,13 +1,276 @@
-# formalization.yaml — machine-readable map from Kirov & Naimi to this Lean development.
+# formalization.yaml — the registry metadata for this development, and the map from
+# Kirov & Naimi's paper to the Lean that formalizes it.
 #
-# One entry per numbered result of the paper, plus the results the paper cites and this
-# development proves rather than assumes. Prose lives in provenance.md (credit), plan.md
-# (what mechanization turned up) and references.md (bibliography); this file is the index.
+# The file serves two readers. The blocks down to `related_formalizations` are the
+# mathlib-initiative formalization.yaml v0.4 record, which is what a registry consumes:
+# who did the work, what it formalizes, how it was produced, and what it depends on.
+# Everything from `paper:` onwards is this repository's own index — one entry per numbered
+# result of the paper, plus the results the paper cites and this development proves rather
+# than assumes. Prose lives in provenance.md (credit), plan.md (what mechanization turned
+# up) and references.md (bibliography).
 #
 # Every `lean.name` below was checked to resolve against the built library. Keep it that way:
 # a name here that no longer type-checks is a bug, not a stale note.
+#
+# For a registry submission the three repository-relative paths are
+#     selected project    comparator
+#     comparator config   comparator/config.json
+#     metadata            formalization.yaml
+# and `python3 check-submission.py` checks the mechanical requirements that go with them.
 
-schema_version: 1
+version: v0.4
+
+project:
+  name: "List coloring and enumeratively chromatic-choosable graphs"
+  description: >-
+    A machine-checked development of list colouring in Lean 4. Give each vertex of a finite
+    graph its own list of n permitted colours and count the proper colourings that respect
+    those lists; the graph is enumeratively chromatic-choosable at n when that count is
+    minimized by giving every vertex the same list. Kostochka and Sidorenko raised the
+    question in 1990.
+
+    The development formalizes Kirov and Naimi, "List coloring and n-monophilic graphs"
+    (Ars Combinatoria 124 (2016), 329-340; arXiv:1004.5183), in the generality the paper
+    states: every cycle is enumeratively chromatic-choosable at every n (their Theorem 1);
+    the exact characterization of the graphs enumeratively chromatic-choosable at 2 (their
+    Theorem 2), unconditionally, because the Rubin theorem that paper quotes is proved here
+    rather than assumed; and for every list size k at least 2 a graph that is k-choosable but
+    not enumeratively chromatic-choosable at k. It also proves the results the paper relies
+    on: the chromatic polynomial and its evaluation as a colouring count, the
+    Kostochka-Sidorenko corollary for chordal graphs, the Erdos-Rubin-Taylor separation, and
+    Donner's theorem that every graph is enumeratively chromatic-choosable at all sufficiently
+    large n. As far as we can determine, list colouring and choosability had not previously
+    been formalized in any proof assistant, and Rubin's 1980 characterization of the
+    2-choosable graphs is proved here in both directions.
+
+    The development also proves a result that is not in the source paper and, as far as we can
+    determine, not in the literature: the complete spectrum of the enumeratively
+    chromatic-choosable cacti. A cactus - a connected graph in which any two cycles sharing an
+    edge are the same cycle - is enumeratively chromatic-choosable at every list size if and
+    only if it has at most one cycle or contains an odd cycle. Above 2 every cactus qualifies;
+    the argument runs an induction over the block structure that carries a pointwise bound on
+    the rooted colouring profile, and the bound has to change at list size 3, where the
+    peeling slack k - 3 vanishes and a pair bound gives way to geometric-mean dominance. The
+    even-cycle blocks at list size 3 are the substance of the proof and are handled by a
+    tensor capacity argument.
+
+    There is no sorry, admit or native_decide in ListColoring/ or Cacti/. Every claimed result
+    depends on exactly propext, Classical.choice and Quot.sound.
+  authors: ["Radoslav Kirov"]
+  responsible_maintainers: ["Radoslav Kirov"]
+  license: Apache-2.0
+  library: ListColoring
+  entry_point: ListColoring.lean
+  additional_library: Cacti
+  additional_entry_point: Cacti.lean
+  open_problems_library: OpenProblems
+  open_problems_entry_point: OpenProblems.lean
+  lean_toolchain: "leanprover/lean4:v4.33.0"
+  mathlib_rev: "db584cd6d46c92f209a44c0f1c829460d327499d"
+  permitted_axioms: [propext, Classical.choice, Quot.sound]
+  standard_of_proof: >-
+    No sorry, admit or native_decide anywhere in ListColoring/ or Cacti/. Every headline
+    result depends on exactly the three permitted axioms, asserted by #print axioms at the foot
+    of each file and enforced in CI by leanprover/comparator against comparator/Challenge.lean.
+    The only sorries in the repository are the three in OpenProblems.lean, which is imported by
+    nothing: there a sorry means the question is open, not that a proof is missing.
+
+classification:
+  arxiv: [math.CO, cs.LO]
+  msc2020:
+    - "05C15"   # coloring of graphs and hypergraphs
+    - "05C31"   # graph polynomials
+    - "05C38"   # paths and cycles
+    - "68V20"   # formalization of mathematics in connection with theorem provers
+
+# What was formalized. The cactus classification of Cacti/ is original to this repository, but
+# ten of the thirteen compared theorems formalize prior work, so the submitted result is
+# source-based and no original-proof entry is claimed here.
+sources:
+  - title: "List coloring and n-monophilic graphs"
+    authors: ["Radoslav Kirov", "Ramin Naimi"]
+    type: paper
+    id: "arXiv:1004.5183"
+    location: "Ars Combinatoria 124 (2016), 329-340; formalized against arXiv:1004.5183v1, 29 Apr 2010"
+    relationship: formalizes
+    license: "not stated by the publisher"
+    author_endorsement: participated
+    note: >-
+      The source paper. Its Lemmas 1-6, Theorem 1 and Theorem 2 are formalized in the paper's
+      own generality; see the `results` block below for the statement-by-statement map, and
+      `errata` for the one mathematical error found, a range condition on three lemmas of
+      Section 5 that does not affect that section's theorem. The first author of the paper is
+      the author of this formalization.
+  - title: "Choosability in graphs"
+    authors: ["Paul Erdos", "Arthur L. Rubin", "Herbert Taylor"]
+    type: paper
+    id: "Congressus Numerantium 26 (1980), 125-157"
+    location: "Rubin's characterization of the 2-choosable graphs, pp. 131-134; the K_{n,n^n} separation"
+    relationship: formalizes
+    note: >-
+      Quoted by the source paper and proved here rather than assumed, which is what makes the
+      formalized Theorem 2 unconditional. Rubin's theorem appears not to have been formalized
+      before. The bibliographic record is corrected in references.md: the year is 1980, not
+      1979, and the pagination is 125-157, not 125-127.
+  - title: "On the number of list-colorings"
+    authors: ["Q. Donner"]
+    type: paper
+    id: "Journal of Graph Theory 16 (3) (1992), 239-245"
+    location: "every graph is enumeratively chromatic-choosable at all sufficiently large list sizes"
+    relationship: formalizes
+    note: >-
+      Proved here with the explicit threshold n > 2^|E(G)|, a weaker bound than the polynomial
+      one of Wang-Qian-Yan 2017 and much weaker than Dong-Zhang 2023, neither of which is
+      formalized.
+  - title: "Problem presented at the problem session, Fourth Czechoslovak Symposium on Combinatorics, Prachatice 1990"
+    authors: ["Alexandr V. Kostochka", "Alexander F. Sidorenko"]
+    type: paper
+    id: "Annals of Discrete Mathematics 51 (1992), 380"
+    relationship: background
+    note: >-
+      The origin of the question. It is a one-page problem-session abstract, not a paper; the
+      chordal-graph corollary attributed to it is proved here as SimpleGraph.ecc_of_isChordal.
+
+related_formalizations: []
+
+automation:
+  methods:
+    - method: agent
+      models: ["claude-opus-5", "claude-fable-5"]
+      framework: "Claude Code"
+      tool_setup: >-
+        Agent sessions directed by the repository owner, with subagents used for parallel
+        search, for independent proof attempts on a stated lemma, and for adversarial review
+        of claimed proofs. Every landed proof was compiled by Lake before being committed; no
+        proof was accepted on an agent's report alone.
+      prompting_notes: >-
+        The mathematical content of the cactus classification was developed in the same
+        sessions and is recorded in ai_research_notes/. Formalizing those notes corrected
+        three of their claims, including a reported gap that was an argument for longer cycles
+        misapplied to a short one.
+    - method: manual
+      tool_setup: >-
+        Statement design, the choice of what to claim in comparator/Challenge.lean, the
+        bibliographic verification in references.md, and the credit assignment in
+        provenance.md.
+
+review:
+  status: agent-reviewed
+  reviewers: ["Claude (adversarial review agents, Claude Code)"]
+  notes: >-
+    Each landed proof was re-checked by an agent instructed to refute it, working from a fresh
+    copy and required to reproduce the compile, to run #print axioms on every declaration, and
+    to confirm that the statement proved is the statement claimed. Statements were also checked
+    by brute-force evaluation before being proved, which repeatedly caught indexing and
+    orientation errors that do not surface as type errors; those checks are #guard commands in
+    the library. In addition, leanprover/comparator runs in CI on every commit against
+    comparator/Challenge.lean, checking statement identity, the permitted axioms, and replay
+    through both Lean's kernel and the independent NanoDa kernel. No independent human review
+    has been performed.
+
+status:
+  scope: >-
+    ListColoring/ formalizes the source paper and the results it quotes; Cacti/ proves the
+    cactus classification and imports ListColoring/, never the reverse. OpenProblems.lean is a
+    separate library, imported by nothing, that states the source paper's two open questions
+    and asserts them with sorry: there a sorry records that the question is open, not that a
+    proof is missing. The three sorries counted below are exactly those.
+  sorry_count: 3
+  sorry_in_definitions: 0
+  axioms: [propext, Classical.choice, Quot.sound]
+  main_results:
+    - declaration: SimpleGraph.eval_chromaticPolynomial
+      file: ListColoring/ChromaticPolynomial.lean
+      sorry_count: 0
+      axioms: [propext, Classical.choice, Quot.sound]
+      comparator_config: comparator/config.json
+      note: "the chromatic polynomial evaluates to the colouring count"
+    - declaration: SimpleGraph.ecc_iff_listColorFunction_eq_eval
+      file: ListColoring/ListColorFunction.lean
+      sorry_count: 0
+      axioms: [propext, Classical.choice, Quot.sound]
+      comparator_config: comparator/config.json
+      note: "P_l(G,n) = P(G,n) is enumerative chromatic-choosability at n"
+    - declaration: SimpleGraph.ERT.not_choosable
+      file: ListColoring/NotChoosable.lean
+      sorry_count: 0
+      axioms: [propext, Classical.choice, Quot.sound]
+      comparator_config: comparator/config.json
+      note: "K_{n,n^n} is not n-choosable (Erdos-Rubin-Taylor)"
+    - declaration: SimpleGraph.ERT.colorable
+      file: ListColoring/NotChoosable.lean
+      sorry_count: 0
+      axioms: [propext, Classical.choice, Quot.sound]
+      comparator_config: comparator/config.json
+      note: "K_{n,n^n} is n-colourable (Erdos-Rubin-Taylor)"
+    - declaration: SimpleGraph.KN5.exists_choosable_not_ecc_of_two_le
+      file: ListColoring/Section5.lean
+      sorry_count: 0
+      axioms: [propext, Classical.choice, Quot.sound]
+      comparator_config: comparator/config.json
+      note: "Kirov-Naimi Section 5, at every list size k >= 2"
+    - declaration: SimpleGraph.ecc_of_isChordal
+      file: ListColoring/Dirac.lean
+      sorry_count: 0
+      axioms: [propext, Classical.choice, Quot.sound]
+      comparator_config: comparator/config.json
+      note: "Kostochka-Sidorenko: chordal graphs, via a simplicial elimination ordering"
+    - declaration: SimpleGraph.ecc_cycleGraph_of_three_le
+      file: ListColoring/CycleGraph.lean
+      sorry_count: 0
+      axioms: [propext, Classical.choice, Quot.sound]
+      comparator_config: comparator/config.json
+      note: "Kirov-Naimi Theorem 1: every cycle, at every list size"
+    - declaration: SimpleGraph.rubinTheorem
+      file: ListColoring/CoreGraphs.lean
+      sorry_count: 0
+      axioms: [propext, Classical.choice, Quot.sound]
+      comparator_config: comparator/config.json
+      note: "Rubin's characterization of the 2-choosable graphs, both directions"
+    - declaration: SimpleGraph.ecc_two_iff
+      file: ListColoring/CoreGraphs.lean
+      sorry_count: 0
+      axioms: [propext, Classical.choice, Quot.sound]
+      comparator_config: comparator/config.json
+      note: "Kirov-Naimi Theorem 2, with no hypothesis beyond connectivity"
+    - declaration: SimpleGraph.exists_ecc_forall_ge
+      file: ListColoring/Threshold.lean
+      sorry_count: 0
+      axioms: [propext, Classical.choice, Quot.sound]
+      comparator_config: comparator/config.json
+      note: "Donner's theorem; the explicit threshold is ecc_of_two_pow_lt"
+    - declaration: ListColoring.isCactus_ecc_of_three_le
+      file: Cacti/Statements.lean
+      sorry_count: 0
+      axioms: [propext, Classical.choice, Quot.sound]
+      comparator_config: comparator/config.json
+      note: "every cactus is enumeratively chromatic-choosable at every k >= 3 (original to this repository)"
+    - declaration: ListColoring.isCactus_ecc_two_iff
+      file: Cacti/Statements.lean
+      sorry_count: 0
+      axioms: [propext, Classical.choice, Quot.sound]
+      comparator_config: comparator/config.json
+      note: "the cactus classification at 2 (original to this repository)"
+    - declaration: ListColoring.isCactus_ecc_iff
+      file: Cacti/Statements.lean
+      sorry_count: 0
+      axioms: [propext, Classical.choice, Quot.sound]
+      comparator_config: comparator/config.json
+      note: "the full cactus spectrum (original to this repository)"
+
+fidelity:
+  divergences: >-
+    Three deliberate deviations from the source paper, each recorded with a `deviation` field
+    on the entry below: Lemma 3(c) is proved for n >= 3 rather than for all n; Section 5's
+    Lemmas 7, 9 and 10 are proved for n >= 2 rather than the paper's n >= 1, because they are
+    false at n = 1 (see `errata`, with machine-checked counterexamples in the library); and
+    Theorem 1 is stated on Mathlib's cycleGraph as well as on the development's own closePath.
+    Nothing downstream is weakened: Section 5's conclusion still holds at every list size
+    k >= 2. The cactus results of Cacti/ have no source to diverge from.
+
+# How the source's statements map to the formal declarations: the `results` block below, one
+# entry per numbered result of the paper, each with its Lean name, file and status.
+alignment: "see the `results` block below, and `beyond_the_paper` for what is proved here that the paper does not state"
 
 paper:
   title: "List coloring and n-monophilic graphs"
@@ -23,23 +286,9 @@ paper:
     chromatic-choosable; this development uses the modern name throughout
     (SimpleGraph.ECCAt at one n, SimpleGraph.ECC for all n). See provenance.md section 4.
 
-project:
-  library: ListColoring
-  entry_point: ListColoring.lean
-  open_problems_library: OpenProblems
-  open_problems_entry_point: OpenProblems.lean
-  lean_toolchain: "leanprover/lean4:v4.33.0"
-  mathlib_rev: "db584cd6d46c92f209a44c0f1c829460d327499d"
-  permitted_axioms: [propext, Classical.choice, Quot.sound]
-  standard_of_proof: >-
-    No sorry, admit or native_decide anywhere in ListColoring/ or Cacti/. Every headline
-    result depends on exactly the three permitted axioms, asserted by #print axioms at the foot
-    of each file and enforced in CI by leanprover/comparator against comparator/Challenge.lean.
-    The only sorries in the repository are the three in OpenProblems.lean, which is imported by
-    nothing: there a sorry means the question is open, not that a proof is missing.
-
-# Vocabulary for the `status` field.
-statuses:
+# Vocabulary for the `status` field of each entry in `results` below. Not the v0.4
+# `status:` block above, which is the project-level record.
+status_vocabulary:
   proved: "Stated and proved here, in the paper's generality."
   proved_weakened: "Proved in a weaker form than the paper states, sufficient for everything downstream. See `deviation`."
   proved_corrected: "Proved, but with a hypothesis the paper does not have, because the paper's stated range is wrong. See `deviation`."

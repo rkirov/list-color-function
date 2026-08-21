@@ -46,6 +46,14 @@ jobs:
       # ListColoring and that nothing imports, so no theorem can rest on an unproved statement.
       # Do NOT widen the paths below to the repository root -- that would make the open
       # questions unstateable rather than making the library any cleaner.
+      # The registry metadata fails closed at Palomar: a missing licence, a duplicate YAML key,
+      # or a sources list that no longer derives exactly one origin is rejected before any
+      # mathematics is read. Cheap to check here, expensive to discover at submission.
+      - name: Registry metadata and submission layout
+        run: |
+          python3 -m pip install --quiet pyyaml
+          python3 check-submission.py
+
       - name: No sorry, admit, or native_decide
         run: |
           if grep -rnwE 'sorry|admit|native_decide' ListColoring/ ListColoring.lean Cacti/ Cacti.lean; then
