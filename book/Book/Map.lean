@@ -97,77 +97,77 @@ Each Lean name below is the exact statement proved; each file link goes to the s
 *
   * Lemma 1
   * {name}`SimpleGraph.ECCAt.coneOn`
-  * [Cone.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Cone.lean)
+  * [Cone.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/Cone.lean)
 *
   * Kostochka–Sidorenko
   * {name}`SimpleGraph.ecc_cliqueTower_of_isEmpty`
-  * [Chordal.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Chordal.lean)
+  * [Chordal.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/Chordal.lean)
 *
   * Lemma 2
   * {name}`SimpleGraph.exists_nested_of_bridge`
-  * [Bridge.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Bridge.lean)
+  * [Bridge.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/Bridge.lean)
 *
   * Lemma 3(a)
   * {name}`ListColoring.col_pathAssign`, {name}`ListColoring.pathA_closed_form`
-  * [PathCount.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/PathCount.lean), [Recurrence.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Recurrence.lean)
+  * [PathCount.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/PathCount.lean), [Recurrence.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/Recurrence.lean)
 *
   * Lemma 3(b)
   * {name}`ListColoring.min_pathA_pathB_le_col`
-  * [PathMinimizing.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/PathMinimizing.lean)
+  * [PathMinimizing.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/PathMinimizing.lean)
 *
   * Lemma 3(c)
   * {name}`ListColoring.isPathShape_parity_of_minimizing`
-  * [PathMinimizing.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/PathMinimizing.lean)
+  * [PathMinimizing.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/PathMinimizing.lean)
 *
   * Lemma 4
   * {name}`ListColoring.col_lt_col_of_ssubset`
-  * [PathColorable.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/PathColorable.lean)
+  * [PathColorable.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/PathColorable.lean)
 *
   * *Theorem 1*
   * {name}`SimpleGraph.ecc_cycleGraph_of_three_le`
-  * [CycleGraph.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/CycleGraph.lean)
+  * [CycleGraph.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/CycleGraph.lean)
 *
   * Lemma 5
   * {name}`SimpleGraph.ecc_pendantTower_iff`
-  * [Core.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Core.lean)
+  * [Core.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/Core.lean)
 *
   * Lemma 6
   * {name}`SimpleGraph.ecc_K23`
-  * [K23.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/K23.lean)
+  * [K23.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/K23.lean)
 *
   * *Theorem 2*
   * {name}`SimpleGraph.ecc_two_iff`
-  * [CoreGraphs.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/CoreGraphs.lean)
+  * [CoreGraphs.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/CoreGraphs.lean)
 *
   * *Rubin's theorem*
   * {name}`SimpleGraph.rubinTheorem`
-  * [CoreGraphs.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/CoreGraphs.lean)
+  * [CoreGraphs.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/CoreGraphs.lean)
 *
   * Rubin, steps 1–6
   * {name}`ListColoring.rubin_structure`
-  * [RubinCases.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/RubinCases.lean)
+  * [RubinCases.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/RubinCases.lean)
 *
   * the core exists
   * {name}`ListColoring.hasCore`
-  * [CoreExtract.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/CoreExtract.lean)
+  * [CoreExtract.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/CoreExtract.lean)
 *
   * §5 building block
   * {name}`SimpleGraph.ERT.not_choosable`
-  * [NotChoosable.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/NotChoosable.lean)
+  * [NotChoosable.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/NotChoosable.lean)
 *
   * *§5: `n`-choosable, not enumeratively chromatic-choosable at `n`*
   * {name}`SimpleGraph.KN5.exists_choosable_not_ecc_of_two_le`
-  * [Section5.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Section5.lean)
+  * [Section5.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/Section5.lean)
 *
   * §5 Lemmas 7 and 10, for the paper's $`H_{n+1}`
   * {name}`SimpleGraph.KN5.exists_choosable_not_ecc`
-  * [Section5.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Section5.lean)
+  * [Section5.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/Section5.lean)
 :::
 
 # The core vocabulary
 
 Four definitions carry the whole development. They live in
-[Defs.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Defs.lean).
+[Defs.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/Defs.lean).
 
 :::table +header (align := left)
 *
@@ -197,8 +197,8 @@ has exactly $`n` colors.
 # Verifying it yourself
 
 ```
-git clone https://github.com/rkirov/list-color-function
-cd list-color-function
+git clone https://github.com/rkirov/enumerative-chromatic-choosability
+cd enumerative-chromatic-choosability
 lake exe cache get && lake build
 ```
 

@@ -16,7 +16,7 @@ tag := "theta"
 %%%
 
 Source:
-[Theta.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Theta.lean).
+[Theta.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/Theta.lean).
 
 Theorem 2 characterizes the graphs that are enumeratively chromatic-choosable at `2`. Its easy
 direction assembles results already in hand — trees, cycles, `K₂,₃`, and the observation that a

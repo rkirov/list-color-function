@@ -225,7 +225,7 @@ Compiled 2026-08-08.
 
 - **F. M. Dong, K. M. Koh, and K. L. Teo**, *Chromatic Polynomials and Chromaticity of Graphs*,
   World Scientific, Singapore, 2005. DOI [10.1142/5814](https://doi.org/10.1142/5814).
-  — *The standard book on the ordinary chromatic polynomial; predates the list-color-function
+  — *The standard book on the ordinary chromatic polynomial; predates the enumerative-chromatic-choosability
   literature and does not cover $P_\ell$.*
   `[UNVERIFIED]` page count (384 pp.) and ISBN 978-981-256-317-0 as claimed in survey.md — not checked.
 

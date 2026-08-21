@@ -15,8 +15,8 @@ set_option maxHeartbeats 1000000
 tag := "cores"
 %%%
 
-Source: [Core.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Core.lean),
-[K23.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/K23.lean).
+Source: [Core.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/Core.lean),
+[K23.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/K23.lean).
 
 Theorem 2 of the paper characterizes the graphs that are enumeratively chromatic-choosable at `2`,
 and it does so in terms of a graph's *core* — what is left after repeatedly deleting vertices of

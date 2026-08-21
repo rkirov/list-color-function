@@ -17,9 +17,9 @@ tag := "readingchallenge"
 %%%
 
 Source:
-[comparator/Challenge.lean](https://github.com/rkirov/list-color-function/blob/main/comparator/Challenge.lean),
-[comparator/config.json](https://github.com/rkirov/list-color-function/blob/main/comparator/config.json),
-[comparator/Submission.lean](https://github.com/rkirov/list-color-function/blob/main/comparator/Submission.lean).
+[comparator/Challenge.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/comparator/Challenge.lean),
+[comparator/config.json](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/comparator/config.json),
+[comparator/Submission.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/comparator/Submission.lean).
 
 Everything up to here has been exposition. This chapter is a guide to a single file, and the file is
 the point: `comparator/Challenge.lean` is the *statement surface* of the development — what is

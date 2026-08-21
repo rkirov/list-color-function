@@ -16,8 +16,8 @@ tag := "swapping"
 %%%
 
 Source:
-[Bridge.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Bridge.lean),
-[PathColorable.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/PathColorable.lean).
+[Bridge.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/Bridge.lean),
+[PathColorable.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/PathColorable.lean).
 
 Lemma 2 is the technical heart of the paper. It says that if a graph splits into two pieces joined
 by a single edge, then the lists at the two ends of that edge can be made *nested* — one contained

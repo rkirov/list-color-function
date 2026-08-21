@@ -4,7 +4,7 @@
 
 ## TL;DR
 - **Mathlib coloring API is real but shallow for this project.** `SimpleGraph.Coloring`, `Colorable`, and `chromaticNumber` are proven and usable, together with cliques, subgraphs, walks/paths/cycles, box product, and complete-bipartite/multipartite graphs. But the file's own TODO still lists "Chromatic polynomials" and "partial colorings" as unstarted, and there is no list-coloring layer at all.
-- **The list-color-function edifice is 0% formalized.** No `chromaticPolynomial`, no deletion-contraction, no `P_ℓ`, no `P_DP`, no choosability, no Vizing/Brooks/Galvin in Mathlib. The only closely related mechanized results are Gonthier's Four Color Theorem (Coq), Bauer–Nipkow's Five Colour Theorem (Isabelle), and Arohee Bhoja's brand-new **standalone** Lean 4 proof of Vizing's theorem (arXiv:2512.13999, Dec 2025) — which is *not* in Mathlib.
+- **The enumerative-chromatic-choosability edifice is 0% formalized.** No `chromaticPolynomial`, no deletion-contraction, no `P_ℓ`, no `P_DP`, no choosability, no Vizing/Brooks/Galvin in Mathlib. The only closely related mechanized results are Gonthier's Four Color Theorem (Coq), Bauer–Nipkow's Five Colour Theorem (Isabelle), and Arohee Bhoja's brand-new **standalone** Lean 4 proof of Vizing's theorem (arXiv:2512.13999, Dec 2025) — which is *not* in Mathlib.
 - **A survey would not duplicate existing work.** The paper repeatedly cited as "the survey" is really Thomassen's 6-page 2009 JCTB note; the standard book (Dong–Koh–Teo 2005) predates the topic and does not cover P_ℓ. The user should write the first dedicated expository treatment of the list color function.
 
 ---
@@ -28,7 +28,7 @@ The vertex-coloring API lives in **`Mathlib/Combinatorics/SimpleGraph/Coloring/V
 
 **Also absent from Mathlib:** Brooks' theorem, any greedy-coloring procedure, chordal graphs / perfect elimination orderings, and edge coloring / chromatic index. Brooks' theorem and Vizing's theorem appear on the community "open conjecture formalizations" difficulty list (github.com/SamuelSchlesinger/open-conjecture-formalizations) as reachable-but-not-done, and that same list states flatly: **"List coloring not in Mathlib."**
 
-*Report verdict:* what is **proven** is the proper-coloring / chromatic-number core plus the ω ≤ χ bound and complete-(multi)partite values; everything a list-color-function project specifically needs (polynomial counting, greedy/PEO, list assignments) is **not even stated**.
+*Report verdict:* what is **proven** is the proper-coloring / chromatic-number core plus the ω ≤ χ bound and complete-(multi)partite values; everything a enumerative-chromatic-choosability project specifically needs (polynomial counting, greedy/PEO, list assignments) is **not even stated**.
 
 ### 2. Chromatic polynomial — does not exist in Mathlib
 
@@ -108,7 +108,7 @@ Choosability landmark results (for the survey):
 
 **There is no dedicated survey, book chapter, lecture-note set, or thesis whose primary subject is the list color function P_ℓ(G,m) or the DP color function P_DP(G,m).** Specifically:
 - The reference repeatedly cited in Kaul–Mudrock papers as a "survey of known results and open questions on the list color function" is really **Thomassen (2009)**, a 6-page research note — not an expository survey.
-- **F. M. Dong, K. M. Koh, K. L. Teo, "Chromatic Polynomials and Chromaticity of Graphs," World Scientific, 2005** (384 pp., ISBN 978-981-256-317-0, doi:10.1142/5814) — "the first book to comprehensively cover chromatic polynomials of graphs," but it covers **only the ordinary chromatic polynomial** and predates essentially all list-color-function work (which took off after Wang–Qian–Yan 2017 / Kaul–Mudrock 2019). A useful companion: F. M. Dong & K. M. Koh, "Foundations of the chromatic polynomial," in *Handbook on the Tutte Polynomial and Related Topics* (CRC, 2021), 232–266.
+- **F. M. Dong, K. M. Koh, K. L. Teo, "Chromatic Polynomials and Chromaticity of Graphs," World Scientific, 2005** (384 pp., ISBN 978-981-256-317-0, doi:10.1142/5814) — "the first book to comprehensively cover chromatic polynomials of graphs," but it covers **only the ordinary chromatic polynomial** and predates essentially all enumerative-chromatic-choosability work (which took off after Wang–Qian–Yan 2017 / Kaul–Mudrock 2019). A useful companion: F. M. Dong & K. M. Koh, "Foundations of the chromatic polynomial," in *Handbook on the Tutte Polynomial and Related Topics* (CRC, 2021), 232–266.
 - **Mudrock's PhD thesis** ("On the list coloring problem and its equitable variants," Illinois Institute of Technology, 2018) is about list coloring / equitable list coloring generally, **not** the enumerative function P_ℓ. No student thesis of Kaul or Mudrock dedicated to P_ℓ/P_DP was found (checked jmudrock.weebly.com research/student-research pages).
 - A **different**, broader 2026 survey exists — **N. K. Vasudevan, K. Somasundaram, N. Narayanan, "List-Coloring and Chromatic-Choosability — A Dynamic Survey," arXiv:2606.31702 (2026)** — but it surveys list-coloring/chromatic-choosability (graph classes where χ_ℓ=χ), **not** the enumerative list color function. The earlier general list-coloring survey it cites is D. R. Woodall (2001), on defective choosability.
 

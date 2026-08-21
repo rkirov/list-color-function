@@ -16,8 +16,8 @@ tag := "polynomial"
 %%%
 
 Source:
-[ChromaticPolynomial.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/ChromaticPolynomial.lean),
-[ListColorFunction.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/ListColorFunction.lean).
+[ChromaticPolynomial.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/ChromaticPolynomial.lean),
+[ListColorFunction.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/ListColorFunction.lean).
 
 Look again at the counts from the previous chapter, read as functions of the number of colours `n`:
 

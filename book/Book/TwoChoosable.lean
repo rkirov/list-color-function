@@ -17,16 +17,16 @@ tag := "twochoosable"
 %%%
 
 Source:
-[Choosable.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Choosable.lean),
-[ThetaChoosable.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/ThetaChoosable.lean),
-[Rubin.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Rubin.lean),
-[ThetaGen.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/ThetaGen.lean),
-[ThetaClass.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/ThetaClass.lean),
-[TwoCycles.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/TwoCycles.lean),
-[RubinStructure.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/RubinStructure.lean),
-[RubinCases.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/RubinCases.lean),
-[CoreExtract.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/CoreExtract.lean),
-[RubinProof.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/RubinProof.lean).
+[Choosable.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/Choosable.lean),
+[ThetaChoosable.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/ThetaChoosable.lean),
+[Rubin.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/Rubin.lean),
+[ThetaGen.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/ThetaGen.lean),
+[ThetaClass.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/ThetaClass.lean),
+[TwoCycles.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/TwoCycles.lean),
+[RubinStructure.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/RubinStructure.lean),
+[RubinCases.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/RubinCases.lean),
+[CoreExtract.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/CoreExtract.lean),
+[RubinProof.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/RubinProof.lean).
 
 The classification of the graphs that are enumeratively chromatic-choosable at `2`, which is the
 second main theorem of the paper, rests on an older classification: which graphs are `2`-choosable?

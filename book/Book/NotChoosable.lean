@@ -16,7 +16,7 @@ tag := "notchoosable"
 %%%
 
 Source:
-[NotChoosable.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/NotChoosable.lean).
+[NotChoosable.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/NotChoosable.lean).
 
 Section 5 of the paper constructs, for each `n`, a graph that is `n`-choosable but *not*
 enumeratively chromatic-choosable at `n` — showing that the two notions, which the characterization

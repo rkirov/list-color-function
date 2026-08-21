@@ -1,8 +1,8 @@
 # List coloring and enumeratively chromatic-choosable graphs — a Lean 4 formalization
 
-[![CI](https://github.com/rkirov/list-color-function/actions/workflows/ci.yml/badge.svg)](https://github.com/rkirov/list-color-function/actions/workflows/ci.yml)
+[![CI](https://github.com/rkirov/enumerative-chromatic-choosability/actions/workflows/ci.yml/badge.svg)](https://github.com/rkirov/enumerative-chromatic-choosability/actions/workflows/ci.yml)
 
-📖 **[Read the companion book](https://rkirov.github.io/list-color-function/)**
+📖 **[Read the companion book](https://rkirov.github.io/enumerative-chromatic-choosability/)**
 
 A machine-checked development of Kirov & Naimi, *List coloring and n-monophilic graphs*,
 Ars Combinatoria **124** (2016), 329–340 ([arXiv:1004.5183](https://arxiv.org/abs/1004.5183)).
@@ -145,7 +145,7 @@ exactly `A` times — and an even cycle admits none, which is why `Cacti/RefTens
 `Cacti/LargeBranch.lean` exist: a tensor capacity argument over the cycle's word model, split into
 `C₄`, `C₆` and every longer cycle.
 
-The book's [*Beyond the Paper: Cacti*](https://rkirov.github.io/list-color-function/) chapter is a
+The book's [*Beyond the Paper: Cacti*](https://rkirov.github.io/enumerative-chromatic-choosability/) chapter is a
 guide to all of this that assumes only the chapters before it. `Cacti/Examples.lean` pins the definition down on three
 graphs — `K₄` refused, a triangle accepted, and the bowtie accepted while having two cycles, which
 is what keeps the classification from being a statement about unicyclic graphs.

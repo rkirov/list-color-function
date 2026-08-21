@@ -16,11 +16,11 @@ tag := "theorem1"
 %%%
 
 Source:
-[Cycle.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Cycle.lean),
-[Recurrence.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Recurrence.lean),
-[CycleECC.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/CycleECC.lean),
-[CycleRotate.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/CycleRotate.lean),
-[ListColorFunction.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/ListColorFunction.lean).
+[Cycle.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/Cycle.lean),
+[Recurrence.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/Recurrence.lean),
+[CycleECC.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/CycleECC.lean),
+[CycleRotate.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/CycleRotate.lean),
+[ListColorFunction.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/ListColorFunction.lean).
 
 This chapter states the first main theorem of Kirov and Naimi {citep kirovNaimi}[] and explains what
 makes it hard. The proof is in Part II; nothing here is proved, only said precisely.

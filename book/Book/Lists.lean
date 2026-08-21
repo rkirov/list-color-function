@@ -15,10 +15,10 @@ set_option maxHeartbeats 1000000
 tag := "lists"
 %%%
 
-Source: [Defs.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Defs.lean),
-[Basic.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Basic.lean),
-[NotChoosable.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/NotChoosable.lean),
-[ListColorFunction.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/ListColorFunction.lean).
+Source: [Defs.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/Defs.lean),
+[Basic.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/Basic.lean),
+[NotChoosable.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/NotChoosable.lean),
+[ListColorFunction.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/ListColorFunction.lean).
 
 So far every vertex drew its colour from the same palette $`\{0, \dots, n-1\}`. Now give each vertex
 its own private list of permitted colours, all lists of the same size `n`, and ask the same two

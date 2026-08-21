@@ -16,8 +16,8 @@ tag := "threshold"
 %%%
 
 Source:
-[Threshold.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Threshold.lean),
-[ChromaticPolynomial.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/ChromaticPolynomial.lean).
+[Threshold.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/Threshold.lean),
+[ChromaticPolynomial.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/ChromaticPolynomial.lean).
 
 Cycles are enumeratively chromatic-choosable for every `n`. Chordal graphs are enumeratively
 chromatic-choosable for every `n`. $`\theta_{2,2,4}` is not enumeratively chromatic-choosable at

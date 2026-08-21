@@ -15,12 +15,12 @@ set_option maxHeartbeats 1000000
 tag := "twoecc"
 %%%
 
-Source: [Core.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Core.lean),
-[K23.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/K23.lean),
-[Theta.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Theta.lean),
-[Rubin.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Rubin.lean),
-[Theorem2.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Theorem2.lean),
-[RubinProof.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/RubinProof.lean).
+Source: [Core.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/Core.lean),
+[K23.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/K23.lean),
+[Theta.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/Theta.lean),
+[Rubin.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/Rubin.lean),
+[Theorem2.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/Theorem2.lean),
+[RubinProof.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/RubinProof.lean).
 
 This chapter states the second main theorem of Kirov and Naimi {citep kirovNaimi}[]: a complete
 description of the graphs that are enumeratively chromatic-choosable at `2`. The one result the

@@ -15,9 +15,9 @@ set_option maxHeartbeats 1000000
 tag := "cliques"
 %%%
 
-Source: [Iso.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Iso.lean),
-[Cone.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Cone.lean),
-[Chordal.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Chordal.lean).
+Source: [Iso.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/Iso.lean),
+[Cone.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/Cone.lean),
+[Chordal.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/Chordal.lean).
 
 The first substantial result in the paper is also the cheapest, and it is a good place to see the
 counting machinery earn its keep. Attach a new vertex to a clique of a graph enumeratively

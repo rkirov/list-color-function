@@ -15,9 +15,9 @@ set_option maxHeartbeats 1000000
 tag := "colouring"
 %%%
 
-Source: [Defs.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Defs.lean),
-[Basic.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Basic.lean),
-[Cone.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Cone.lean).
+Source: [Defs.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/Defs.lean),
+[Basic.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/Basic.lean),
+[Cone.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/Cone.lean).
 
 This chapter assumes you know what a graph is — a finite set of vertices, some pairs of which are
 joined by an edge — and nothing further. Everything else is built here.

@@ -177,7 +177,7 @@ so Lemma 10 fails as well. Lemma 9 fails independently and for its own reason: $
 lists $`\{0,1\}` has *two* colours whose deletion destroys every colouring, not at most one.
 
 All three failures are machine-checked, as `#guard`s at the foot of
-[Section5.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Section5.lean),
+[Section5.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/Section5.lean),
 which is why the formalization carries `2 ≤ n` throughout where the paper carries `1 ≤ n`.
 
 *The theorem the three lemmas serve is unharmed.* Section 5 exists to produce, at every list size,
@@ -290,7 +290,7 @@ Beyond the paper, the open question it left behind is still open: whether agreem
 $`P` at one value of `n` forces agreement at `n + 1`. That is Section 6's Question 2, and in the
 modern vocabulary it asks whether $`\nu(G) = \tau(G)` for every graph. It and Question 1 are stated
 in Lean in
-[OpenProblems.lean](https://github.com/rkirov/list-color-function/blob/main/OpenProblems.lean) and
+[OpenProblems.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/OpenProblems.lean) and
 asserted with `sorry` — a separate library, so that nothing in the development can rest on an
 unproved statement and a `sorry` there means *nobody knows* rather than *not done yet*.
 {ref "twoecc"}[The Theorem 2 chapter] says what is known about the case $`\chi(G) = 2`.

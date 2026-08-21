@@ -16,12 +16,12 @@ tag := "cycles"
 %%%
 
 Source:
-[PathSplit.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/PathSplit.lean),
-[PathMinimizing.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/PathMinimizing.lean),
-[Cycle.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Cycle.lean),
-[CycleECC.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/CycleECC.lean),
-[CycleTwo.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/CycleTwo.lean),
-[CycleRotate.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/CycleRotate.lean).
+[PathSplit.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/PathSplit.lean),
+[PathMinimizing.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/PathMinimizing.lean),
+[Cycle.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/Cycle.lean),
+[CycleECC.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/CycleECC.lean),
+[CycleTwo.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/CycleTwo.lean),
+[CycleRotate.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/CycleRotate.lean).
 
 Everything now assembles. This chapter covers the second half of Lemma 3 — which assignments
 actually achieve the minimum — and then Theorem 1.

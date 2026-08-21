@@ -15,11 +15,11 @@ set_option maxHeartbeats 1000000
 tag := "counting"
 %%%
 
-Source: [Defs.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Defs.lean),
-[Rename.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Rename.lean),
-[Basic.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Basic.lean),
-[Delete.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Delete.lean),
-[Sum.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Sum.lean).
+Source: [Defs.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/Defs.lean),
+[Rename.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/Rename.lean),
+[Basic.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/Basic.lean),
+[Delete.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/Delete.lean),
+[Sum.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/Sum.lean).
 
 The whole subject rests on one number. Given a graph `G` and, for each vertex, a finite list of
 permitted colors, how many proper colorings draw each vertex's color from its own list? Everything

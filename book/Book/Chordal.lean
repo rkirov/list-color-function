@@ -15,9 +15,9 @@ set_option maxHeartbeats 1000000
 tag := "chordal"
 %%%
 
-Source: [Cone.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Cone.lean),
-[Chordal.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Chordal.lean),
-[Dirac.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Dirac.lean).
+Source: [Cone.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/Cone.lean),
+[Chordal.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/Chordal.lean),
+[Dirac.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/Dirac.lean).
 
 Which graphs are enumeratively chromatic-choosable at `n`? The first answer, and the one that came
 with the question, is due to Kostochka and Sidorenko {citep kostochkaSidorenko}[]: *every chordal

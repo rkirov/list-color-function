@@ -15,7 +15,7 @@ set_option maxHeartbeats 1000000
 tag := "cacti"
 %%%
 
-Source: the [`Cacti/`](https://github.com/rkirov/list-color-function/tree/main/Cacti) library —
+Source: the [`Cacti/`](https://github.com/rkirov/enumerative-chromatic-choosability/tree/main/Cacti) library —
 `Defs.lean` for the definition, `Induction.lean` and `Three.lean` for the two invariants,
 `BalancedCore.lean` for odd cycles, `RefTensor.lean` through `LargeBranch.lean` for even ones,
 `GMFinal.lean` and `Statements.lean` for the assembly, and `Examples.lean` for the concrete

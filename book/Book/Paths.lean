@@ -15,9 +15,9 @@ set_option maxHeartbeats 1000000
 tag := "paths"
 %%%
 
-Source: [Path.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Path.lean),
-[Recurrence.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/Recurrence.lean),
-[PathCount.lean](https://github.com/rkirov/list-color-function/blob/main/ListColoring/PathCount.lean).
+Source: [Path.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/Path.lean),
+[Recurrence.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/Recurrence.lean),
+[PathCount.lean](https://github.com/rkirov/enumerative-chromatic-choosability/blob/main/ListColoring/PathCount.lean).
 
 Section 3 of the paper computes the number of colorings of a path from a very particular shape of
 list assignment, and everything about cycles follows from that computation. This chapter is about
