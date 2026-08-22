@@ -3,7 +3,16 @@
 # `Challenge.lean` is the statement surface of the development: every public definition and every
 # top-level result, stated exactly as in `ListColoring/` and `Cacti/`, with placeholder bodies.
 # `Submission.lean` delegates to the libraries themselves (path-required, not vendored), so the
-# comparator checks the exact library build. Shares the root's `packagesDir` to reuse the already-built Mathlib.
+# comparator checks the exact library build.
+#
+# This workspace owns its `.lake/packages`, i.e. Lake's default, and must keep owning it. Pointing
+# `packagesDir` at the root's copy to reuse an already-built Mathlib works locally and fails in a
+# registry verifier: the verifier discards submitted `.lake` state, prepares fresh build
+# directories, and runs the build with write access confined to the selected project, so a
+# `packagesDir` of `../.lake/packages` makes the very first dependency fetch a write outside the
+# project -- `permission denied (error code: 13)`, twice, then `error: build failed`. To get the
+# local disk saving back, symlink `comparator/.lake/packages` at the shared tree: `.lake/` is
+# ignored by git, and a submitted snapshot excludes symbolic links anyway.
 #
 # Workspace layout follows the `jacobian_challenge_diffgeo` replica in
 # github.com/rkirov/jacobian-fable (branch `lean-eval`), which in turn follows lean-eval's own
@@ -11,7 +20,6 @@
 name = "graph_coloring_comparator"
 testDriver = "workspace_test"
 defaultTargets = ["Challenge", "Submission"]
-packagesDir = "../.lake/packages"
 
 [leanOptions]
 pp.unicode.fun = true

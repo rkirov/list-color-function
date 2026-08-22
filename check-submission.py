@@ -209,6 +209,19 @@ def main() -> int:
     check(version >= MIN_TOOLCHAIN,
           f"the toolchain {toolchain} is at least v{'.'.join(map(str, MIN_TOOLCHAIN))}")
 
+    # A packagesDir above the selected project is the failure that is invisible locally: it works
+    # against a repository that already has a built package tree at the root, and turns the first
+    # dependency fetch into a write outside the project everywhere else.
+    for spec in (f"{PROJECT}/lakefile.toml", f"{PROJECT}/lake-manifest.json"):
+        if not os.path.isfile(spec):
+            continue
+        text = open(spec, encoding="utf-8").read()
+        found = re.search(r"packagesDir\"?\s*[:=]\s*\"([^\"]+)\"", text)
+        inside = found is None or not os.path.relpath(
+            os.path.join(PROJECT, found.group(1)), PROJECT).startswith("..")
+        check(inside, f"{spec}: packagesDir stays inside the selected project"
+                      + (f" (found {found.group(1)!r})" if found and not inside else ""))
+
     cfg = json.load(open(CONFIG))
     check(CONFIG.startswith(PROJECT + "/") and CONFIG.endswith(".json"),
           f"the comparator config {CONFIG} is inside the selected project and ends in .json")

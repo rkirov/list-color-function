@@ -82,6 +82,17 @@ export COMPARATOR_LANDRUN="$WORK/landrun"
 export PATH="$WORK/lean4export/.lake/build/bin:$WORK/nanoda/target/release:$WORK:$PATH"
 export COMPARATOR_BIN="$WORK/comparator/.lake/build/bin/comparator"
 
+# Reuse the root's package tree rather than materialising a second Mathlib. This has to be a
+# symlink and not `packagesDir = "../.lake/packages"` in the workspace lakefile: a registry
+# verifier prepares fresh build directories and confines the build's writes to the selected
+# project, so a packagesDir pointing above it turns the first dependency fetch into a write
+# outside the project. `.lake/` is git-ignored and a submitted snapshot excludes symbolic links,
+# so this is local convenience only and never reaches a verifier.
+if [ -d "$HERE/.lake/packages" ] && [ ! -e "$WS/.lake/packages" ]; then
+  mkdir -p "$WS/.lake"
+  ln -s ../../.lake/packages "$WS/.lake/packages"
+fi
+
 # Build the workspace (Challenge spec, Submission → library) and run it through lean-eval's own
 # harness, which forces `enable_nanoda := true`.
 cd "$WS"

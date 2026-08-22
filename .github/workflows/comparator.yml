@@ -34,7 +34,9 @@ jobs:
       - uses: actions/checkout@v4
 
       # Build the library and fetch the Mathlib olean cache. The comparator workspace
-      # path-requires the library and shares its packagesDir, so it reuses this build.
+      # path-requires the library and reuses this package tree through the symlink verify.sh
+      # creates -- not through `packagesDir`, which must stay inside the workspace so that a
+      # registry verifier, which confines the build to the selected project, can build it too.
       - uses: leanprover/lean-action@v1
         with:
           use-mathlib-cache: "true"
